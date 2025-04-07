@@ -7,6 +7,7 @@
 let extensionEnabled = true;
 let linkTargetPreference = '_self';
 let activeButtons = []; // 存储从后台获取的活动语法
+let panelExistsOnPage = false; // 新增：跟踪面板是否已插入
 
 /**
  * 注入 CSS 样式
@@ -140,78 +141,152 @@ function injectStyles() {
 /**
  * 主函数 - 初始化内容脚本逻辑
  */
-function init() {
+async function init() {
   injectStyles(); // 注入样式表
 
-  loadExtensionSettings(() => {
-    const observer = new MutationObserver((mutations) => {
-      if (!extensionEnabled) {
-        removeButtons(); // 禁用时移除
-        return; 
-      }
-      
-      if (isGoogleSearchPage() && hasValidSiteQuery()) {
-        const panelExists = !!document.querySelector('.ghacking-panel-container');
-        if (!panelExists) {
-            const rcntResult = document.evaluate('//*[@id="rcnt"]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-            const rcnt = rcntResult.singleNodeValue;
-            const centerCol = document.getElementById('center_col');
+  // 首次加载设置
+  await loadExtensionSettings();
 
-            if (rcnt && centerCol && centerCol.offsetParent !== null) {
-                 insertButtons(); // 调用插入函数
-            }
+  // 初始化 MutationObserver - 主要用于检测面板是否被意外移除
+  const observer = new MutationObserver((mutations) => {
+    // 如果扩展启用且页面符合条件，但面板不在页面上，则尝试重新插入
+    if (extensionEnabled && isGoogleSearchPage() && hasValidSiteQuery() && !document.querySelector('.ghacking-panel-container')) {
+        if (panelExistsOnPage) { // 只有当面板之前存在过才记录是重新插入
+             console.log("Panel removed by page mutation, re-inserting...");
         }
-      } else {
-        removeButtons(); // 不满足条件时移除
-      }
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-  });
-
-  // 监听来自后台的消息
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === 'settingsUpdated') {
-        if (message.setting.key === 'extensionEnabled') {
-            const newState = message.setting.value;
-            if (newState !== extensionEnabled) {
-                extensionEnabled = newState;
-                if (extensionEnabled) {
-                    if (isGoogleSearchPage() && hasValidSiteQuery()) {
-                        insertButtons(); 
-                    }
-                } else {
-                    removeButtons();
-                }
-            }
-        } else if (message.setting.key === 'linkTargetPreference') {
-            linkTargetPreference = message.setting.value;
-        } else if (message.setting.key === 'customButtons' || message.setting.key === 'defaultButtons' || message.setting.key === 'all') {
-             insertButtons(); // 重新获取语法数据并插入
-        }
-        sendResponse({ status: "收到设置更新" });
-    } else if (message.action === 'triggerSearch') {
-        // 保持触发搜索的逻辑，如果需要可以清理日志
+        // 尝试重新加载数据并插入。这里不直接插入，而是走标准流程
+        // 以确保数据是最新的。
+        loadActiveButtonsAndUpdatePanel(); 
     }
   });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  // 监听 storage 变化 - 这是数据更新的主要来源
+  chrome.storage.onChanged.addListener(async (changes, namespace) => {
+    if (namespace === 'local') {
+      console.log("Storage change detected in content script:", Object.keys(changes));
+      let needsPanelUpdate = false;
+      
+      if (changes.extensionEnabled) {
+        const newState = changes.extensionEnabled.newValue;
+        console.log("Extension enabled state changed to:", newState);
+        if (newState !== extensionEnabled) {
+            extensionEnabled = newState;
+            if (!extensionEnabled) {
+              removePanel(); // 禁用时立即移除
+            } else {
+              // 启用时，检查是否需要显示面板（可能页面已加载完成）
+              ensurePanelExistsIfNeeded(); 
+            }
+        } // 如果状态没变，则不需要更新
+      }
+      
+      if (changes.linkTargetPreference) {
+        linkTargetPreference = changes.linkTargetPreference.newValue;
+        console.log("Link target preference changed to:", linkTargetPreference);
+        // 链接目标改变不影响面板显示，无需更新
+      }
+      
+      // 只有当按钮列表变化，并且扩展是启用状态时，才标记需要更新面板
+      if (changes.defaultButtons || changes.customButtons) {
+        console.log("Button list changed in storage.");
+        if (extensionEnabled) {
+             needsPanelUpdate = true;
+        }
+      }
+
+      // 如果标记了需要更新面板 (由于按钮列表变化且扩展启用)
+      if (needsPanelUpdate) {
+          console.log("Reloading active buttons and updating panel due to storage change.");
+          await loadActiveButtonsAndUpdatePanel(); // 异步加载并更新
+      }
+    }
+  });
+
+  // 初始检查页面状态并决定是否显示面板
+  ensurePanelExistsIfNeeded();
 }
 
 /**
  * 加载扩展设置 (启用状态, 链接打开方式)
- * @param {function} callback - 加载完成后的回调函数
  */
-function loadExtensionSettings(callback) {
-  chrome.storage.local.get([
-    'extensionEnabled',
-    'linkTargetPreference'
-  ], (result) => {
+async function loadExtensionSettings() {
+  try {
+    const result = await chrome.storage.local.get([
+      'extensionEnabled',
+      'linkTargetPreference'
+    ]);
     extensionEnabled = typeof result.extensionEnabled === 'undefined' ? true : result.extensionEnabled;
     linkTargetPreference = result.linkTargetPreference || '_self';
+    console.log("Initial settings loaded:", { extensionEnabled, linkTargetPreference });
+  } catch (error) {
+      console.error("加载扩展设置失败:", error);
+      // 设置默认值以防出错
+      extensionEnabled = true;
+      linkTargetPreference = '_self';
+  }
+}
 
-    if (typeof callback === 'function') {
-        callback();
+/**
+ * 加载活动语法并更新面板 - 关键函数
+ * 应该只在需要更新面板内容时调用 (初始化, 按钮存储变化, 启用扩展)
+ */
+async function loadActiveButtonsAndUpdatePanel() {
+    // 仅在扩展启用且页面符合条件时才真正执行加载和更新
+    if (!extensionEnabled || !isGoogleSearchPage() || !hasValidSiteQuery()) {
+        console.log("Conditions not met for loading/updating panel, ensuring it's removed.");
+        removePanel();
+        return;
     }
-  });
+
+    console.log("Requesting active buttons from background...");
+    try {
+        const response = await chrome.runtime.sendMessage({ action: 'getActiveButtons' });
+        if (response && response.success && response.data) {
+            // TODO: 可以增加检查，如果 activeButtons 数据与上次相同，则不更新 DOM
+            // let oldButtonJson = JSON.stringify(activeButtons);
+            // let newButtonJson = JSON.stringify(response.data);
+            // if(oldButtonJson === newButtonJson && panelExistsOnPage) {
+            //     console.log("Active buttons data hasn't changed, skipping DOM update.");
+            //     return;
+            // }
+            
+            activeButtons = response.data;
+            console.log("Active buttons loaded:", activeButtons.length);
+            insertOrUpdatePanel(); // 调用插入或更新面板的函数
+            
+        } else {
+            console.error('加载活动语法失败:', response);
+            activeButtons = []; // 清空语法
+            removePanel(); // 加载失败则移除面板
+        }
+    } catch (error) {
+        console.error("请求活动语法时出错:", error);
+        activeButtons = [];
+        removePanel();
+    }
+}
+
+/**
+ * 检查页面条件，如果满足条件且面板不存在，则触发加载和插入流程
+ */
+function ensurePanelExistsIfNeeded() {
+  if (extensionEnabled && isGoogleSearchPage() && hasValidSiteQuery()) {
+    // 条件满足
+    if (!document.querySelector('.ghacking-panel-container')) {
+        console.log("Conditions met and panel not found, initiating panel insertion.");
+        loadActiveButtonsAndUpdatePanel(); // 触发加载和插入
+    } else {
+        // 面板已存在，正常情况不需要做什么，除非需要强制刷新
+        console.log("Conditions met and panel already exists.");
+        panelExistsOnPage = true; // 确保状态正确
+    }
+  } else {
+    // 条件不满足，确保移除面板
+    console.log("Conditions not met for panel, ensuring removal.");
+    removePanel();
+  }
 }
 
 /**
@@ -229,221 +304,152 @@ function isGoogleSearchPage() {
 function hasValidSiteQuery() {
   const params = new URLSearchParams(window.location.search);
   const query = params.get('q');
-  return query && /site:[\w.-]+\.[a-zA-Z]{2,}/.test(query);
+  // 改进正则，确保 site: 后面跟的是有效域名（简化版）
+  return query && /site:([a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,})/.test(query);
 }
 
 /**
- * 移除注入的语法按钮和面板
+ * 从当前URL的查询参数中提取 target_domain
+ * @returns {string | null} 提取到的域名，或 null
  */
-function removeButtons() {
+function getTargetDomain() {
+  const params = new URLSearchParams(window.location.search);
+  const query = params.get('q');
+  if (query) {
+    const match = query.match(/site:([a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,})/);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  return null;
+}
+
+/**
+ * 移除注入的面板
+ */
+function removePanel() {
   const panel = document.querySelector('.ghacking-panel-container');
   if (panel) {
+    console.log("Removing Hacking Panel");
     panel.remove();
+    panelExistsOnPage = false; // 更新状态
   }
 }
 
 /**
- * 核心函数：获取活动语法并在页面上插入或更新面板
+ * 核心函数：在页面上插入或更新面板
  */
-function insertButtons() {
-  if (!isGoogleSearchPage() || !hasValidSiteQuery() || !extensionEnabled) {
-    removeButtons();
+function insertOrUpdatePanel() {
+  if (!activeButtons || activeButtons.length === 0) {
+    console.log("No active buttons to display, removing panel if exists.");
+    removePanel();
     return;
   }
 
-  chrome.runtime.sendMessage({ action: 'getActiveButtons' }, (response) => {
-    if (chrome.runtime.lastError) {
-        console.error('获取活动语法失败:', chrome.runtime.lastError.message);
-        return;
-    }
-    if (response && response.success) {
-      activeButtons = response.buttons || [];
-
-      if (activeButtons.length === 0) {
-        removeButtons();
-        return;
-      }
-
-      let targetElement = document.getElementById('rhs');
-      let insertionMethod = 'prepend';
-
-      if (!targetElement || targetElement.offsetParent === null) {
-        targetElement = document.getElementById('center_col');
-        if (!targetElement) {
-           const rcntResult = document.evaluate('//*[@id="rcnt"]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-           targetElement = rcntResult.singleNodeValue;
-        } else {
-        }
-         insertionMethod = 'prepend';
-      } else {
-      }
-      
-      if (!targetElement) {
-        console.error('无法找到合适的插入点 (#rhs, #center_col 或 #rcnt)。无法插入侧边栏。');
-        return;
-      }
-
-      createAndInsertPanel(targetElement, insertionMethod);
-
-    } else {
-      console.error('后台未能成功返回活动语法:', response ? response.message : '无响应');
-      removeButtons();
-    }
-  });
-}
-
-/**
- * 创建或更新并插入面板到目标元素
- * @param {HTMLElement} targetElement 插入的目标DOM元素
- * @param {string} method 插入方法 ('prepend', 'append')
- */
-function createAndInsertPanel(targetElement, method) {
   let panel = document.querySelector('.ghacking-panel-container');
+  let buttonsContainer;
 
   if (!panel) {
+    console.log("Creating and inserting Hacking Panel to body.");
+    // --- 创建面板 --- 
     panel = document.createElement('div');
     panel.className = 'ghacking-panel-container';
-    if (method === 'prepend') {
-      targetElement.prepend(panel);
-    } else {
-      targetElement.append(panel);
+    // CSS 已设置 position:fixed, right, top，直接添加到 body
+    document.body.appendChild(panel);
+
+    // --- 创建标题 --- 
+    const title = document.createElement('div');
+    title.className = 'ghacking-panel-title';
+    title.textContent = 'Google Hacking 助手';
+    panel.appendChild(title);
+
+    // --- 创建按钮容器 --- 
+    buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'ghacking-buttons-container';
+    panel.appendChild(buttonsContainer);
+
+    // --- 创建底部信息 --- 
+    const footer = document.createElement('div');
+    footer.className = 'ghacking-panel-footer';
+    const versionSpan = document.createElement('span');
+    versionSpan.className = 'ghacking-panel-version';
+    try {
+        const manifest = chrome.runtime.getManifest();
+        const githubUrl = manifest.homepage_url || '#';
+        versionSpan.innerHTML = `版本: ${manifest.version} | <a href="${githubUrl}" target="_blank">GitHub</a>`;
+    } catch(e) {
+        console.error("获取 Manifest 失败:", e);
+        versionSpan.textContent = '无法加载版本信息';
     }
+    footer.appendChild(versionSpan);
+    panel.appendChild(footer);
+    
   } else {
-    panel.innerHTML = '';
+    console.log("Updating existing Hacking Panel.");
+    // 面板已存在，获取按钮容器并清空
+    buttonsContainer = panel.querySelector('.ghacking-buttons-container');
+    buttonsContainer.innerHTML = ''; // 清空现有按钮
   }
 
-  const title = document.createElement('div');
-  title.className = 'ghacking-panel-title';
-  title.textContent = 'Google Hacking 助手';
-  panel.appendChild(title);
-
-  const buttonsContainer = document.createElement('div');
-  buttonsContainer.className = 'ghacking-buttons-container';
-
+  // --- 填充按钮 --- 
   activeButtons.forEach(button => {
-    const buttonElement = createButtonElement(button);
-    buttonsContainer.appendChild(buttonElement);
+      const buttonElement = createButtonElement(button);
+      buttonsContainer.appendChild(buttonElement);
   });
-  panel.appendChild(buttonsContainer);
 
-  const footer = document.createElement('div');
-  footer.className = 'ghacking-panel-footer';
-  const versionSpan = document.createElement('span');
-  versionSpan.className = 'ghacking-panel-version';
-  const manifest = chrome.runtime.getManifest();
-  versionSpan.innerHTML = `版本: ${manifest.version} | <a href="https://github.com/Pa55w0rd/google-hacking-assistant" target="_blank">GitHub</a>`;
-  footer.appendChild(versionSpan);
-  panel.appendChild(footer);
-
-  panel.style.display = 'block'; 
+  // 在函数末尾更新面板存在状态
+  panelExistsOnPage = true;
 }
 
 /**
  * 创建单个语法按钮元素
- * @param {object} button 语法对象
+ * @param {object} button 按钮数据
  * @returns {HTMLElement} 按钮元素
  */
 function createButtonElement(button) {
   const buttonElement = document.createElement('button');
-  buttonElement.className = 'ghacking-button';
+  buttonElement.className = `ghacking-button ghacking-button-${button.riskLevel || 'default'}`;
   buttonElement.textContent = button.name;
-  buttonElement.title = button.syntax;
-
-  const riskLevelClass = `ghacking-button-${button.riskLevel || 'default'}`.toLowerCase();
-  buttonElement.classList.add(riskLevelClass);
-
-  buttonElement.addEventListener('click', (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    executeHackingSearch(button);
-  });
+  buttonElement.title = button.syntax; // 鼠标悬停显示完整语法
+  buttonElement.dataset.syntax = button.syntax; // 存储语法供点击事件使用
+  buttonElement.addEventListener('click', () => executeHackingSearch(button));
   return buttonElement;
 }
 
 /**
- * 模拟真实点击，尝试解决某些情况下 window.open 被阻止的问题
- * @param {HTMLElement} element 要模拟点击的元素
- */
-function simulateRealClick(element) {
-    const mouseEvent = new MouseEvent('click', {
-        view: window,
-        bubbles: true,
-        cancelable: true
-    });
-    element.dispatchEvent(mouseEvent);
-}
-
-/**
  * 执行 Google Hacking 搜索
- * @param {object} button 被点击的语法对象
+ * @param {object} button 被点击的按钮数据
  */
 async function executeHackingSearch(button) {
-  const params = new URLSearchParams(window.location.search);
-  let query = params.get('q') || '';
-
-  const targetDomainMatch = query.match(/site:([\w.-]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?)/i);
-  let targetDomain = '';
-  if (targetDomainMatch && targetDomainMatch[1]) {
-    targetDomain = targetDomainMatch[1];
-  } else {
-    console.error('未能从当前查询中提取有效的 site: 域名。无法执行 Hacking 搜索。');
-    showAlert('请先在Google搜索框中输入包含 site:domain.com 的查询');
+  const targetDomain = getTargetDomain();
+  if (!targetDomain) {
+    console.error("无法从当前URL提取目标域名。");
+    showAlert('错误：无法从当前URL提取目标域名');
     return;
   }
 
-  const hackingSyntax = button.syntax.replace(/\{target_domain\}/g, targetDomain);
+  // 替换占位符
+  const finalSyntax = button.syntax.replace(/\{target_domain\}/g, targetDomain);
+  const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(finalSyntax)}`;
 
-  const newSearchURL = `https://www.google.com/search?q=${encodeURIComponent(hackingSyntax)}`;
+  console.log(`执行搜索: ${finalSyntax}`);
 
+  // 根据用户偏好打开链接
   if (linkTargetPreference === '_blank') {
-    const newTab = window.open(newSearchURL, '_blank');
-    
-    if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') { 
-      console.warn('window.open 可能被阻止，尝试模拟点击...');
-      const link = document.createElement('a');
-      link.href = newSearchURL;
-      link.target = '_blank';
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      simulateRealClick(link); 
-      setTimeout(() => link.remove(), 100); 
-    }
+    window.open(searchUrl, '_blank');
   } else {
-    window.location.href = newSearchURL;
+    window.location.href = searchUrl;
   }
 }
 
 /**
- * 显示一个简单的提示信息
- * @param {string} message 要显示的消息
+ * 显示简单的 alert 提示 (可以改进为更友好的 UI)
+ * @param {string} message 
  */
 function showAlert(message) {
-  let alertBox = document.querySelector('.ghacking-alert');
-  if (!alertBox) {
-    alertBox = document.createElement('div');
-    alertBox.className = 'ghacking-alert';
-    
-    const content = document.createElement('span');
-    content.className = 'ghacking-alert-content';
-    alertBox.appendChild(content);
-    
-    const closeButton = document.createElement('button');
-    closeButton.className = 'ghacking-alert-button';
-    closeButton.textContent = '关闭';
-    closeButton.onclick = () => alertBox.remove();
-    alertBox.appendChild(closeButton);
-    
-    document.body.appendChild(alertBox);
-  }
-  
-  alertBox.querySelector('.ghacking-alert-content').textContent = message;
-
-  setTimeout(() => {
-    if (alertBox && alertBox.parentNode) {
-      alertBox.remove();
-    }
-  }, 5000);
+  // 可以替换为更美观的提示框实现
+  alert(message);
 }
 
-// 脚本入口
+// 启动脚本
 init(); 

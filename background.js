@@ -50,10 +50,21 @@ const RAW_DEFAULT_BUTTONS = [
 chrome.runtime.onInstalled.addListener(details => {
   console.log(`Extension ${details.reason} event.`); // 保留此日志以跟踪安装/更新
   initializeDefaultButtons();
-  // 可在此处添加其他初始化逻辑，如设置默认首选项
-  chrome.storage.local.get(['linkTargetPreference'], result => {
+  // 初始化默认设置
+  chrome.storage.local.get(['linkTargetPreference', 'extensionEnabled'], result => {
+      const defaults = {};
       if (result.linkTargetPreference === undefined) {
-          chrome.storage.local.set({ linkTargetPreference: '_self' });
+          defaults.linkTargetPreference = '_self';
+      }
+      if (result.extensionEnabled === undefined) {
+          defaults.extensionEnabled = true; // 默认启用
+      }
+      if (Object.keys(defaults).length > 0) {
+          chrome.storage.local.set(defaults, () => {
+              if (chrome.runtime.lastError) {
+                  console.error("初始化默认设置失败:", chrome.runtime.lastError);
+              }
+          });
       }
   });
 });
@@ -84,307 +95,158 @@ function initializeDefaultButtons() {
   });
 }
 
-// 监听来自内容脚本和选项页面的消息
+// --- 监听消息 ---
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  // console.log('收到消息:', message); // 移除常规日志
-  
-  // 处理获取所有语法数据的请求 (用于 options.js)
   if (message.action === 'getAllButtonsData') {
-    // console.log('处理获取所有语法数据请求'); // 移除
-    chrome.storage.local.get(['defaultButtons', 'customButtons'], function(result) {
-      // console.log('从存储中获取的语法数据:', result); // 移除
-      if (chrome.runtime.lastError) {
-         console.error("获取所有语法数据失败:", chrome.runtime.lastError);
-         sendResponse({ success: false, message: '获取存储数据失败', data: { defaultButtons: [], customButtons: [] } });
-         return;
-       }
-      sendResponse({
-        success: true,
-        data: {
-          defaultButtons: result.defaultButtons || [],
-          customButtons: result.customButtons || []
-        }
-      });
-    });
+    getAllButtonsData(sendResponse);
     return true; // 异步
   }
-  
-  // 处理切换内置语法状态的请求
+
   if (message.action === 'toggleDefaultButton') {
-    // console.log('处理切换内置语法状态请求:', message); // 移除
-    chrome.storage.local.get(['defaultButtons'], function(result) {
-      if (chrome.runtime.lastError) {
-        console.error('获取内置语法数据失败:', chrome.runtime.lastError);
-        sendResponse({ success: false, message: chrome.runtime.lastError.message });
-        return;
-      }
-      let defaultButtons = result.defaultButtons || [];
-      const buttonIndex = defaultButtons.findIndex(b => b.id === message.buttonId);
-      if (buttonIndex === -1) {
-        console.error('未找到要切换的内置语法:', message.buttonId); // 保留错误
-        sendResponse({ success: false, message: '未找到要切换的语法' });
-        return;
-      }
-      defaultButtons[buttonIndex].enabled = message.isEnabled;
-      chrome.storage.local.set({ defaultButtons }, function() {
-        if (chrome.runtime.lastError) {
-          console.error('保存内置语法状态失败:', chrome.runtime.lastError); // 保留错误
-          sendResponse({ success: false, message: chrome.runtime.lastError.message });
-          return;
-        }
-        // 通知内容脚本语法列表已更新
-        notifyContentScriptsSettingsUpdated({ key: 'defaultButtons', value: defaultButtons });
-        sendResponse({ success: true });
-      });
-    });
+    toggleDefaultButton(message.buttonId, message.isEnabled, sendResponse);
     return true; // 异步
   }
-  
-  // 处理添加自定义语法的请求
+
   if (message.action === 'addCustomButton') {
-    // console.log('[addCustomButton] 处理添加自定义语法请求:', message); // 移除
-    chrome.storage.local.get(['customButtons'], function(result) {
-       if (chrome.runtime.lastError) {
-           console.error("获取自定义语法数据失败:", chrome.runtime.lastError);
-           sendResponse({ success: false, message: chrome.runtime.lastError.message });
-           return;
-       }
-      let customButtons = result.customButtons || [];
-      const newButton = {
-        ...message.button,
-        id: 'custom_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-        isCustom: true
-      };
-      // console.log('[addCustomButton] 准备添加的新语法数据:', newButton); // 移除
-      customButtons.push(newButton);
-      chrome.storage.local.set({ customButtons }, function() {
-        if (chrome.runtime.lastError) {
-          console.error('[addCustomButton] 保存自定义语法失败:', chrome.runtime.lastError); // 保留错误
-          sendResponse({ success: false, message: chrome.runtime.lastError.message });
-          return;
-        }
-        // console.log('[addCustomButton] 自定义语法保存成功。'); // 移除
-        // 通知内容脚本语法列表已更新
-        notifyContentScriptsSettingsUpdated({ key: 'customButtons', value: customButtons });
-        sendResponse({ success: true });
-      });
-    });
+    addCustomButton(message.button, sendResponse);
     return true; // 异步
   }
-  
-  // 处理更新自定义语法的请求
+
   if (message.action === 'updateCustomButton') {
-    // console.log('[updateCustomButton] 处理更新自定义语法请求:', message); // 移除
-    chrome.storage.local.get(['customButtons'], function(result) {
-        if (chrome.runtime.lastError) {
-           console.error("获取自定义语法数据失败:", chrome.runtime.lastError);
-           sendResponse({ success: false, message: chrome.runtime.lastError.message });
-           return;
-       }
-      let customButtons = result.customButtons || [];
-      const buttonIndex = customButtons.findIndex(b => b.id === message.button.id);
-      if (buttonIndex === -1) {
-        console.error('未找到要更新的自定义语法:', message.button.id); // 保留错误
-        sendResponse({ success: false, message: '未找到要更新的语法' });
-        return;
-      }
-      const originalButton = customButtons[buttonIndex];
-      customButtons[buttonIndex] = { ...originalButton, ...message.button, isCustom: true };
-      const updatedButton = customButtons[buttonIndex];
-      // console.log(`[updateCustomButton] 准备更新语法 ID: ${updatedButton.id}，数据:`, updatedButton); // 移除
-      chrome.storage.local.set({ customButtons }, function() {
-        if (chrome.runtime.lastError) {
-          console.error('[updateCustomButton] 保存自定义语法失败:', chrome.runtime.lastError); // 保留错误
-          sendResponse({ success: false, message: chrome.runtime.lastError.message });
-          return;
-        }
-        // console.log('[updateCustomButton] 自定义语法更新成功。'); // 移除
-        // 通知内容脚本语法列表已更新
-        notifyContentScriptsSettingsUpdated({ key: 'customButtons', value: customButtons });
-        sendResponse({ success: true });
-      });
-    });
+    updateCustomButton(message.button, sendResponse);
     return true; // 异步
   }
-  
-  // 处理删除自定义语法的请求
+
   if (message.action === 'deleteCustomButton') {
-    // console.log('处理删除自定义语法请求:', message); // 移除
-    chrome.storage.local.get(['customButtons'], function(result) {
-        if (chrome.runtime.lastError) {
-           console.error("获取自定义语法数据失败:", chrome.runtime.lastError);
-           sendResponse({ success: false, message: chrome.runtime.lastError.message });
-           return;
-       }
-      let customButtons = result.customButtons || [];
-      customButtons = customButtons.filter(b => b.id !== message.buttonId);
-      chrome.storage.local.set({ customButtons }, function() {
-        if (chrome.runtime.lastError) {
-          console.error('删除自定义语法失败:', chrome.runtime.lastError); // 保留错误
-          sendResponse({ success: false, message: chrome.runtime.lastError.message });
-          return;
-        }
-        // 通知内容脚本语法列表已更新
-        notifyContentScriptsSettingsUpdated({ key: 'customButtons', value: customButtons });
-        sendResponse({ success: true });
-      });
-    });
+    deleteCustomButton(message.buttonId, sendResponse);
     return true; // 异步
   }
-  
-  // 处理清除所有自定义语法的请求
+
   if (message.action === 'clearAllCustomButtons') {
-    // console.log('处理清除所有自定义语法请求'); // 移除
-    chrome.storage.local.set({ customButtons: [] }, function() {
-      if (chrome.runtime.lastError) {
-        console.error('清除自定义语法失败:', chrome.runtime.lastError); // 保留错误
-        sendResponse({ success: false, message: chrome.runtime.lastError.message });
-        return;
-      }
-      // 通知内容脚本语法列表已更新
-      notifyContentScriptsSettingsUpdated({ key: 'customButtons', value: [] });
-      sendResponse({ success: true });
-    });
+    clearAllCustomButtons(sendResponse);
     return true; // 异步
   }
   
-  // 处理获取活动语法列表的请求 (用于 content.js)
-  if (message.action === 'getActiveButtons') {
-    // console.log('处理获取活动语法列表请求'); // 移除
-    chrome.storage.local.get(['defaultButtons', 'customButtons'], function(result) {
-        if (chrome.runtime.lastError) {
-            console.error('获取语法数据失败 (getActiveButtons):', chrome.runtime.lastError); // 保留错误
-            sendResponse({ success: false, message: '获取语法数据失败: ' + chrome.runtime.lastError.message, buttons: [] });
-            return;
-        }
-        const defaultButtons = result.defaultButtons || [];
-        const customButtons = result.customButtons || [];
-        const enabledDefaultButtons = defaultButtons.filter(button => button.enabled !== false);
-        const enabledCustomButtons = customButtons.filter(button => button.enabled !== false);
-        const activeButtons = [...enabledDefaultButtons, ...enabledCustomButtons];
-        // console.log('发送活动语法列表:', activeButtons); // 移除
-        sendResponse({ success: true, buttons: activeButtons });
-    });
-    return true; // 异步
-  }
-  
-  // 处理设置更新通知 (来自 popup.js 或 options.js)
+  // 处理来自 Popup 或 Options 页面的简单设置更新（现在主要通过 storage.onChanged）
+  // 可以保留这个作为备用或特定场景，但目前不再依赖它进行实时同步
   if (message.action === 'settingsUpdated') {
-    // console.log('处理设置更新通知:', message); // 移除
-    // 将设置更新转发给所有内容脚本
-    notifyContentScriptsSettingsUpdated(message.setting);
-    // 不需要回复
-    return; // 同步返回或省略
+    console.log('后台收到 settingsUpdated 消息 (可能来自旧逻辑或特定场景):', message.setting);
+    // 如果有需要，可以在这里处理特定设置，但主要更新应由 storage.onChanged 触发
+    // 例如，如果某个设置需要在后台立即响应，可以在这里添加逻辑
+    sendResponse({status: "Background received update"});
   }
-  
-  // 处理设置保存通知 (已废弃?)
-  /*
-  if (message.action === 'settingsSaved') {
-    console.log('处理设置保存通知');
-    notifyContentScriptsSettingsUpdated({ key: 'all', value: 'settingsSaved' });
-    return;
+
+  // 处理来自内容脚本的请求
+  if (message.action === 'getActiveButtons') {
+    getActiveButtons(sendResponse);
+    return true; // 异步
   }
-  */
-  
-  // 未知消息动作
-  // console.warn('未知消息动作:', message.action); // 移除警告
-  // 对于未处理的消息，可以选择不回复或回复失败
-  // sendResponse({ success: false, message: '未知的消息动作' }); 
-  // return true; // 如果需要异步检查，则返回 true
 });
 
-/**
- * 通知所有相关内容脚本设置已更新
- * @param {object} setting - 更新的设置 { key: string, value: any }
- */
-function notifyContentScriptsSettingsUpdated(setting) {
-    chrome.tabs.query({ url: "*://*.google.com/search?*" }, (tabs) => {
-      if (chrome.runtime.lastError) {
-        console.error("查询 Google 搜索标签页失败:", chrome.runtime.lastError); // 保留错误
-        return;
-      }
-      // console.log(`准备向 ${tabs.length} 个标签页发送设置更新:`, setting.key); // 移除
-      tabs.forEach(tab => {
-        chrome.tabs.sendMessage(tab.id, { action: 'settingsUpdated', setting }, (response) => {
-          if (chrome.runtime.lastError) {
-            // 忽略错误，标签页可能已关闭或内容脚本未注入
-            // console.warn(`发送消息到标签页 ${tab.id} 失败:`, chrome.runtime.lastError.message); 
-          } else {
-            // console.log(`设置更新消息已发送到标签页: ${tab.id}, 响应:`, response); // 移除
-          }
-        });
-      });
-    });
-}
+// --- 语法和设置管理函数 ---
 
-// --- 新的或修改后的函数 ---
-
-// 获取所有语法数据（用于选项页）
 async function getAllButtonsData(sendResponse) {
   try {
     const result = await chrome.storage.local.get(['defaultButtons', 'customButtons']);
-    // 确保 defaultButtons 存在，如果不存在（可能发生在旧版本升级），则初始化
-    let defaultButtons = result.defaultButtons;
-    if (!defaultButtons || defaultButtons.length === 0) {
-        console.warn('存储中未找到 defaultButtons，重新初始化');
-        defaultButtons = RAW_DEFAULT_BUTTONS.map(btn => ({ ...btn, enabled: true }));
-        await chrome.storage.local.set({ defaultButtons }); 
-    }
-    sendResponse({ success: true, data: { 
-        defaultButtons: defaultButtons || [], 
-        customButtons: result.customButtons || [] 
-    }}); 
+    sendResponse({ success: true, data: { defaultButtons: result.defaultButtons || [], customButtons: result.customButtons || [] } });
   } catch (error) {
-    console.error('获取所有语法数据失败:', error);
+    console.error("获取所有语法数据失败:", error);
+    sendResponse({ success: false, message: '获取存储数据失败', data: { defaultButtons: [], customButtons: [] } });
+  }
+}
+
+async function toggleDefaultButton(buttonId, isEnabled, sendResponse) {
+  try {
+    const result = await chrome.storage.local.get(['defaultButtons']);
+    let defaultButtons = result.defaultButtons || [];
+    const buttonIndex = defaultButtons.findIndex(b => b.id === buttonId);
+    if (buttonIndex === -1) {
+      throw new Error('未找到要切换的内置语法');
+    }
+    defaultButtons[buttonIndex].enabled = isEnabled;
+    await chrome.storage.local.set({ defaultButtons });
+    // 不需要手动通知，content script 会监听 storage 变化
+    sendResponse({ success: true });
+  } catch (error) {
+    console.error('切换内置语法状态失败:', error);
     sendResponse({ success: false, message: error.message });
   }
 }
 
-// 获取当前活动的语法（用于内容脚本）
-async function getActiveButtons(sendResponse) {
-   try {
-    const result = await chrome.storage.local.get(['defaultButtons', 'customButtons']);
-    const activeButtons = [];
-    // 添加启用的默认语法
-    if (result.defaultButtons) {
-        result.defaultButtons.forEach(btn => {
-            if (btn.enabled) {
-                activeButtons.push(btn);
-            }
-        });
-    }
-    // 添加所有自定义语法
-    if (result.customButtons) {
-        activeButtons.push(...result.customButtons);
-    }
-    sendResponse({ success: true, buttons: activeButtons });
+async function addCustomButton(buttonData, sendResponse) {
+  try {
+    const result = await chrome.storage.local.get(['customButtons']);
+    let customButtons = result.customButtons || [];
+    const newButton = {
+      ...buttonData,
+      id: 'custom_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      isCustom: true
+    };
+    customButtons.push(newButton);
+    await chrome.storage.local.set({ customButtons });
+    sendResponse({ success: true });
   } catch (error) {
-    console.error('获取活动语法失败:', error);
+    console.error('添加自定义语法失败:', error);
     sendResponse({ success: false, message: error.message });
   }
 }
 
-/**
- * 生成唯一ID
- * @returns {string} 唯一ID
- */
-function generateUniqueId() {
-  // 使用时间戳和随机数组合生成唯一ID
-  return 'custom_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+async function updateCustomButton(buttonData, sendResponse) {
+  try {
+    const result = await chrome.storage.local.get(['customButtons']);
+    let customButtons = result.customButtons || [];
+    const buttonIndex = customButtons.findIndex(b => b.id === buttonData.id);
+    if (buttonIndex === -1) {
+      throw new Error('未找到要更新的自定义语法');
+    }
+    customButtons[buttonIndex] = { ...customButtons[buttonIndex], ...buttonData, isCustom: true };
+    await chrome.storage.local.set({ customButtons });
+    sendResponse({ success: true });
+  } catch (error) {
+    console.error('更新自定义语法失败:', error);
+    sendResponse({ success: false, message: error.message });
+  }
 }
 
-/**
- * 清除所有自定义语法
- * @param {Function} sendResponse 响应函数
- */
+async function deleteCustomButton(buttonId, sendResponse) {
+  try {
+    const result = await chrome.storage.local.get(['customButtons']);
+    let customButtons = result.customButtons || [];
+    customButtons = customButtons.filter(b => b.id !== buttonId);
+    await chrome.storage.local.set({ customButtons });
+    sendResponse({ success: true });
+  } catch (error) {
+    console.error('删除自定义语法失败:', error);
+    sendResponse({ success: false, message: error.message });
+  }
+}
+
 async function clearAllCustomButtons(sendResponse) {
   try {
-    // 将customButtons设置为空数组
     await chrome.storage.local.set({ customButtons: [] });
-    console.log('已清除所有自定义语法');
     sendResponse({ success: true });
   } catch (error) {
     console.error('清除自定义语法失败:', error);
+    sendResponse({ success: false, message: error.message });
+  }
+}
+
+/**
+ * 获取所有启用的语法 (供内容脚本使用)
+ */
+async function getActiveButtons(sendResponse) {
+  try {
+    const result = await chrome.storage.local.get(['defaultButtons', 'customButtons']);
+    const defaultButtons = result.defaultButtons || [];
+    const customButtons = result.customButtons || [];
+    
+    const activeDefault = defaultButtons.filter(b => b.enabled !== false);
+    const activeCustom = customButtons.filter(b => b.enabled !== false);
+    
+    const activeButtons = [...activeDefault, ...activeCustom];
+    sendResponse({ success: true, data: activeButtons });
+  } catch (error) {
+    console.error('获取活动语法失败:', error);
     sendResponse({ success: false, message: error.message });
   }
 } 

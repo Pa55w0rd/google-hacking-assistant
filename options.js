@@ -113,46 +113,6 @@ function showStatusToast(message, type = 'success') {
 }
 
 /**
- * 保存设置并显示提示
- * @param {string} key 设置键名
- * @param {any} value 设置值
- * @param {string} settingName 设置的显示名称（用于提示消息）
- */
-function saveSetting(key, value, settingName) {
-  const settingObj = {};
-  settingObj[key] = value;
-  chrome.storage.local.set(settingObj, function() {
-    if (chrome.runtime.lastError) {
-      console.error(`保存设置 ${key} 失败:`, chrome.runtime.lastError);
-      showStatusToast(`保存${settingName}失败`, 'error');
-      return;
-    }
-    
-    // 根据不同的设置类型显示不同的成功提示
-    let successMessage = '';
-    switch(key) {
-      case 'linkTargetPreference':
-        successMessage = `链接打开方式已更改为 ${value === '_blank' ? '新标签页' : '当前标签页'}`;
-        break;
-      case 'extensionEnabled':
-        successMessage = `扩展已${value ? '启用' : '禁用'}`;
-        break;
-      default:
-        successMessage = `${settingName}已保存`;
-    }
-    
-    // 显示成功提示
-    showStatusToast(successMessage, 'success');
-    
-    // 通知其他页面设置已更改
-    chrome.runtime.sendMessage({ 
-            action: 'settingsUpdated',
-            setting: { key, value }
-    });
-  });
-}
-
-/**
  * 检查语法名称是否重复
  * @param {string} name 待检查的名称
  * @param {string} currentId 当前语法ID（编辑模式时使用, null 或 undefined 表示添加模式）
@@ -181,8 +141,9 @@ function checkDuplicateButtonName(name, currentId = null) {
   return customDuplicate;
 }
 
-// --- 全局变量 ---
+// 全局变量
 let allButtonsData = { defaultButtons: [], customButtons: [] };
+let linkTargetPreference = '_self'; // 新增：存储链接打开偏好
 
 // --- DOMContentLoaded 事件监听器 ---
 document.addEventListener('DOMContentLoaded', function() {
@@ -282,14 +243,29 @@ document.addEventListener('DOMContentLoaded', function() {
       const lastUpdatedLabel = document.querySelector('.about-info span:nth-child(3)');
       if (lastUpdatedLabel) lastUpdatedLabel.textContent = getText('lastUpdated');
       
+      // 更新关于页面免责声明
       const disclaimerTitle = document.querySelector('.warning strong');
       if (disclaimerTitle) disclaimerTitle.textContent = getText('disclaimer');
       
-      const disclaimerText = document.querySelector('.warning');
-      if (disclaimerText) {
-        const textNode = Array.from(disclaimerText.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
-        if (textNode) textNode.textContent = getText('disclaimerText');
+      const disclaimerWarningDiv = document.querySelector('.warning');
+      if (disclaimerWarningDiv) {
+          // 先移除 strong 标签之后的所有现有文本节点，防止重复添加
+          let currentNode = disclaimerTitle ? disclaimerTitle.nextSibling : disclaimerWarningDiv.firstChild;
+          while (currentNode) {
+              const nextNode = currentNode.nextSibling;
+              if (currentNode.nodeType === Node.TEXT_NODE) {
+                  disclaimerWarningDiv.removeChild(currentNode);
+              }
+              currentNode = nextNode;
+          }
+          // 添加新的文本节点
+          const disclaimerTextNode = document.createTextNode(getText('disclaimerText'));
+          disclaimerWarningDiv.appendChild(disclaimerTextNode);
       }
+      
+      // 新增：更新基本设置区域的文本（如果需要）
+      const linkTargetLabel = document.querySelector('#generalSettings .setting-item label');
+      if (linkTargetLabel) linkTargetLabel.textContent = getText('linkTargetPref');
       
       console.log("UI 文本更新完成。");
     } catch (error) {
@@ -311,9 +287,9 @@ document.addEventListener('DOMContentLoaded', function() {
        console.log("已加载基本设置:", result);
 
        // 设置链接打开方式
-      const linkTarget = result.linkTargetPreference || '_self';
+      linkTargetPreference = result.linkTargetPreference || '_self'; // 更新全局变量
        linkTargetRadios.forEach(radio => {
-           radio.checked = radio.value === linkTarget;
+           radio.checked = radio.value === linkTargetPreference;
        });
        
        // 完成加载后更新 UI 文本
@@ -930,11 +906,26 @@ document.addEventListener('DOMContentLoaded', function() {
   // --- 事件监听器设置 ---
   console.log("设置事件监听器...");
 
-  // 链接目标单选语法
+  // 链接目标单选按钮
   linkTargetRadios.forEach(radio => {
       radio.addEventListener('change', function() {
           if (this.checked) {
-              saveSetting('linkTargetPreference', this.value, 'linkTargetPref');
+              const newValue = this.value;
+              linkTargetPreference = newValue; // 更新全局变量
+              // 保存到 storage
+              chrome.storage.local.set({ linkTargetPreference: newValue }, function() {
+                 if (chrome.runtime.lastError) {
+                     console.error("保存链接打开方式失败:", chrome.runtime.lastError);
+                     showStatusToast("保存链接打开方式失败", "error");
+                     // 可以在这里恢复之前的选中状态
+                     const previousValue = newValue === '_self' ? '_blank' : '_self';
+                     linkTargetRadios.forEach(r => r.checked = r.value === previousValue);
+                     linkTargetPreference = previousValue;
+                 } else {
+                     showStatusToast("链接打开方式已保存", "success");
+                     // 不再需要手动发送消息
+                 }
+              });
           }
       });
   });
@@ -957,12 +948,39 @@ document.addEventListener('DOMContentLoaded', function() {
   cancelButton.addEventListener('click', hideButtonForm);
   clearAllCustomButtons.addEventListener('click', handleClearAllCustomButtons);
 
+  // 监听 storage 变化，主要用于同步 Popup 或其他地方的修改
+  chrome.storage.onChanged.addListener((changes, namespace) => {
+      if (namespace === 'local') {
+          console.log("Storage change detected in options:", changes);
+          if (changes.linkTargetPreference) {
+              const newValue = changes.linkTargetPreference.newValue;
+              if (linkTargetPreference !== newValue) {
+                  console.log("Updating linkTargetPreference from storage change:", newValue);
+                  linkTargetPreference = newValue;
+                  linkTargetRadios.forEach(radio => {
+                      radio.checked = radio.value === newValue;
+                  });
+              }
+          }
+          // 如果其他设置项需要在选项页实时同步，也可以在这里添加逻辑
+          if (changes.defaultButtons || changes.customButtons) {
+              // 语法列表发生变化，重新加载并渲染
+              console.log("Button list changed externally, reloading...");
+              loadAllButtons();
+          }
+          if (changes.extensionEnabled) {
+              // 如果需要在选项页显示或响应"启用侧边栏"状态，可以在此处理
+              console.log("Extension enabled state changed externally:", changes.extensionEnabled.newValue);
+          }
+      }
+  });
+
   // --- 初始化 ---
   console.log("开始初始化...");
-  setActiveSection('about'); // <-- 默认显示 关于 页面
+  setActiveSection('about'); // 默认显示 关于 页面
   populateAboutSection(); // 填充关于页面的信息
   loadGeneralSettings(); // 加载设置 (会触发语言检测和首次 UI 更新)
-  loadAllButtons(); // 加载语法数据并渲染 (会触发第二次 UI 更新以显示语法计数)
+  loadAllButtons(); // 加载语法数据并渲染
   console.log("初始化完成。");
 
   /**
