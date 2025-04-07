@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Hacking 助手 - 设置</title>
+  <!-- 引入 Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <style>
+    :root {
+      /* Google Material Design 色板 (示例) */
+      --md-primary-color: #1976d2; /* Google Blue 700 */
+      --md-primary-light-color: #e3f2fd; /* Google Blue 50 */
+      --md-accent-color: #ffab40; /* Google Amber A400 */
+      --md-background-color: #f5f5f5; /* Grey 100 */
+      --md-surface-color: #ffffff;
+      --md-on-surface-color: #212121; /* Grey 900 */
+      --md-on-surface-medium-color: #616161; /* Grey 700 */
+      --md-on-surface-disabled-color: #bdbdbd; /* Grey 500 */
+      --md-error-color: #d32f2f; /* Red 700 */
+      --md-divider-color: #e0e0e0; /* Grey 300 */
+      --md-ripple-color: rgba(0, 0, 0, 0.1);
+
+      /* 字体 */
+      --md-font-family: 'Roboto', 'Segoe UI', 'Microsoft YaHei', sans-serif;
+
+      /* 圆角 */
+      --md-border-radius: 4px;
+      
+      /* 阴影 */
+      --md-shadow-1dp: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+      --md-shadow-2dp: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    }
+
+    body {
+      font-family: var(--md-font-family);
+      margin: 0;
+      background-color: var(--md-background-color);
+      color: var(--md-on-surface-color);
+      display: flex;
+      min-height: 100vh;
+      font-size: 14px; /* 基础字号 */
+    }
+
+    /* 左侧菜单栏 */
+    #optionsMenu {
+      width: 240px;
+      background-color: var(--md-surface-color);
+      border-right: 1px solid var(--md-divider-color);
+      padding: 16px 0; /* 上下留白，左右语法自己控制 */
+      box-sizing: border-box;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #optionsMenu .menu-header {
+        padding: 0 24px 16px 24px;
+        margin-bottom: 8px;
+        border-bottom: 1px solid var(--md-divider-color);
+    }
+
+    #optionsMenu .menu-header h1 {
+      color: var(--md-primary-color);
+      font-size: 20px;
+      margin: 0;
+      font-weight: 500;
+    }
+
+    #optionsMenu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      flex-grow: 1; /* 占据剩余空间 */
+    }
+
+    #optionsMenu li {
+      margin-bottom: 4px;
+    }
+
+    #optionsMenu button {
+      background: none;
+      border: none;
+      color: var(--md-on-surface-medium-color);
+      cursor: pointer;
+      padding: 12px 24px;
+      width: 100%;
+      text-align: left;
+      border-radius: 0 var(--md-border-radius) var(--md-border-radius) 0; /* 右侧圆角 */
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s, color 0.2s;
+      display: flex; /* 使用 flex 对齐图标和文本 */
+      align-items: center;
+    }
+    
+    #optionsMenu button .material-icons-outlined {
+        margin-right: 16px; /* 图标和文本间距 */
+        font-size: 20px; /* 图标大小 */
+        opacity: 0.7;
+    }
+
+    #optionsMenu button.active,
+    #optionsMenu button:hover {
+      background-color: var(--md-primary-light-color);
+      color: var(--md-primary-color);
+    }
+    
+    #optionsMenu button.active .material-icons-outlined,
+    #optionsMenu button:hover .material-icons-outlined {
+        opacity: 1;
+    }
+
+    #optionsMenu .menu-footer {
+        padding: 16px 24px 0 24px;
+        color: var(--md-on-surface-disabled-color);
+        font-size: 12px;
+        margin-top: auto; /* 推到底部 */
+        border-top: 1px solid var(--md-divider-color);
+    }
+
+    /* 右侧内容区 */
+    #optionsContent {
+      flex-grow: 1;
+      padding: 24px 32px; /* 增加内边距 */
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    .content-section {
+      display: none;
+      max-width: 800px; /* 稍微加宽 */
+      margin: 0 auto;
+    }
+
+    .content-section.active {
+      display: block;
+    }
+
+    h2 {
+      color: var(--md-on-surface-color);
+      margin-top: 0;
+      margin-bottom: 24px;
+      font-size: 24px;
+      font-weight: 400; /* Material Design 标题通常用 Regular */
+      border-bottom: 1px solid var(--md-divider-color);
+      padding-bottom: 16px;
+    }
+
+    /* 卡片式设置项 */
+    .setting-item {
+      margin-bottom: 24px;
+      background-color: var(--md-surface-color);
+      padding: 20px 24px; /* 增加内边距 */
+      border-radius: var(--md-border-radius);
+      border: 1px solid var(--md-divider-color);
+      /* box-shadow: var(--md-shadow-1dp); */ /* 可选：添加阴影 */
+    }
+
+    .setting-item label,
+    .form-group label {
+      display: block;
+      font-weight: 500; /* Medium weight */
+      margin-bottom: 8px;
+      font-size: 16px; /* 稍微增大 */
+      color: var(--md-on-surface-color);
+    }
+
+    .setting-item .description,
+    .form-group .description {
+      font-size: 13px;
+      color: var(--md-on-surface-medium-color);
+      margin-top: -4px; /* 靠近 Label */
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    
+    /* Material Design 风格语法 */
+    button.md-button {
+        font-family: var(--md-font-family);
+        border: none;
+        border-radius: var(--md-border-radius);
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 500;
+        text-transform: uppercase; /* 字母大写 */
+        cursor: pointer;
+        outline: none;
+        transition: background-color 0.2s, box-shadow 0.2s;
+        min-width: 64px;
+        text-align: center;
+        line-height: 1.75;
+        display: inline-flex; /* 用于对齐图标 */
+        align-items: center;
+        justify-content: center;
+        vertical-align: middle;
+        box-sizing: border-box;
+    }
+    button.md-button .material-icons-outlined {
+        margin-right: 8px;
+        font-size: 18px;
+    }
+    button.md-button.icon-only .material-icons-outlined {
+        margin-right: 0;
+    }
+    /* Contained Button (主要语法) */
+    button.md-button.primary-btn {
+        background-color: var(--md-primary-color);
+        color: #fff;
+        box-shadow: var(--md-shadow-1dp);
+    }
+    button.md-button.primary-btn:hover {
+        background-color: #1565c0; /* darken primary */
+        box-shadow: var(--md-shadow-2dp);
+    }
+    /* Danger Button */
+    button.md-button.danger-btn {
+        background-color: var(--md-error-color);
+        color: #fff;
+        box-shadow: var(--md-shadow-1dp);
+    }
+    button.md-button.danger-btn:hover {
+        background-color: #c62828; /* darken error */
+        box-shadow: var(--md-shadow-2dp);
+    }
+    /* Text Button (次要/取消语法) */
+    button.md-button.secondary-btn {
+        background-color: transparent;
+        color: var(--md-primary-color);
+    }
+    button.md-button.secondary-btn:hover {
+        background-color: rgba(25, 118, 210, 0.08); /* primary color with low opacity */
+    }
+    /* Action Button (编辑/删除等文本语法) */
+    button.md-button.action-button {
+        background-color: transparent;
+        color: var(--md-on-surface-medium-color);
+        padding: 6px 8px; /* 紧凑型 */
+        min-width: auto;
+        text-transform: none;
+    }
+    button.md-button.action-button:hover {
+        background-color: var(--md-ripple-color);
+    }
+    button.md-button.action-button.delete-btn {
+        color: var(--md-error-color);
+    }
+    button.md-button.action-button.delete-btn:hover {
+        background-color: rgba(211, 47, 47, 0.08); /* error color with low opacity */
+    }
+
+    /* 为编辑/删除语法添加图标 */
+    .button-actions .md-button.action-button .material-icons-outlined {
+        font-size: 18px; /* 图标大小 */
+        vertical-align: middle; /* 垂直对齐 */
+        margin: 0; /* 移除默认间距 */
+    }
+    /* 给删除语法加点间距 */
+    .button-actions .md-button.action-button.delete-btn {
+        margin-left: 8px; 
+    }
+
+    /* 开关样式 (Material Design) */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 36px; /* 缩小宽度 */
+      height: 14px; /* 缩小高度 */
+      vertical-align: middle;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #bdbdbd; /* 关闭状态灰色 */
+      transition: .4s;
+      border-radius: 7px; /* 调整圆角 */
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px; /* 调整滑块大小 */
+      width: 20px;
+      left: -2px; /* 调整初始位置 */
+      bottom: -3px; /* 调整垂直位置 */
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4); /* 添加阴影 */
+    }
+    input:checked + .slider {
+      background-color: var(--md-primary-light-color); /* 开启状态背景色淡化 */
+    }
+    input:checked + .slider:before {
+      background-color: var(--md-primary-color); /* 开启状态滑块颜色 */
+      transform: translateX(18px); /* 调整移动距离 */
+    }
+
+    /* 语法列表样式 */
+    .button-list {
+      max-height: 350px; /* 增加高度 */
+      overflow-y: auto;
+      margin-top: 10px;
+      border: 1px solid var(--md-divider-color);
+      border-radius: var(--md-border-radius);
+      background-color: var(--md-background-color); /* 列表背景 */
+    }
+    .button-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px; /* 调整内边距 */
+      border-bottom: 1px solid var(--md-divider-color);
+      background-color: var(--md-surface-color); /* 列表项背景 */
+    }
+    .button-item:last-child { border-bottom: none; }
+    .button-info {
+      flex-grow: 1;
+      margin-right: 16px;
+    }
+    .button-name {
+      font-weight: 500;
+      font-size: 14px;
+      color: var(--md-on-surface-color);
+      display: inline-block; /* 允许与风险等级同行 */
+      margin-right: 8px;
+    }
+    .button-syntax {
+      font-family: 'Roboto Mono', monospace; /* 代码字体 */
+      font-size: 13px;
+      color: var(--md-on-surface-medium-color);
+      margin-top: 4px;
+      word-break: break-all;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 450px; /* 防止过长 */
+      display: block; /* 确保独占一行 */
+    }
+    .button-actions {
+        display: flex;
+        align-items: center;
+     }
+    .risk-level {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 10px;
+      color: white;
+      font-weight: 500;
+      white-space: nowrap;
+      display: inline-block; /* 同行显示 */
+      vertical-align: middle;
+      margin-left: 4px; /* 微调间距 */
+    }
+    .risk-high { background-color: var(--md-error-color); }
+    .risk-medium { background-color: #ffa000; } /* Amber 700 */
+    .risk-info { background-color: #0288d1; } /* Light Blue 700 */
+    .risk-default { background-color: #757575; } /* Grey 600 */
+
+    .add-button-container {
+      margin-top: 24px; /* 增加上边距 */
+      display: flex; /* 使用 Flexbox 布局 */
+      justify-content: flex-end; /* 语法靠右对齐 */
+      gap: 8px; /* 语法之间的间距 */
+    }
+    
+    /* 表单样式 (Material Design Text Fields 风格 - 简化版) */
+    #buttonForm {
+      background-color: var(--md-surface-color);
+      border: 1px solid var(--md-divider-color);
+      border-radius: var(--md-border-radius);
+      padding: 24px;
+      margin-top: 24px;
+      display: none; /* 默认隐藏 */
+      /* box-shadow: var(--md-shadow-1dp); */
+    }
+    #buttonForm h3 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        font-size: 18px;
+        font-weight: 500;
+    }
+    .form-group {
+      margin-bottom: 20px;
+      position: relative; /* 用于浮动标签效果（简化） */
+    }
+    .form-group label {
+        font-size: 12px; /* Label 变小 */
+        color: var(--md-on-surface-medium-color);
+        position: absolute;
+        top: -8px; /* 移到边框上方 */
+        left: 10px;
+        background-color: var(--md-surface-color); /* 背景遮挡边框 */
+        padding: 0 4px;
+        font-weight: 400;
+    }
+    /* 特别调整开关组的 form-group */
+    .form-group-switch {
+        margin-bottom: 16px; /* 减小与其他组的间距 */
+        /* 使其看起来与其他 form-group 类似 */
+        padding-top: 8px; /* 模拟 label 占位 */
+    }
+    .form-group input[type="text"],
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 14px 12px 10px 12px; /* 调整内边距以容纳标签 */
+      border: 1px solid var(--md-divider-color);
+      border-radius: var(--md-border-radius);
+      font-size: 14px;
+      box-sizing: border-box;
+      background-color: transparent; /* 背景透明 */
+      transition: border-color 0.2s;
+      margin-top: 4px; /* 为Label腾出空间 */
+    }
+    .form-group input[type="text"]:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--md-primary-color);
+        box-shadow: 0 0 0 1px var(--md-primary-color); /* 模拟边框加粗 */
+    }
+    .form-group textarea {
+      min-height: 80px; /* 增加文本域高度 */
+      font-family: 'Roboto Mono', monospace;
+      resize: vertical; /* 允许垂直调整大小 */
+    }
+    .form-group select {
+        appearance: none; /* 移除默认箭头 */
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23616161' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 18px;
+        padding-right: 40px; /* 为箭头腾出空间 */
+    }
+    .form-group .description {
+        margin-top: 8px; /* 描述距离输入框的间距 */
+        margin-bottom: 0;
+    }
+    .form-actions {
+      margin-top: 24px;
+      text-align: right;
+    }
+    .form-actions button + button {
+        margin-left: 8px;
+    }
+    
+    /* Radio 语法 (简化 Material 风格) */
+    .radio-group label {
+      display: flex; /* 使用 flex 对齐 */
+      align-items: center;
+      margin-bottom: 12px;
+      font-weight: normal;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .radio-group input[type="radio"] {
+      appearance: none; /* 隐藏默认样式 */
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--md-on-surface-medium-color);
+      border-radius: 50%;
+      margin-right: 12px;
+      position: relative;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .radio-group input[type="radio"]::before {
+      content: '';
+      display: block;
+      width: 10px;
+      height: 10px;
+      background-color: var(--md-primary-color);
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0); /* 默认隐藏 */
+      transition: transform 0.2s;
+    }
+    .radio-group input[type="radio"]:checked {
+      border-color: var(--md-primary-color);
+    }
+    .radio-group input[type="radio"]:checked::before {
+      transform: translate(-50%, -50%) scale(1); /* 显示选中点 */
+    }
+    .radio-group label:hover input[type="radio"] {
+        border-color: var(--md-primary-color);
+    }
+
+    /* 新增：开关控制组样式 */
+    .switch-control-group {
+        display: flex;
+        align-items: center;
+        /* 移除内边距，由父级 .form-group-switch 控制 */
+    }
+    /* 开关前的标签文本样式 */
+    .switch-label-text {
+        font-size: 14px; /* 调整字号 */
+        color: var(--md-on-surface-medium-color);
+        margin-right: 16px; /* 与开关的间距 */
+        min-width: 60px; /* 给标签一个最小宽度，防止被压缩 */
+        flex-shrink: 0;
+    }
+    .switch-control-group .switch {
+        margin-right: 12px; /* 开关和描述之间的间距 */
+        flex-shrink: 0; /* 防止开关被压缩 */
+    }
+    .switch-control-group .description {
+        margin: 0; /* 移除默认的外边距 */
+        line-height: 1.4; /* 调整行高 */
+    }
+
+    /* 关于页面样式 */
+    .about-header {
+      display: flex;
+      align-items: center;
+      background-color: var(--md-surface-color);
+      padding: 24px;
+      border-radius: var(--md-border-radius);
+      border: 1px solid var(--md-divider-color);
+      margin-bottom: 24px;
+    }
+    .about-logo {
+      width: 64px;
+      height: 64px;
+      margin-right: 24px;
+      border-radius: 50%;
+      overflow: hidden; /* 确保图片不超出 */
+    }
+    .about-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .about-title h3 {
+      margin: 0 0 4px 0;
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--md-on-surface-color);
+    }
+    .about-title p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--md-on-surface-medium-color);
+    }
+    .about-section {
+      background-color: var(--md-surface-color);
+      padding: 24px;
+      border-radius: var(--md-border-radius);
+      border: 1px solid var(--md-divider-color);
+      margin-bottom: 24px;
+    }
+    .about-section h4 {
+      margin: 0 0 16px 0;
+        font-size: 16px;
+      font-weight: 500;
+      color: var(--md-on-surface-color);
+      border-bottom: 1px solid var(--md-divider-color);
+      padding-bottom: 12px;
+    }
+    .about-section p {
+        font-size: 14px;
+      line-height: 1.7;
+      color: var(--md-on-surface-color);
+      margin-bottom: 16px;
+    }
+    .about-section p:last-child {
+        margin-bottom: 0;
+    }
+    .project-links a {
+      display: inline-flex; 
+      align-items: center;
+      background-color: var(--md-primary-light-color);
+      color: var(--md-primary-color);
+      padding: 8px 16px;
+      border-radius: 18px; /* 胶囊形状 */
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      margin-right: 12px;
+      margin-bottom: 12px;
+      transition: background-color 0.2s, box-shadow 0.2s;
+    }
+    .project-links a:hover {
+      background-color: #d1e3fa; /* slightly darker light blue */
+      box-shadow: var(--md-shadow-1dp);
+    }
+    .project-links a .material-icons-outlined {
+        margin-right: 8px;
+        font-size: 18px;
+    }
+    .warning {
+      background-color: #fff3e0; /* Orange 50 */
+      border-left: 4px solid #ffa000; /* Amber 700 */
+      padding: 16px;
+      margin: 16px 0;
+      font-size: 14px;
+      border-radius: var(--md-border-radius);
+      color: #4d3a19;
+    }
+    .warning strong {
+        font-weight: 500;
+        color: #bf360c; /* Deep Orange 900 */
+    }
+
+    /* Toast (Snackbar 风格) - 改为顶部居中 */
+    .save-success-toast {
+      position: fixed;
+      top: 20px; 
+      left: 50%;
+      transform: translate(-50%, -100px); /* 初始在屏幕上方 */
+      min-width: 288px;
+      max-width: 568px;
+      background-color: #323232;
+      color: #ffffff;
+      padding: 14px 24px;
+      border-radius: var(--md-border-radius);
+      box-shadow: var(--md-shadow-2dp);
+      z-index: 9999; /* 提高层级 */
+      font-weight: 400;
+      font-size: 14px;
+      transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+      opacity: 0; /* 初始透明 */
+      pointer-events: none; /* 初始不可交互 */
+    }
+    .save-success-toast.show {
+        opacity: 1;
+        transform: translate(-50%, 0); /* 滑入 */
+        pointer-events: auto; /* 显示时可交互 */
+    }
+    /* 根据类型调整颜色 (可选) */
+    .save-success-toast.success { background-color: #4caf50; } /* 绿色 */
+    .save-success-toast.error { background-color: var(--md-error-color); } /* 错误用红色 */
+    .save-success-toast.warning { background-color: #ffa000; } /* 警告用橙色 */
+
+    /* 对话框遮罩层 */
+    .dialog-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.32); /* 半透明黑色遮罩 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000; /* 低于对话框，高于页面内容 */
+        opacity: 0;
+        transition: opacity 0.2s ease-out;
+    }
+    .dialog-overlay.show {
+        opacity: 1;
+    }
+
+    /* 自定义确认对话框样式 (Material Design Dialog 风格) */
+    .custom-confirm-dialog {
+        position: relative; /* 相对于 overlay 定位 */
+        z-index: 1001; /* 比 Toast 高一层 */
+        background-color: var(--md-surface-color);
+        border-radius: var(--md-border-radius);
+        box-shadow: var(--md-shadow-2dp);
+        padding: 20px 24px;
+        min-width: 280px;
+        max-width: 400px;
+        font-size: 14px;
+        color: var(--md-on-surface-color);
+    }
+    .custom-confirm-dialog .confirm-content p {
+        margin: 0 0 20px 0;
+        line-height: 1.6;
+        color: var(--md-on-surface-medium-color);
+    }
+    .custom-confirm-dialog .confirm-buttons {
+        text-align: right;
+    }
+    .custom-confirm-dialog .confirm-buttons button {
+        margin-left: 8px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- 保存成功Toast提示 (移到底部，结构不变) -->
+  <div id="saveSuccessToast" class="save-success-toast">设置已保存！</div>
+
+  <!-- 左侧菜单 -->
+  <div id="optionsMenu">
+    <div class="menu-header">
+    <h1>设置</h1>
+    </div>
+    <ul>
+      <li><button data-section="generalSettings"><span class="material-icons-outlined">settings</span>基本设置</button></li>
+      <li><button data-section="buttonManagement"><span class="material-icons-outlined">edit</span>语法管理</button></li>
+      <li><button data-section="about" class="active"><span class="material-icons-outlined">info</span>关于</button></li>
+    </ul>
+    <div class="menu-footer">
+        v1.0
+    </div>
+  </div>
+
+  <!-- 右侧内容区 -->
+  <div id="optionsContent">
+    <!-- 基本设置内容 -->
+    <div id="generalSettings" class="content-section">
+      <h2>基本设置</h2>
+      <div class="setting-item">
+        <label>链接打开方式</label>
+        <div class="description">选择点击语法后，是在当前标签页打开搜索结果，还是在新标签页中打开，变更后需要刷新搜索页面。</div>
+        <div class="radio-group">
+          <label>
+            <input type="radio" name="linkTarget" value="_self" checked>
+            在当前标签页打开
+          </label>
+          <label>
+            <input type="radio" name="linkTarget" value="_blank">
+            在新标签页打开
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 语法管理内容 -->
+    <div id="buttonManagement" class="content-section">
+      <h2>语法管理</h2>
+      <div class="setting-item">
+        <label>内置语法</label>
+        <div class="description">管理预定义的常用 Google Hacking 语法。启用或禁用它们。</div>
+        <div id="defaultButtonList" class="button-list">
+          <!-- 内置语法列表将通过 JavaScript 动态生成 -->
+        </div>
+      </div>
+      <div class="setting-item">
+        <label>自定义语法</label>
+        <div class="description">添加、编辑或删除您自己的 Google Hacking 语法。</div>
+        <div id="customButtonList" class="button-list">
+          <!-- 自定义语法列表将通过 JavaScript 动态生成 -->
+        </div>
+        <div class="add-button-container">
+          <!-- 使用 Material Design 语法样式 -->
+          <button id="showAddFormButton" class="md-button primary-btn">
+              <span class="material-icons-outlined">add</span> 添加新语法
+          </button>
+          <button id="clearAllCustomButtons" class="md-button danger-btn">
+              <span class="material-icons-outlined">delete_sweep</span> 清除所有
+          </button>
+        </div>
+      </div>
+      <!-- 添加/编辑语法表单 -->
+      <div id="buttonForm" class="setting-item" style="display: none;">
+        <h3 id="formTitle">添加新语法</h3>
+        <input type="hidden" id="buttonId">
+        <div class="form-group">
+          <label for="buttonName">语法名称</label>
+          <input type="text" id="buttonName" required>
+        </div>
+        <div class="form-group">
+          <label for="buttonSyntax">搜索语法</label>
+          <textarea id="buttonSyntax" required></textarea>
+          <div class="description">使用 <code>{target_domain}</code> 作为目标域名的占位符。</div>
+        </div>
+        <div class="form-group">
+          <label for="riskLevel">风险等级</label>
+          <select id="riskLevel">
+            <option value="info">信息</option>
+            <option value="medium">中危</option>
+            <option value="high">高危</option>
+            <option value="default">低危</option>
+          </select>
+        </div>
+        <!-- 新增：是否启用开关 -->
+        <div class="form-group form-group-switch">
+            <div class="switch-control-group">
+                <span class="switch-label-text">是否启用</span>
+                <label class="switch"> 
+                    <input type="checkbox" id="buttonEnabled" checked>
+                    <span class="slider"></span>
+                </label>
+                <span class="description">控制此语法是否在侧边栏显示。</span>
+            </div>
+        </div>
+        <div class="form-actions">
+          <button id="saveButton" class="md-button primary-btn">保存语法</button>
+          <button id="cancelButton" class="md-button secondary-btn">取消</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 关于内容 -->
+    <div id="about" class="content-section active">
+      <h2>关于</h2>
+      
+      <div class="about-header">
+        <div class="about-logo">
+          <img src="images/icon128.png" alt="Google Hacking 助手图标">
+        </div>
+        <div class="about-title">
+          <h3>Google Hacking 助手</h3>
+          <p>版本 1.0 | 最后更新: <span id="lastUpdated">2024-03-21</span></p>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <h4>产品简介</h4>
+        <p>Google Hacking 是一种通过特定搜索语法快速发现敏感信息或漏洞的技术。本扩展旨在简化安全研究人员、渗透测试人员和开发人员的搜索流程，通过预置常用语法和自定义功能，一键触发高危漏洞的 Google 搜索，提升效率。</p>
+        <div class="warning">
+            <strong>免责声明：</strong> 本扩展仅供安全研究和合法渗透测试使用。请勿用于未授权的安全测试或非法活动。使用者需承担因使用本扩展而产生的所有法律责任。
+        </div>
+      </div>
+      
+      <div class="about-section">
+          <h4>项目信息</h4>
+          <div class="project-links">
+            <!-- 使用 Material Icon -->
+            <a href="https://github.com/Pa55w0rd/google-hacking-assistant" id="githubLink" target="_blank">
+              <span class="material-icons-outlined">code</span>
+              GitHub
+            </a>
+             <!-- 可以添加更多链接，例如反馈、文档等 -->
+            <a href="https://github.com/Pa55w0rd/google-hacking-assistant/issues" id="githubIssues" target="_blank">
+              <span class="material-icons-outlined">bug_report</span>
+              提交问题
+            </a>
+          </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html> 
