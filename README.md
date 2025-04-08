@@ -42,14 +42,36 @@
     *   在选项页面，你可以管理自定义语法（增删改查、启用/禁用）、启用/禁用内置语法、更改链接打开方式。
     *   **所有设置更改（启用/禁用侧边栏、语法开关）都会实时应用到已打开的 Google 搜索页面，无需刷新。**
 
+## 📸 截图预览
+
+**1. 扩展侧边栏**
+
+![Google Hacking 助手侧边栏在搜索结果页](images/screenshot-sidebar.png)
+*扩展侧边栏出现在 Google 搜索结果页面右侧，提供一键 Hacking 功能。*
+
+**2. 弹出窗口**
+
+![扩展弹出窗口](images/screenshot-popup.png)
+*点击浏览器工具栏图标弹出的窗口，可快速开关侧边栏和进入设置。*
+
+**3. 选项页面 - 基本设置**
+
+![扩展选项页面 - 基本设置](images/screenshot-options-general.png)
+*选项页面 - 基本设置，可配置链接打开方式。*
+
+**4. 选项页面 - 语法管理**
+
+![扩展选项页面 - 语法管理](images/screenshot-options-buttons.png)
+*选项页面 - 语法管理，可管理内置和自定义的 Google Hacking 语法。*
+
 ## 📌 `{target_domain}` 占位符
 
-在添加或编辑自定义语法时，你可以使用 `{target_domain}` 这个特殊的占位符。当你在 Google 搜索结果页面（包含 `site:some-domain.com`）点击该语法按钮时，扩展会自动将语法中的 `{target_domain}` 替换成 `some-domain.com`。
+在添加或编辑自定义语法时，你可以使用 `{target_domain}` 这个特殊的占位符。当你在 Google 搜索结果页面（包含 `site:example.com`）点击该语法按钮时，扩展会自动将语法中的 `{target_domain}` 替换成 `example.com`。
 
 **示例：**
 
 *   你保存了一个自定义语法：`inurl:admin {target_domain}`
-*   你在 Google 搜索 `site:example.com login`
+*   你在 Google 搜索 `site:example.com`
 *   在出现的侧边栏中点击了上述语法按钮
 *   扩展将执行新的搜索：`inurl:admin example.com`
 
