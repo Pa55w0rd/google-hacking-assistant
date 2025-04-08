@@ -64,7 +64,7 @@
 ![扩展选项页面 - 语法管理](images/screenshot-options-buttons.png)
 *选项页面 - 语法管理，可管理内置和自定义的 Google Hacking 语法。*
 
-## 📌 `{target_domain}` 占位符
+## 📌 添加或编辑自定义语法
 
 在添加或编辑自定义语法时，你可以使用 `{target_domain}` 这个特殊的占位符。当你在 Google 搜索结果页面（包含 `site:example.com`）点击该语法按钮时，扩展会自动将语法中的 `{target_domain}` 替换成 `example.com`。
 
