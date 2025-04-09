@@ -319,35 +319,90 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // --- 关于页面内容填充 ---
-  function populateAboutSection() {
-      console.log("填充关于页面...");
-      const lastUpdatedSpan = document.getElementById('lastUpdated');
+  /**
+   * 更新"关于"区域的内容 (包括版本号和 GitHub 链接)
+   */
+  async function populateAboutSection() { // 改为 async 函数以使用 await
+      const aboutVersionSpan = document.getElementById('aboutVersion');
+      const menuVersionDiv = document.getElementById('optionsMenuVersion');
+      const githubLink = document.getElementById('githubLinkOptions'); // 使用新的 ID
+      const disclaimerWarning = document.querySelector('#about .warning');
+      const lastUpdatedSpan = document.getElementById('lastUpdated'); // 获取最后更新元素
+
+      // 获取 Manifest 信息 (同步)
+      let version = 'N/A';
+      let homepageUrl = '#';
+      try {
+          const manifest = chrome.runtime.getManifest();
+          version = manifest.version || 'N/A';
+          homepageUrl = manifest.homepage_url || '#';
+      } catch (e) {
+          console.error("填充关于信息时读取 Manifest 失败:", e);
+      }
+
+      // 更新版本和 GitHub 链接
+      if (aboutVersionSpan) aboutVersionSpan.textContent = version;
+      if (menuVersionDiv) menuVersionDiv.textContent = `v${version}`;
+      if (githubLink) githubLink.href = homepageUrl;
+      
+      // 获取并设置最后更新时间 (异步)
       if (lastUpdatedSpan) {
-          // 获取当前日期并格式化
-          const today = new Date();
-          const year = today.getFullYear();
-          const month = String(today.getMonth() + 1).padStart(2, '0'); // 月份从0开始
-          const day = String(today.getDate()).padStart(2, '0');
-          lastUpdatedSpan.textContent = `${year}-${month}-${day}`;
+          try {
+              const response = await fetch(chrome.runtime.getURL('update_info.json'));
+              if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              const updateInfo = await response.json();
+              const lastUpdatedISO = updateInfo.last_updated;
+
+              if (lastUpdatedISO) {
+                  try {
+                      const date = new Date(lastUpdatedISO);
+                      if (!isNaN(date.getTime())) {
+                          const year = date.getFullYear();
+                          const month = String(date.getMonth() + 1).padStart(2, '0');
+                          const day = String(date.getDate()).padStart(2, '0');
+                          lastUpdatedSpan.textContent = `${year}-${month}-${day}`;
+                      } else {
+                          console.warn("update_info.json 中的 last_updated 格式无效:", lastUpdatedISO);
+                          lastUpdatedSpan.textContent = 'N/A';
+                      }
+                  } catch (dateError) {
+                      console.error("解析 update_info.json 中的 last_updated 出错:", dateError);
+                      lastUpdatedSpan.textContent = 'N/A';
+                  }
+              } else {
+                  console.warn("update_info.json 中未找到 last_updated 字段。");
+                  lastUpdatedSpan.textContent = 'N/A';
+              }
+          } catch (fetchError) {
+              console.error("获取或解析 update_info.json 失败:", fetchError);
+              lastUpdatedSpan.textContent = 'N/A';
+          }
+      }
+
+      // 设置免责声明文本 (同步)
+      if (disclaimerWarning) {
+         const strongTag = disclaimerWarning.querySelector('strong');
+         if (strongTag) {
+             strongTag.textContent = getText('disclaimer');
+             // 在 strong 标签后添加文本节点
+             const textNode = document.createTextNode(getText('disclaimerText'));
+             // 清除旧文本（如果存在）
+             while (strongTag.nextSibling) {
+                 disclaimerWarning.removeChild(strongTag.nextSibling);
+             }
+             disclaimerWarning.appendChild(textNode);
+         } else {
+             // 如果没有 strong 标签，直接设置全部文本（容错）
+             disclaimerWarning.textContent = `${getText('disclaimer')} ${getText('disclaimerText')}`;
+         }
       }
       
-      // 设置 GitHub 链接 (从 manifest 读取)
-      const githubLink = document.getElementById('githubLink');
-      if (githubLink) {
-        try {
-          const manifest = chrome.runtime.getManifest();
-          if (manifest.homepage_url) {
-            githubLink.href = manifest.homepage_url;
-          } else {
-            console.warn("Manifest 中未找到 homepage_url");
-            githubLink.href = '#'; // Fallback
-          }
-        } catch (e) {
-          console.error("无法读取 manifest 获取 homepage_url:", e);
-          githubLink.href = '#';
-        }
-      }
+      // 初始化时需要调用这个异步函数
+      await populateAboutSection(); // 初始填充关于信息
+      loadGeneralSettings();
+      loadAllButtons();
   }
 
   // --- 加载和渲染语法列表 ---
@@ -977,10 +1032,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // --- 初始化 ---
   console.log("开始初始化...");
-  setActiveSection('about'); // 默认显示 关于 页面
-  populateAboutSection(); // 填充关于页面的信息
-  loadGeneralSettings(); // 加载设置 (会触发语言检测和首次 UI 更新)
-  loadAllButtons(); // 加载语法数据并渲染
+  setActiveSection('about'); // 默认显示"关于"
+  populateAboutSection(); // 初始填充关于信息
+  loadGeneralSettings();
+  loadAllButtons();
+  updateUITexts();
   console.log("初始化完成。");
 
   /**

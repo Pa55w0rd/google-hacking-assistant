@@ -32,15 +32,9 @@ const RAW_DEFAULT_BUTTONS = [
   { id: 'default_php_errors', name: "PHP错误/警告", syntax: "site:{target_domain} \"PHP Parse error\" | \"PHP Warning\" | \"PHP Error\"", riskLevel: "medium" },
   // 11. phpinfo()
   { id: 'default_phpinfo', name: "phpinfo() 暴露", syntax: "site:{target_domain} ext:php intitle:phpinfo \"published by the PHP Group\"", riskLevel: "high" },
-  // 12. 搜索 GitHub/GitLab (Search Code Repos)
-  { id: 'default_git_search', name: "搜索 GitHub/GitLab", syntax: "site:github.com | site:gitlab.com {target_domain}", riskLevel: "info" },
-  // 13. 查找子域名 (Find Subdomains)
-  { id: 'default_subdomains', name: "查找子域名", syntax: "site:*.{target_domain} -site:www.{target_domain}", riskLevel: "info" },
-  // 14. API/密钥/敏感信息 (Secrets)
-  { id: 'default_secrets', name: "API/密钥/敏感词", syntax: "site:{target_domain} \"api key\" | \"apikey\" | \"secret\" | \"password\" | \"token\" | \"auth_token\" | \"private key\" | \"client_secret\"", riskLevel: "high" },
-  // 15. Git 文件暴露 (Git Exposure)
+  // 12. Git 文件暴露 (Git Exposure)
   { id: 'default_git_expose', name: "Git 文件暴露", syntax: "site:{target_domain} inurl:.git | ext:git | inurl:.gitignore | inurl:.gitconfig", riskLevel: "high" },
-  // 16. WordPress 文件 (WordPress Files)
+  // 13. WordPress 文件 (WordPress Files)
   { id: 'default_wp_files', name: "WordPress 文件", syntax: "site:{target_domain} inurl:wp-content | inurl:wp-admin | inurl:wp-includes", riskLevel: "medium" }
 ];
 

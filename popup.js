@@ -8,6 +8,23 @@ document.addEventListener('DOMContentLoaded', function() {
   const toggleSidebar = document.getElementById('toggleSidebar');
   const openOptionsButton = document.getElementById('openOptions');
   const githubLink = document.getElementById('githubLink');
+  const popupVersionSpan = document.getElementById('popupVersion'); // 获取版本号元素
+
+  // --- 获取 manifest 信息并更新 UI ---
+  try {
+      const manifest = chrome.runtime.getManifest();
+      if (popupVersionSpan) {
+          popupVersionSpan.textContent = manifest.version || 'N/A';
+      }
+      if (githubLink) {
+          githubLink.href = manifest.homepage_url || '#';
+      }
+  } catch (e) {
+      console.error("读取 Manifest 失败:", e);
+      if (popupVersionSpan) popupVersionSpan.textContent = '错误';
+      if (githubLink) githubLink.href = '#';
+  }
+  // --------------------------------
 
   if (!toggleSidebar) {
       console.error("无法找到侧边栏开关元素 #toggleSidebar");
@@ -47,24 +64,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   } else {
       console.error("无法找到打开选项按钮 #openOptions");
-  }
-
-  // 设置GitHub链接
-  if (githubLink) {
-    try {
-        const manifest = chrome.runtime.getManifest();
-        if (manifest.homepage_url) {
-             githubLink.href = manifest.homepage_url;
-        } else {
-             console.warn("Manifest 中未找到 homepage_url");
-             githubLink.href = '#';
-        }
-    } catch (e) {
-        console.error("无法读取 manifest 获取 homepage_url:", e);
-        githubLink.href = '#';
-    }
-  } else {
-      console.warn("无法找到 GitHub 链接元素 #githubLink");
   }
 
   // 监听 storage 变化，更新 Popup UI (可选但推荐，用于其他地方修改时的同步)

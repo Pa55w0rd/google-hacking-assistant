@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Google Hacking 助手",
-  "version": "1.0",
+  "version": "1.1",
   "description": "一键触发Google Hacking搜索语法，简化安全研究和渗透测试流程",
   "homepage_url": "https://github.com/Pa55w0rd/google-hacking-assistant",
   "permissions": [

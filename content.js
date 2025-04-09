@@ -304,8 +304,8 @@ function isGoogleSearchPage() {
 function hasValidSiteQuery() {
   const params = new URLSearchParams(window.location.search);
   const query = params.get('q');
-  // 改进正则，确保 site: 后面跟的是有效域名（简化版）
-  return query && /site:([a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,})/.test(query);
+  // 修正正则：确保转义正确
+  return query && /site:(?:https?:\/\/)?([a-zA-Z0-9\-.]+\.[a-zA-Z]{2,})/.test(query);
 }
 
 /**
@@ -316,7 +316,8 @@ function getTargetDomain() {
   const params = new URLSearchParams(window.location.search);
   const query = params.get('q');
   if (query) {
-    const match = query.match(/site:([a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,})/);
+    // 修正正则：确保转义正确
+    const match = query.match(/site:(?:https?:\/\/)?([a-zA-Z0-9\-.]+\.[a-zA-Z]{2,})/);
     if (match && match[1]) {
       return match[1];
     }
