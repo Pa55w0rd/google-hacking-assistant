@@ -67,22 +67,32 @@
 
 ## 📌 添加或编辑自定义语法
 
+这是发挥 Google Hacking 助手强大潜力的关键！除了使用内置语法，您还可以根据自己的特定需求，创建和管理个性化的 Hacking 语法。
+
 在添加或编辑自定义语法时，你可以使用 `{target_domain}` 这个特殊的占位符。当你在 Google 搜索结果页面（包含 `site:example.com`）点击该语法按钮时，扩展会自动将语法中的 `{target_domain}` 替换成 `example.com`。
 
 **示例：**
 
-*   你保存了一个自定义语法：`inurl:admin {target_domain}`
+*   你保存了一个自定义语法：`site:{target_domain} inurl:admin`
 *   你在 Google 搜索 `site:example.com`
 *   在出现的侧边栏中点击了上述语法按钮
-*   扩展将执行新的搜索：`inurl:admin example.com`
+*   扩展将执行新的搜索：`site:example.com inurl:admin`
 
-对于不需要基于 `site:` 域名的通用搜索（例如搜索 Pastebin），请不要在语法中使用 `{target_domain}`。
+这使得您可以创建一次语法，就能方便地对任何通过 `site:` 指令指定的目标网站执行该搜索。
+
+**学习与灵感：Google Hacking Database (GHDB)**
+
+对于 Google Hacking 语法本身，如果您还不熟悉或者想寻找更多有趣的用法，强烈推荐查阅 [Exploit DB 上的 Google Hacking Database (GHDB)](https://www.exploit-db.com/google-hacking-database)。这是一个巨大的宝库，包含了大量用于发现漏洞和敏感信息的搜索语法，是学习和获取自定义语法灵感的好地方。
 
 ## 📜 更新日志
 
 ### v1.1
 
-*   **功能增强**：兼容 Google 搜索查询中 `site:` 指令后带有 `http://` 或 `https://` 协议的域名。
+*   **功能增强**：兼容 Google 搜索查询中 `site:` 指令后带有 `http://` 或 `https://` 协议的域名（如 site:https://example.com）。
+
+### v1.2
+
+*   **界面优化**：在"语法管理"页面添加了 Google Hacking Database (GHDB) 的推荐资源部分，为不熟悉 Google Hacking 的用户提供学习参考。
 
 ## 📜 许可证
 
