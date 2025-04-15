@@ -517,11 +517,21 @@ document.addEventListener('DOMContentLoaded', function() {
   function createDefaultButtonElement(button) {
     const item = document.createElement('div');
     item.className = 'button-item';
+    
+    // 确定支持的搜索引擎
+    const supportedEngines = button.supportedEngines || ['google'];
+    const supportsGoogle = supportedEngines.includes('google');
+    const supportsBaidu = supportedEngines.includes('baidu');
+    
     item.innerHTML = `
       <div class="button-info">
         <span class="button-name" title="${button.syntax}">${button.name}</span>
         <span class="risk-level risk-${button.riskLevel || 'default'}">${getRiskLevelText(button.riskLevel)}</span>
         <div class="button-syntax" title="${button.syntax}">${button.syntax}</div>
+      </div>
+      <div class="button-engines">
+        ${supportsGoogle ? `<span class="engine-icon engine-google" title="支持 Google">G</span>` : ''}
+        ${supportsBaidu ? `<span class="engine-icon engine-baidu" title="支持百度">B</span>` : ''}
       </div>
       <div class="button-actions">
         <label class="switch">
@@ -550,11 +560,21 @@ document.addEventListener('DOMContentLoaded', function() {
     item.className = 'button-item';
     // 检查语法是否已启用（默认为 true）
     const isEnabled = button.enabled !== false;
+    
+    // 确定支持的搜索引擎
+    const supportedEngines = button.supportedEngines || ['google'];
+    const supportsGoogle = supportedEngines.includes('google');
+    const supportsBaidu = supportedEngines.includes('baidu');
+    
     item.innerHTML = `
       <div class="button-info">
         <span class="button-name" title="${button.syntax}">${button.name}</span>
          <span class="risk-level risk-${button.riskLevel || 'default'}">${getRiskLevelText(button.riskLevel)}</span>
         <div class="button-syntax" title="${button.syntax}">${button.syntax}</div>
+      </div>
+      <div class="button-engines">
+        ${supportsGoogle ? `<span class="engine-icon engine-google" title="支持 Google">G</span>` : ''}
+        ${supportsBaidu ? `<span class="engine-icon engine-baidu" title="支持百度">B</span>` : ''}
       </div>
       <div class="button-actions">
         <!-- 添加开关 -->
@@ -849,12 +869,21 @@ document.addEventListener('DOMContentLoaded', function() {
       buttonSyntaxInput.value = buttonData.syntax || '';
       riskLevelSelect.value = buttonData.riskLevel || 'info'; // 默认 info
       buttonEnabledInput.checked = buttonData.enabled !== false; // 设置开关状态
+      
+      // 设置搜索引擎支持状态
+      const supportedEngines = buttonData.supportedEngines || ['google'];
+      document.getElementById('supportGoogle').checked = supportedEngines.includes('google');
+      document.getElementById('supportBaidu').checked = supportedEngines.includes('baidu');
     } else { // 添加模式
       buttonIdInput.value = ''; // 清空ID
       buttonNameInput.value = ''; // 清空字段
       buttonSyntaxInput.value = '';
       riskLevelSelect.value = 'info'; // 新语法默认风险等级为 info
       buttonEnabledInput.checked = true; // 新语法默认启用
+      
+      // 搜索引擎支持默认值
+      document.getElementById('supportGoogle').checked = true;
+      document.getElementById('supportBaidu').checked = false;
     }
     buttonForm.style.display = 'block'; // 显示表单
     showAddFormButton.style.display = 'none'; // 隐藏"添加新语法"语法
@@ -874,6 +903,11 @@ document.addEventListener('DOMContentLoaded', function() {
     buttonSyntaxInput.value = '';
     riskLevelSelect.value = 'info';
     buttonEnabledInput.checked = true; // 重置启用开关为选中
+    
+    // 重置搜索引擎支持选项
+    document.getElementById('supportGoogle').checked = true;
+    document.getElementById('supportBaidu').checked = false;
+    
     formTitle.textContent = getText('formTitleAdd'); // 重置标题为添加
   }
 
@@ -886,9 +920,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const buttonSyntax = buttonSyntaxInput.value.trim();
     const riskLevel = riskLevelSelect.value;
     const isEnabled = buttonEnabledInput.checked; // 获取开关状态
+    
+    // 获取搜索引擎支持状态
+    const supportsGoogle = document.getElementById('supportGoogle').checked;
+    const supportsBaidu = document.getElementById('supportBaidu').checked;
+    const supportedEngines = [];
+    if (supportsGoogle) supportedEngines.push('google');
+    if (supportsBaidu) supportedEngines.push('baidu');
 
     if (!buttonName || !buttonSyntax) {
       showStatusToast("语法名称和搜索语法不能为空！", "error");
+      return;
+    }
+    
+    if (supportedEngines.length === 0) {
+      showStatusToast("至少需要支持一个搜索引擎！", "error");
       return;
     }
 
@@ -903,7 +949,8 @@ document.addEventListener('DOMContentLoaded', function() {
       syntax: buttonSyntax,
       riskLevel: riskLevel,
       isCustom: true, // 标记为自定义
-      enabled: isEnabled // 添加 enabled 状态
+      enabled: isEnabled, // 添加 enabled 状态
+      supportedEngines: supportedEngines // 添加支持的搜索引擎
     };
 
     const isEdit = !!buttonId;

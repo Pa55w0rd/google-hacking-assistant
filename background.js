@@ -11,31 +11,31 @@
  */
 const RAW_DEFAULT_BUTTONS = [
   // 1. 文档文件 (Documents)
-  { id: 'default_docs', name: "公开文档", syntax: "site:{target_domain} ext:doc | ext:docx | ext:odt | ext:pdf | ext:rtf | ext:sxw | ext:psw | ext:ppt | ext:pptx | ext:pps | ext:csv", riskLevel: "medium" },
+  { id: 'default_docs', name: "公开文档", syntax: "site:{target_domain} ext:doc | ext:docx | ext:odt | ext:pdf | ext:rtf | ext:sxw | ext:psw | ext:ppt | ext:pptx | ext:pps | ext:csv", riskLevel: "medium", supportedEngines: ['google', 'baidu'] },
   // 2. 目录列表 (Directory Listing)
-  { id: 'default_dir_list', name: "目录列表漏洞", syntax: "site:{target_domain} intitle:index.of | \"parent directory\"", riskLevel: "medium" },
+  { id: 'default_dir_list', name: "目录列表漏洞", syntax: "site:{target_domain} intitle:index.of | \"parent directory\"", riskLevel: "medium", supportedEngines: ['google', 'baidu'] },
   // 3. 配置文件 (Configuration Files)
-  { id: 'default_config_files', name: "配置文件暴露", syntax: "site:{target_domain} ext:xml | ext:conf | ext:cnf | ext:reg | ext:inf | ext:rdp | ext:cfg | ext:txt | ext:ora | ext:ini | ext:env | ext:yml | ext:yaml | ext:json", riskLevel: "high" },
+  { id: 'default_config_files', name: "配置文件暴露", syntax: "site:{target_domain} ext:xml | ext:conf | ext:cnf | ext:reg | ext:inf | ext:rdp | ext:cfg | ext:txt | ext:ora | ext:ini | ext:env | ext:yml | ext:yaml | ext:json", riskLevel: "high", supportedEngines: ['google', 'baidu'] },
   // 4. 数据库文件 (Database Files)
-  { id: 'default_db_files', name: "数据库文件暴露", syntax: "site:{target_domain} ext:sql | ext:dbf | ext:mdb | ext:db", riskLevel: "high" },
+  { id: 'default_db_files', name: "数据库文件暴露", syntax: "site:{target_domain} ext:sql | ext:dbf | ext:mdb | ext:db", riskLevel: "high", supportedEngines: ['google', 'baidu'] },
   // 5. 日志文件 (Log Files)
-  { id: 'default_log_files', name: "日志文件暴露", syntax: "site:{target_domain} ext:log | inurl:log.txt", riskLevel: "medium" },
+  { id: 'default_log_files', name: "日志文件暴露", syntax: "site:{target_domain} ext:log | inurl:log.txt", riskLevel: "medium", supportedEngines: ['google', 'baidu'] },
   // 6. 备份和旧文件 (Backup Files)
-  { id: 'default_backup_files', name: "备份和旧文件", syntax: "site:{target_domain} ext:bak | ext:bkf | ext:bkp | ext:old | ext:backup | ext:tmp | ext:temp | ext:swp", riskLevel: "medium" },
+  { id: 'default_backup_files', name: "备份和旧文件", syntax: "site:{target_domain} ext:bak | ext:bkf | ext:bkp | ext:old | ext:backup | ext:tmp | ext:temp | ext:swp", riskLevel: "medium", supportedEngines: ['google', 'baidu'] },
   // 7. 登录页面 (Login Pages)
-  { id: 'default_login_pages', name: "登录页面", syntax: "site:{target_domain} inurl:login | inurl:signin | intitle:\"Login\" | intitle:\"Sign in\"", riskLevel: "info" },
+  { id: 'default_login_pages', name: "登录页面", syntax: "site:{target_domain} inurl:login | inurl:signin | intitle:\"Login\" | intitle:\"Sign in\"", riskLevel: "info", supportedEngines: ['google', 'baidu'] },
   // 8. 管理后台入口 (Admin Panels)
-  { id: 'default_admin_panels', name: "管理后台入口", syntax: "site:{target_domain} inurl:admin | inurl:cpanel | inurl:dashboard | intitle:\"Admin Login\" | intitle:\"Control Panel\"", riskLevel: "info" },
+  { id: 'default_admin_panels', name: "管理后台入口", syntax: "site:{target_domain} inurl:admin | inurl:cpanel | inurl:dashboard | intitle:\"Admin Login\" | intitle:\"Control Panel\"", riskLevel: "info", supportedEngines: ['google', 'baidu'] },
   // 9. SQL 错误 (SQL Errors)
-  { id: 'default_sql_errors', name: "SQL 错误", syntax: "site:{target_domain} intext:\"sql syntax near\" | intext:\"syntax error has occurred\" | intext:\"incorrect syntax near\" | intext:\"unexpected end of SQL command\" | intext:\"Warning: mysql_connect()\" | intext:\"Warning: mysql_query()\" | intext:\"Warning: pg_connect()\"", riskLevel: "high" },
+  { id: 'default_sql_errors', name: "SQL 错误", syntax: "site:{target_domain} intext:\"sql syntax near\" | intext:\"syntax error has occurred\" | intext:\"incorrect syntax near\" | intext:\"unexpected end of SQL command\" | intext:\"Warning: mysql_connect()\" | intext:\"Warning: mysql_query()\" | intext:\"Warning: pg_connect()\"", riskLevel: "high", supportedEngines: ['google', 'baidu'] },
   // 10. PHP 错误/警告 (PHP Errors)
-  { id: 'default_php_errors', name: "PHP错误/警告", syntax: "site:{target_domain} \"PHP Parse error\" | \"PHP Warning\" | \"PHP Error\"", riskLevel: "medium" },
+  { id: 'default_php_errors', name: "PHP错误/警告", syntax: "site:{target_domain} \"PHP Parse error\" | \"PHP Warning\" | \"PHP Error\"", riskLevel: "medium", supportedEngines: ['google', 'baidu'] },
   // 11. phpinfo()
-  { id: 'default_phpinfo', name: "phpinfo() 暴露", syntax: "site:{target_domain} ext:php intitle:phpinfo \"published by the PHP Group\"", riskLevel: "high" },
+  { id: 'default_phpinfo', name: "phpinfo() 暴露", syntax: "site:{target_domain} ext:php intitle:phpinfo \"published by the PHP Group\"", riskLevel: "high", supportedEngines: ['google', 'baidu'] },
   // 12. Git 文件暴露 (Git Exposure)
-  { id: 'default_git_expose', name: "Git 文件暴露", syntax: "site:{target_domain} inurl:.git | ext:git | inurl:.gitignore | inurl:.gitconfig", riskLevel: "high" },
+  { id: 'default_git_expose', name: "Git 文件暴露", syntax: "site:{target_domain} inurl:.git | ext:git | inurl:.gitignore | inurl:.gitconfig", riskLevel: "high", supportedEngines: ['google', 'baidu'] },
   // 13. WordPress 文件 (WordPress Files)
-  { id: 'default_wp_files', name: "WordPress 文件", syntax: "site:{target_domain} inurl:wp-content | inurl:wp-admin | inurl:wp-includes", riskLevel: "medium" }
+  { id: 'default_wp_files', name: "WordPress 文件", syntax: "site:{target_domain} inurl:wp-content | inurl:wp-admin | inurl:wp-includes", riskLevel: "medium", supportedEngines: ['google', 'baidu'] }
 ];
 
 /**

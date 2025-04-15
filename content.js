@@ -1,6 +1,6 @@
 /**
  * Google Hacking 助手 - 内容脚本
- * 在Google搜索页面动态插入Google Hacking语法，提供一键触发高级搜索语法功能
+ * 在Google和百度搜索页面动态插入Hacking语法，提供一键触发高级搜索语法功能
  */
 
 // 全局变量存储设置和语法
@@ -8,6 +8,7 @@ let extensionEnabled = true;
 let linkTargetPreference = '_self';
 let activeButtons = []; // 存储从后台获取的活动语法
 let panelExistsOnPage = false; // 新增：跟踪面板是否已插入
+let currentSearchEngine = ''; // 新增：当前搜索引擎类型 ('google' 或 'baidu')
 
 /**
  * 注入 CSS 样式
@@ -144,13 +145,24 @@ function injectStyles() {
 async function init() {
   injectStyles(); // 注入样式表
 
+  // 检测当前搜索引擎
+  if (isGoogleSearchPage()) {
+    currentSearchEngine = 'google';
+  } else if (isBaiduSearchPage()) {
+    currentSearchEngine = 'baidu';
+  } else {
+    currentSearchEngine = '';
+  }
+  
+  console.log(`当前识别到的搜索引擎: ${currentSearchEngine || '未知'}`);
+
   // 首次加载设置
   await loadExtensionSettings();
 
   // 初始化 MutationObserver - 主要用于检测面板是否被意外移除
   const observer = new MutationObserver((mutations) => {
     // 如果扩展启用且页面符合条件，但面板不在页面上，则尝试重新插入
-    if (extensionEnabled && isGoogleSearchPage() && hasValidSiteQuery() && !document.querySelector('.ghacking-panel-container')) {
+    if (extensionEnabled && isSearchPage() && hasValidSiteQuery() && !document.querySelector('.ghacking-panel-container')) {
         if (panelExistsOnPage) { // 只有当面板之前存在过才记录是重新插入
              console.log("Panel removed by page mutation, re-inserting...");
         }
@@ -234,7 +246,7 @@ async function loadExtensionSettings() {
  */
 async function loadActiveButtonsAndUpdatePanel() {
     // 仅在扩展启用且页面符合条件时才真正执行加载和更新
-    if (!extensionEnabled || !isGoogleSearchPage() || !hasValidSiteQuery()) {
+    if (!extensionEnabled || !isSearchPage() || !hasValidSiteQuery()) {
         console.log("Conditions not met for loading/updating panel, ensuring it's removed.");
         removePanel();
         return;
@@ -244,49 +256,48 @@ async function loadActiveButtonsAndUpdatePanel() {
     try {
         const response = await chrome.runtime.sendMessage({ action: 'getActiveButtons' });
         if (response && response.success && response.data) {
-            // TODO: 可以增加检查，如果 activeButtons 数据与上次相同，则不更新 DOM
-            // let oldButtonJson = JSON.stringify(activeButtons);
-            // let newButtonJson = JSON.stringify(response.data);
-            // if(oldButtonJson === newButtonJson && panelExistsOnPage) {
-            //     console.log("Active buttons data hasn't changed, skipping DOM update.");
-            //     return;
-            // }
+            const allButtons = response.data;
             
-            activeButtons = response.data;
-            console.log("Active buttons loaded:", activeButtons.length);
-            insertOrUpdatePanel(); // 调用插入或更新面板的函数
+            // 根据当前搜索引擎筛选支持的按钮
+            activeButtons = allButtons.filter(button => {
+                // 检查按钮是否支持当前搜索引擎
+                const supportedEngines = button.supportedEngines || ['google']; // 默认只支持Google
+                return supportedEngines.includes(currentSearchEngine);
+            });
             
+            console.log(`已过滤按钮: 总数${allButtons.length}个, 当前引擎(${currentSearchEngine})支持${activeButtons.length}个`);
+            
+            // 更新面板
+            insertOrUpdatePanel();
         } else {
-            console.error('加载活动语法失败:', response);
-            activeButtons = []; // 清空语法
-            removePanel(); // 加载失败则移除面板
+            console.error("Failed to get active buttons:", response?.error || "Unknown error");
+            removePanel();
         }
     } catch (error) {
-        console.error("请求活动语法时出错:", error);
-        activeButtons = [];
+        console.error("Error loading active buttons:", error);
         removePanel();
     }
 }
 
 /**
- * 检查页面条件，如果满足条件且面板不存在，则触发加载和插入流程
+ * 确保面板在需要时存在
  */
 function ensurePanelExistsIfNeeded() {
-  if (extensionEnabled && isGoogleSearchPage() && hasValidSiteQuery()) {
-    // 条件满足
-    if (!document.querySelector('.ghacking-panel-container')) {
-        console.log("Conditions met and panel not found, initiating panel insertion.");
-        loadActiveButtonsAndUpdatePanel(); // 触发加载和插入
-    } else {
-        // 面板已存在，正常情况不需要做什么，除非需要强制刷新
-        console.log("Conditions met and panel already exists.");
-        panelExistsOnPage = true; // 确保状态正确
-    }
+  if (extensionEnabled && isSearchPage() && hasValidSiteQuery()) {
+    console.log("Page meets criteria, loading active buttons and updating panel.");
+    loadActiveButtonsAndUpdatePanel();
   } else {
-    // 条件不满足，确保移除面板
-    console.log("Conditions not met for panel, ensuring removal.");
+    console.log("Page does not meet criteria (enabled, search page, site query), removing panel if exists.");
     removePanel();
   }
+}
+
+/**
+ * 检查当前是否为搜索结果页面（Google或百度）
+ * @returns {boolean} 是否为搜索结果页面
+ */
+function isSearchPage() {
+  return isGoogleSearchPage() || isBaiduSearchPage();
 }
 
 /**
@@ -298,14 +309,30 @@ function isGoogleSearchPage() {
 }
 
 /**
+ * 检查当前是否为百度搜索结果页面
+ * @returns {boolean} 是否为百度搜索结果页面
+ */
+function isBaiduSearchPage() {
+  return window.location.hostname.includes('baidu.com') && window.location.pathname.includes('/s');
+}
+
+/**
  * 检查URL查询参数中是否包含有效的site:查询
  * @returns {boolean} 是否包含有效的site:查询
  */
 function hasValidSiteQuery() {
-  const params = new URLSearchParams(window.location.search);
-  const query = params.get('q');
-  // 修正正则：确保转义正确
-  return query && /site:(?:https?:\/\/)?([a-zA-Z0-9\-.]+\.[a-zA-Z]{2,})/.test(query);
+  if (currentSearchEngine === 'google') {
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get('q');
+    // 修正正则：确保转义正确
+    return query && /site:(?:https?:\/\/)?([a-zA-Z0-9\-.]+\.[a-zA-Z]{2,})/.test(query);
+  } else if (currentSearchEngine === 'baidu') {
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get('wd');
+    // 百度的site语法
+    return query && /site:(?:https?:\/\/)?([a-zA-Z0-9\-.]+\.[a-zA-Z]{2,})/.test(query);
+  }
+  return false;
 }
 
 /**
@@ -313,13 +340,23 @@ function hasValidSiteQuery() {
  * @returns {string | null} 提取到的域名，或 null
  */
 function getTargetDomain() {
-  const params = new URLSearchParams(window.location.search);
-  const query = params.get('q');
-  if (query) {
-    // 修正正则：确保转义正确
-    const match = query.match(/site:(?:https?:\/\/)?([a-zA-Z0-9\-.]+\.[a-zA-Z]{2,})/);
-    if (match && match[1]) {
-      return match[1];
+  if (currentSearchEngine === 'google') {
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get('q');
+    if (query) {
+      const match = query.match(/site:(?:https?:\/\/)?([a-zA-Z0-9\-.]+\.[a-zA-Z]{2,})/);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+  } else if (currentSearchEngine === 'baidu') {
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get('wd');
+    if (query) {
+      const match = query.match(/site:(?:https?:\/\/)?([a-zA-Z0-9\-.]+\.[a-zA-Z]{2,})/);
+      if (match && match[1]) {
+        return match[1];
+      }
     }
   }
   return null;
@@ -361,7 +398,8 @@ function insertOrUpdatePanel() {
     // --- 创建标题 --- 
     const title = document.createElement('div');
     title.className = 'ghacking-panel-title';
-    title.textContent = 'Google Hacking 助手';
+    // 根据不同的搜索引擎显示不同的标题
+    title.textContent = currentSearchEngine === 'google' ? 'Google Hacking 助手' : '百度 Hacking 助手';
     panel.appendChild(title);
 
     // --- 创建按钮容器 --- 
@@ -418,7 +456,7 @@ function createButtonElement(button) {
 }
 
 /**
- * 执行 Google Hacking 搜索
+ * 执行 Hacking 搜索
  * @param {object} button 被点击的按钮数据
  */
 async function executeHackingSearch(button) {
@@ -431,9 +469,21 @@ async function executeHackingSearch(button) {
 
   // 替换占位符
   const finalSyntax = button.syntax.replace(/\{target_domain\}/g, targetDomain);
-  const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(finalSyntax)}`;
+  
+  // 根据不同的搜索引擎构建搜索URL
+  let searchUrl;
+  
+  if (currentSearchEngine === 'google') {
+    searchUrl = `https://www.google.com/search?q=${encodeURIComponent(finalSyntax)}`;
+  } else if (currentSearchEngine === 'baidu') {
+    searchUrl = `https://www.baidu.com/s?wd=${encodeURIComponent(finalSyntax)}`;
+  } else {
+    console.error("不支持的搜索引擎");
+    showAlert('错误：不支持的搜索引擎');
+    return;
+  }
 
-  console.log(`执行搜索: ${finalSyntax}`);
+  console.log(`执行${currentSearchEngine}搜索: ${finalSyntax}`);
 
   // 根据用户偏好打开链接
   if (linkTargetPreference === '_blank') {

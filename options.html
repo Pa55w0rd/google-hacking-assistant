@@ -341,6 +341,44 @@
         display: flex;
         align-items: center;
      }
+    
+    /* 搜索引擎支持图标 */
+    .button-engines {
+      display: flex;
+      align-items: center;
+      margin-right: 16px;
+    }
+    .engine-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 4px;
+      font-weight: bold;
+      font-size: 12px;
+      background-color: #f5f5f5;
+      border: 1px solid #e0e0e0;
+      color: #5f6368;
+    }
+    .engine-icon:first-child {
+      margin-left: 0;
+    }
+    .engine-google {
+      background-color: #4285F4;
+      color: white;
+    }
+    .engine-baidu {
+      background-color: #2932E1;
+      color: white;
+    }
+    .engine-disabled {
+      background-color: #f5f5f5;
+      color: #bdbdbd;
+      opacity: 0.5;
+    }
+    
     .risk-level {
       font-size: 11px;
       padding: 3px 8px;
@@ -364,54 +402,157 @@
       gap: 8px; /* 语法之间的间距 */
     }
     
-    /* 表单样式 (Material Design Text Fields 风格 - 简化版) */
+    /* 表单样式 (Material Design Text Fields 风格) */
     #buttonForm {
       background-color: var(--md-surface-color);
       border: 1px solid var(--md-divider-color);
-      border-radius: var(--md-border-radius);
-      padding: 24px;
-      margin-top: 24px;
+      border-radius: 8px; /* 增加圆角 */
+      padding: 32px; /* 增加内边距 */
+      margin-top: 30px;
       display: none; /* 默认隐藏 */
-      /* box-shadow: var(--md-shadow-1dp); */
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* 添加阴影 */
     }
+    
     #buttonForm h3 {
-        margin-top: 0;
-        margin-bottom: 20px;
-        font-size: 18px;
-        font-weight: 500;
+      margin-top: 0;
+      margin-bottom: 30px; /* 增加下边距 */
+      font-size: 20px; /* 增加字体大小 */
+      font-weight: 500;
     }
+    
     .form-group {
-      margin-bottom: 20px;
-      position: relative; /* 用于浮动标签效果（简化） */
+      margin-bottom: 30px; /* 增加下边距 */
+      position: relative;
     }
+    
+    /* 删除旧的标签浮动样式 */
     .form-group label {
-        font-size: 12px; /* Label 变小 */
-        color: var(--md-on-surface-medium-color);
-        position: absolute;
-        top: -8px; /* 移到边框上方 */
-        left: 10px;
-        background-color: var(--md-surface-color); /* 背景遮挡边框 */
-        padding: 0 4px;
-        font-weight: 400;
+      display: block;
+      font-size: 15px;
+      color: var(--md-on-surface-color);
+      font-weight: 500;
+      margin-bottom: 12px;
+      position: relative;
+      top: auto;
+      left: auto;
+      background: none;
+      padding: 0;
     }
-    /* 特别调整开关组的 form-group */
-    .form-group-switch {
-        margin-bottom: 16px; /* 减小与其他组的间距 */
-        /* 使其看起来与其他 form-group 类似 */
-        padding-top: 8px; /* 模拟 label 占位 */
-    }
+    
+    /* 输入框样式调整 */
     .form-group input[type="text"],
     .form-group textarea,
     .form-group select {
       width: 100%;
-      padding: 14px 12px 10px 12px; /* 调整内边距以容纳标签 */
+      padding: 12px 16px; /* 调整内边距 */
       border: 1px solid var(--md-divider-color);
-      border-radius: var(--md-border-radius);
-      font-size: 14px;
+      border-radius: 6px; /* 增加圆角 */
+      font-size: 15px; /* 增加字体大小 */
       box-sizing: border-box;
-      background-color: transparent; /* 背景透明 */
+      background-color: #f8f9fa; /* 轻微的背景色 */
       transition: border-color 0.2s;
-      margin-top: 4px; /* 为Label腾出空间 */
+      margin-top: 0; /* 重置上边距 */
+      height: auto; /* 自动高度 */
+    }
+    
+    .form-group textarea {
+      min-height: 100px; /* 增加文本域高度 */
+      font-family: 'Roboto Mono', monospace;
+      resize: vertical;
+      line-height: 1.5; /* 增加行高 */
+    }
+    
+    .form-group select {
+      height: 46px; /* 确保下拉框高度合适 */
+      appearance: none; /* 移除默认箭头 */
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23616161' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      background-size: 18px;
+      padding-right: 48px; /* 为箭头腾出空间 */
+    }
+
+    /* 表单操作区域样式 */
+    .form-actions {
+      margin-top: 36px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 16px;
+    }
+    
+    .form-actions .md-button {
+      font-size: 15px;
+      padding: 10px 24px;
+      height: 44px;
+      min-width: 100px;
+    }
+    
+    /* 覆盖旧的样式 */
+    .form-actions button + button {
+      margin-left: 0;
+    }
+
+    /* 开关控制组样式 */
+    .switch-control-group {
+        display: flex;
+        align-items: center; /* 垂直居中对齐 */
+        margin-bottom: 12px;
+        min-height: 32px; /* 确保最小高度，使文字和开关对齐 */
+    }
+    /* 开关前的标签文本样式 */
+    .switch-label-text {
+        font-size: 14px;
+        color: var(--md-on-surface-medium-color);
+        margin-right: 16px;
+        min-width: 100px;
+        flex-shrink: 0;
+        line-height: 32px; /* 与开关高度对齐 */
+    }
+    .switch-control-group .switch {
+        position: relative;
+        display: inline-block;
+        width: 36px;
+        height: 14px;
+        margin: 9px 12px 9px 0; /* 调整垂直边距使开关居中 */
+        flex-shrink: 0;
+    }
+    .switch-control-group .description {
+        margin: 0;
+        line-height: 32px; /* 与开关高度对齐 */
+        color: var(--md-on-surface-medium-color);
+        font-size: 13px;
+        flex-grow: 1;
+    }
+    /* 开关滑块样式优化 */
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #bdbdbd;
+        transition: .4s;
+        border-radius: 7px;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: -2px;
+        bottom: -3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+    input:checked + .slider {
+        background-color: var(--md-primary-light-color);
+    }
+    input:checked + .slider:before {
+        background-color: var(--md-primary-color);
+        transform: translateX(18px);
     }
     .form-group input[type="text"]:focus,
     .form-group textarea:focus,
@@ -420,31 +561,11 @@
         border-color: var(--md-primary-color);
         box-shadow: 0 0 0 1px var(--md-primary-color); /* 模拟边框加粗 */
     }
-    .form-group textarea {
-      min-height: 80px; /* 增加文本域高度 */
-      font-family: 'Roboto Mono', monospace;
-      resize: vertical; /* 允许垂直调整大小 */
-    }
-    .form-group select {
-        appearance: none; /* 移除默认箭头 */
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23616161' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 12px center;
-        background-size: 18px;
-        padding-right: 40px; /* 为箭头腾出空间 */
-    }
     .form-group .description {
         margin-top: 8px; /* 描述距离输入框的间距 */
         margin-bottom: 0;
     }
-    .form-actions {
-      margin-top: 24px;
-      text-align: right;
-    }
-    .form-actions button + button {
-        margin-left: 8px;
-    }
-    
+
     /* Radio 语法 (简化 Material 风格) */
     .radio-group label {
       display: flex; /* 使用 flex 对齐 */
@@ -486,29 +607,6 @@
     }
     .radio-group label:hover input[type="radio"] {
         border-color: var(--md-primary-color);
-    }
-
-    /* 新增：开关控制组样式 */
-    .switch-control-group {
-        display: flex;
-        align-items: center;
-        /* 移除内边距，由父级 .form-group-switch 控制 */
-    }
-    /* 开关前的标签文本样式 */
-    .switch-label-text {
-        font-size: 14px; /* 调整字号 */
-        color: var(--md-on-surface-medium-color);
-        margin-right: 16px; /* 与开关的间距 */
-        min-width: 60px; /* 给标签一个最小宽度，防止被压缩 */
-        flex-shrink: 0;
-    }
-    .switch-control-group .switch {
-        margin-right: 12px; /* 开关和描述之间的间距 */
-        flex-shrink: 0; /* 防止开关被压缩 */
-    }
-    .switch-control-group .description {
-        margin: 0; /* 移除默认的外边距 */
-        line-height: 1.4; /* 调整行高 */
     }
 
     /* 关于页面样式 */
@@ -678,6 +776,73 @@
         margin-left: 8px;
     }
 
+    /* 开关组的容器样式 */
+    .form-group-switch {
+        margin-bottom: 16px;
+        padding-top: 8px;
+    }
+    
+    /* 当form-group-switch在form-group内时的特殊样式 */
+    .form-group .form-group-switch {
+        margin-top: 8px;
+    }
+    
+    /* 确保开关组之间有合适的间距 */
+    .form-group-switch .switch-control-group + .switch-control-group {
+        margin-top: 8px;
+    }
+
+    /* 水平排列的开关容器 */
+    .switch-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 36px; /* 增加间距 */
+      margin: 20px 0; /* 增加上下外边距 */
+    }
+    
+    /* 调整水平排列的开关样式 */
+    .switch-row .switch-control-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0;
+      min-height: 40px; /* 增加高度 */
+      background-color: #f8f9fa;
+      padding: 10px 20px; /* 增加内边距 */
+      border-radius: 8px; /* 增加圆角 */
+      border: 1px solid var(--md-divider-color);
+      min-width: 300px; /* 增加宽度 */
+      position: relative;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* 添加轻微阴影 */
+    }
+    
+    .switch-row .switch-label-text {
+      font-size: 15px; /* 增加字体大小 */
+      color: var(--md-on-surface-color);
+      font-weight: 500;
+      margin-right: 20px; /* 增加右边距 */
+      min-width: auto;
+      flex-shrink: 0;
+    }
+    
+    .switch-row .switch {
+      margin: 0 0 0 auto;
+      transform: scale(1.2); /* 稍微放大开关 */
+    }
+    
+    .switch-row .description {
+      margin-left: 20px; /* 增加左边距 */
+      font-size: 14px; /* 增加字体大小 */
+      color: var(--md-on-surface-medium-color);
+    }
+    
+    /* 表单下方描述文本 */
+    .form-group > .description {
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
   </style>
 </head>
 <body>
@@ -775,16 +940,42 @@
             <option value="default">低危</option>
           </select>
         </div>
-        <!-- 新增：是否启用开关 -->
-        <div class="form-group form-group-switch">
+        <!-- 搜索引擎支持选项 -->
+        <div class="form-group">
+          <label>支持的搜索引擎</label>
+          <div class="switch-row">
             <div class="switch-control-group">
-                <span class="switch-label-text">是否启用</span>
-                <label class="switch"> 
-                    <input type="checkbox" id="buttonEnabled" checked>
-                    <span class="slider"></span>
-                </label>
-                <span class="description">控制此语法是否在侧边栏显示。</span>
+              <span class="switch-label-text">支持 Google</span>
+              <label class="switch"> 
+                <input type="checkbox" id="supportGoogle" checked>
+                <span class="slider"></span>
+              </label>
+              <span class="description">启用Google搜索支持</span>
             </div>
+            <div class="switch-control-group">
+              <span class="switch-label-text">支持百度</span>
+              <label class="switch"> 
+                <input type="checkbox" id="supportBaidu">
+                <span class="slider"></span>
+              </label>
+              <span class="description">启用百度搜索支持</span>
+            </div>
+          </div>
+          <div class="description" style="margin-top: 8px;">注意：百度搜索语法可能与 Google 不完全兼容</div>
+        </div>
+        
+        <!-- 是否启用开关 -->
+        <div class="form-group">
+          <div class="switch-row">
+            <div class="switch-control-group">
+              <span class="switch-label-text">是否启用</span>
+              <label class="switch"> 
+                <input type="checkbox" id="buttonEnabled" checked>
+                <span class="slider"></span>
+              </label>
+              <span class="description">控制此语法是否在侧边栏显示</span>
+            </div>
+          </div>
         </div>
         <div class="form-actions">
           <button id="saveButton" class="md-button primary-btn">保存语法</button>
