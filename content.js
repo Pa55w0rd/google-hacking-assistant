@@ -9,6 +9,7 @@ let linkTargetPreference = '_self';
 let activeButtons = []; // 存储从后台获取的活动语法
 let panelExistsOnPage = false; // 新增：跟踪面板是否已插入
 let currentSearchEngine = ''; // 新增：当前搜索引擎类型 ('google' 或 'baidu')
+let extractedUrls = []; // 新增：存储从搜索结果中提取的URL
 
 /**
  * 注入 CSS 样式
@@ -35,13 +36,125 @@ function injectStyles() {
         }
         
         /* 标题区域 */
-          .ghacking-panel-title {
+        .ghacking-panel-title {
              padding: 0 0 10px 0;
-            font-size: 14px;
-            font-weight: 500;
+             font-size: 14px;
+             font-weight: 500;
              color: #202124;
              border-bottom: 1px solid #ebebeb;
              margin-bottom: 12px;
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+        }
+        
+        /* 操作按钮 */
+        .ghacking-action-button {
+            font-size: 12px;
+            padding: 4px 8px;
+            background-color: #f0f0f0;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #5f6368;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+            margin-left: 4px;
+        }
+        
+        .ghacking-action-button:hover {
+            background-color: #e8e8e8;
+            color: #202124;
+        }
+        
+        /* 移除复制域名按钮样式 */
+        
+        .ghacking-extract-urls::before {
+            content: "🔗";
+            margin-right: 4px;
+            font-size: 12px;
+        }
+        
+        .ghacking-copy-success {
+            background-color: #e6f4ea !important;
+            color: #188038 !important;
+            border-color: #b7e1c1 !important;
+        }
+        
+        /* 按钮容器 */
+        .ghacking-action-buttons {
+            display: flex;
+        }
+        
+        /* URL提取面板 */
+        .ghacking-url-panel {
+            margin-top: 10px;
+            border-top: 1px solid #ebebeb;
+            padding-top: 10px;
+            display: none;
+        }
+        
+        .ghacking-url-panel.active {
+            display: block;
+        }
+        
+        .ghacking-url-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .ghacking-url-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ebebeb;
+            border-radius: 4px;
+            padding: 8px;
+            background-color: #f8f9fa;
+            font-size: 12px;
+        }
+        
+        .ghacking-url-item {
+            margin-bottom: 6px;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed #ebebeb;
+            word-break: break-all;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            padding: 4px;
+        }
+        
+        .ghacking-url-item:hover {
+            background-color: #e8f0fe;
+        }
+        
+        .ghacking-url-item:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .ghacking-url-actions {
+            margin-top: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .ghacking-copy-all-urls {
+            font-size: 12px;
+            padding: 4px 8px;
+            background-color: #f0f0f0;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #5f6368;
+        }
+        
+        .ghacking-copy-all-urls:hover {
+            background-color: #e8e8e8;
         }
         
         /* 语法容器 */
@@ -153,8 +266,6 @@ async function init() {
   } else {
     currentSearchEngine = '';
   }
-  
-  console.log(`当前识别到的搜索引擎: ${currentSearchEngine || '未知'}`);
 
   // 首次加载设置
   await loadExtensionSettings();
@@ -163,11 +274,7 @@ async function init() {
   const observer = new MutationObserver((mutations) => {
     // 如果扩展启用且页面符合条件，但面板不在页面上，则尝试重新插入
     if (extensionEnabled && isSearchPage() && hasValidSiteQuery() && !document.querySelector('.ghacking-panel-container')) {
-        if (panelExistsOnPage) { // 只有当面板之前存在过才记录是重新插入
-             console.log("Panel removed by page mutation, re-inserting...");
-        }
-        // 尝试重新加载数据并插入。这里不直接插入，而是走标准流程
-        // 以确保数据是最新的。
+        // 尝试重新加载数据并插入
         loadActiveButtonsAndUpdatePanel(); 
     }
   });
@@ -177,12 +284,10 @@ async function init() {
   // 监听 storage 变化 - 这是数据更新的主要来源
   chrome.storage.onChanged.addListener(async (changes, namespace) => {
     if (namespace === 'local') {
-      console.log("Storage change detected in content script:", Object.keys(changes));
       let needsPanelUpdate = false;
       
       if (changes.extensionEnabled) {
         const newState = changes.extensionEnabled.newValue;
-        console.log("Extension enabled state changed to:", newState);
         if (newState !== extensionEnabled) {
             extensionEnabled = newState;
             if (!extensionEnabled) {
@@ -191,27 +296,21 @@ async function init() {
               // 启用时，检查是否需要显示面板（可能页面已加载完成）
               ensurePanelExistsIfNeeded(); 
             }
-        } // 如果状态没变，则不需要更新
+        }
       }
       
       if (changes.linkTargetPreference) {
         linkTargetPreference = changes.linkTargetPreference.newValue;
-        console.log("Link target preference changed to:", linkTargetPreference);
-        // 链接目标改变不影响面板显示，无需更新
       }
       
       // 只有当按钮列表变化，并且扩展是启用状态时，才标记需要更新面板
-      if (changes.defaultButtons || changes.customButtons) {
-        console.log("Button list changed in storage.");
-        if (extensionEnabled) {
-             needsPanelUpdate = true;
-        }
+      if ((changes.defaultButtons || changes.customButtons) && extensionEnabled) {
+        needsPanelUpdate = true;
       }
 
       // 如果标记了需要更新面板 (由于按钮列表变化且扩展启用)
       if (needsPanelUpdate) {
-          console.log("Reloading active buttons and updating panel due to storage change.");
-          await loadActiveButtonsAndUpdatePanel(); // 异步加载并更新
+        await loadActiveButtonsAndUpdatePanel(); // 异步加载并更新
       }
     }
   });
@@ -231,12 +330,11 @@ async function loadExtensionSettings() {
     ]);
     extensionEnabled = typeof result.extensionEnabled === 'undefined' ? true : result.extensionEnabled;
     linkTargetPreference = result.linkTargetPreference || '_self';
-    console.log("Initial settings loaded:", { extensionEnabled, linkTargetPreference });
   } catch (error) {
-      console.error("加载扩展设置失败:", error);
-      // 设置默认值以防出错
-      extensionEnabled = true;
-      linkTargetPreference = '_self';
+    console.error("加载扩展设置失败:", error);
+    // 设置默认值以防出错
+    extensionEnabled = true;
+    linkTargetPreference = '_self';
   }
 }
 
@@ -247,12 +345,10 @@ async function loadExtensionSettings() {
 async function loadActiveButtonsAndUpdatePanel() {
     // 仅在扩展启用且页面符合条件时才真正执行加载和更新
     if (!extensionEnabled || !isSearchPage() || !hasValidSiteQuery()) {
-        console.log("Conditions not met for loading/updating panel, ensuring it's removed.");
         removePanel();
         return;
     }
 
-    console.log("Requesting active buttons from background...");
     try {
         const response = await chrome.runtime.sendMessage({ action: 'getActiveButtons' });
         if (response && response.success && response.data) {
@@ -264,8 +360,6 @@ async function loadActiveButtonsAndUpdatePanel() {
                 const supportedEngines = button.supportedEngines || ['google']; // 默认只支持Google
                 return supportedEngines.includes(currentSearchEngine);
             });
-            
-            console.log(`已过滤按钮: 总数${allButtons.length}个, 当前引擎(${currentSearchEngine})支持${activeButtons.length}个`);
             
             // 更新面板
             insertOrUpdatePanel();
@@ -284,10 +378,8 @@ async function loadActiveButtonsAndUpdatePanel() {
  */
 function ensurePanelExistsIfNeeded() {
   if (extensionEnabled && isSearchPage() && hasValidSiteQuery()) {
-    console.log("Page meets criteria, loading active buttons and updating panel.");
     loadActiveButtonsAndUpdatePanel();
   } else {
-    console.log("Page does not meet criteria (enabled, search page, site query), removing panel if exists.");
     removePanel();
   }
 }
@@ -368,7 +460,6 @@ function getTargetDomain() {
 function removePanel() {
   const panel = document.querySelector('.ghacking-panel-container');
   if (panel) {
-    console.log("Removing Hacking Panel");
     panel.remove();
     panelExistsOnPage = false; // 更新状态
   }
@@ -379,7 +470,6 @@ function removePanel() {
  */
 function insertOrUpdatePanel() {
   if (!activeButtons || activeButtons.length === 0) {
-    console.log("No active buttons to display, removing panel if exists.");
     removePanel();
     return;
   }
@@ -388,7 +478,6 @@ function insertOrUpdatePanel() {
   let buttonsContainer;
 
   if (!panel) {
-    console.log("Creating and inserting Hacking Panel to body.");
     // --- 创建面板 --- 
     panel = document.createElement('div');
     panel.className = 'ghacking-panel-container';
@@ -398,9 +487,77 @@ function insertOrUpdatePanel() {
     // --- 创建标题 --- 
     const title = document.createElement('div');
     title.className = 'ghacking-panel-title';
-    // 根据不同的搜索引擎显示不同的标题
-    title.textContent = currentSearchEngine === 'google' ? 'Google Hacking 助手' : '百度 Hacking 助手';
+    
+    // 创建标题文本
+    const titleText = document.createElement('span');
+    titleText.textContent = currentSearchEngine === 'google' ? 'Google Hacking 助手' : '百度 Hacking 助手';
+    
+    // 创建按钮容器
+    const actionButtons = document.createElement('div');
+    actionButtons.className = 'ghacking-action-buttons';
+    
+    // 创建提取URL按钮
+    const extractUrlsButton = document.createElement('button');
+    extractUrlsButton.className = 'ghacking-action-button ghacking-extract-urls';
+    extractUrlsButton.textContent = '提取URL';
+    extractUrlsButton.title = '从搜索结果中提取URL';
+    extractUrlsButton.addEventListener('click', extractUrlsFromSearchResults);
+    
+    // 只添加提取URL按钮到按钮容器
+    actionButtons.appendChild(extractUrlsButton);
+    
+    // 添加到标题区域
+    title.appendChild(titleText);
+    title.appendChild(actionButtons);
     panel.appendChild(title);
+
+    // --- 创建URL提取面板 ---
+    const urlPanel = document.createElement('div');
+    urlPanel.className = 'ghacking-url-panel';
+    
+    // 创建URL面板标题
+    const urlPanelTitle = document.createElement('div');
+    urlPanelTitle.className = 'ghacking-url-title';
+    
+    const urlTitleText = document.createElement('span');
+    urlTitleText.textContent = '提取的URL';
+    
+    const urlCount = document.createElement('span');
+    urlCount.className = 'ghacking-url-count';
+    urlCount.textContent = '(0)';
+    
+    urlPanelTitle.appendChild(urlTitleText);
+    urlPanelTitle.appendChild(urlCount);
+    
+    // 创建URL列表容器
+    const urlList = document.createElement('div');
+    urlList.className = 'ghacking-url-list';
+    
+    // 创建URL操作按钮
+    const urlActions = document.createElement('div');
+    urlActions.className = 'ghacking-url-actions';
+    
+    const copyAllButton = document.createElement('button');
+    copyAllButton.className = 'ghacking-copy-all-urls';
+    copyAllButton.textContent = '复制全部URL';
+    copyAllButton.addEventListener('click', copyAllExtractedUrls);
+    
+    const closeButton = document.createElement('button');
+    closeButton.className = 'ghacking-copy-all-urls';
+    closeButton.textContent = '关闭';
+    closeButton.addEventListener('click', () => {
+      urlPanel.classList.remove('active');
+    });
+    
+    urlActions.appendChild(copyAllButton);
+    urlActions.appendChild(closeButton);
+    
+    // 组装URL面板
+    urlPanel.appendChild(urlPanelTitle);
+    urlPanel.appendChild(urlList);
+    urlPanel.appendChild(urlActions);
+    
+    panel.appendChild(urlPanel);
 
     // --- 创建按钮容器 --- 
     buttonsContainer = document.createElement('div');
@@ -422,9 +579,7 @@ function insertOrUpdatePanel() {
     }
     footer.appendChild(versionSpan);
     panel.appendChild(footer);
-    
   } else {
-    console.log("Updating existing Hacking Panel.");
     // 面板已存在，获取按钮容器并清空
     buttonsContainer = panel.querySelector('.ghacking-buttons-container');
     buttonsContainer.innerHTML = ''; // 清空现有按钮
@@ -483,8 +638,6 @@ async function executeHackingSearch(button) {
     return;
   }
 
-  console.log(`执行${currentSearchEngine}搜索: ${finalSyntax}`);
-
   // 根据用户偏好打开链接
   if (linkTargetPreference === '_blank') {
     window.open(searchUrl, '_blank');
@@ -500,6 +653,356 @@ async function executeHackingSearch(button) {
 function showAlert(message) {
   // 可以替换为更美观的提示框实现
   alert(message);
+}
+
+/**
+ * 从搜索结果中提取URL
+ * 处理点击提取URL按钮的事件
+ */
+function extractUrlsFromSearchResults() {
+  // 添加提取中的视觉反馈
+  const extractUrlsButton = document.querySelector('.ghacking-extract-urls');
+  let originalText = '提取URL';
+  let originalBg = '';
+  
+  if (extractUrlsButton) {
+    originalText = extractUrlsButton.textContent;
+    originalBg = extractUrlsButton.style.backgroundColor;
+    
+    extractUrlsButton.textContent = '提取中...';
+    extractUrlsButton.style.backgroundColor = '#f1f3f4';
+    extractUrlsButton.style.color = '#5f6368';
+    extractUrlsButton.style.borderColor = '#dadce0';
+    extractUrlsButton.disabled = true;
+    extractUrlsButton.style.cursor = 'default';
+  }
+
+  // 清空之前提取的URL
+  extractedUrls = [];
+  
+  // 根据不同的搜索引擎选择不同的选择器
+  let resultLinks;
+  
+  if (currentSearchEngine === 'google') {
+    // Google搜索结果链接选择器
+    resultLinks = document.querySelectorAll('#search a[href^="http"]:not([href^="https://www.google.com"]):not([href^="https://webcache.googleusercontent.com"]):not([href^="https://translate.google.com"])');
+  } else if (currentSearchEngine === 'baidu') {
+    try {
+      // 收集所有可能包含链接的元素
+      let allLinks = [];
+      
+      // 1. 标准链接选择器
+      allLinks = [...allLinks, ...Array.from(document.querySelectorAll('#content_left a[href^="http"]:not([href^="http://www.baidu.com"]):not([href^="https://www.baidu.com"])'))];
+      
+      // 2. 带有data-click属性的链接
+      allLinks = [...allLinks, ...Array.from(document.querySelectorAll('#content_left a[data-click]:not([data-click*="rsv_snapshot"])'))];
+      
+      // 3. c-container中的data-url属性
+      const dataUrlElements = Array.from(document.querySelectorAll('#content_left .c-container[data-url]'));
+      const dataUrls = dataUrlElements.map(element => {
+        const dataUrl = element.getAttribute('data-url');
+        return dataUrl && dataUrl.trim() !== '' ? { href: dataUrl } : null;
+      }).filter(item => item !== null);
+      allLinks = [...allLinks, ...dataUrls];
+      
+      // 4. 使用XPath获取特定位置的元素
+      try {
+        const xpathResult = document.evaluate('//*[@id="content_left"]/div[contains(@class, "c-container")]/div/div[1]/div[3]/div[1]/div[2]', document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        
+        for (let i = 0; i < xpathResult.snapshotLength; i++) {
+          const element = xpathResult.snapshotItem(i);
+          // 尝试获取data-url属性
+          const dataUrl = element.getAttribute('data-url');
+          if (dataUrl && dataUrl.trim() !== '') {
+            allLinks.push({ href: dataUrl });
+          }
+          
+          // 同时检查其中的<a>标签
+          const linkElements = element.querySelectorAll('a[href^="http"]');
+          if (linkElements && linkElements.length > 0) {
+            allLinks = [...allLinks, ...Array.from(linkElements)];
+          }
+        }
+      } catch (e) {
+        console.error('XPath提取错误:', e);
+      }
+      
+      // 5. 搜索包含链接的特定属性
+      const possibleLinkAttributes = ['mu', 'data-url', 'data-landurl', 'data-link'];
+      possibleLinkAttributes.forEach(attr => {
+        const elements = document.querySelectorAll(`[${attr}^="http"]`);
+        if (elements && elements.length > 0) {
+          elements.forEach(element => {
+            const url = element.getAttribute(attr);
+            if (url && url.trim() !== '') {
+              allLinks.push({ href: url });
+            }
+          });
+        }
+      });
+      
+      // 赋值给resultLinks
+      resultLinks = allLinks;
+    } catch (e) {
+      console.error('百度链接提取错误:', e);
+      resultLinks = document.querySelectorAll('#content_left a[href^="http"]:not([href^="http://www.baidu.com"]):not([href^="https://www.baidu.com"])');
+    }
+  } else {
+    console.error("不支持的搜索引擎");
+    showAlert('错误：不支持的搜索引擎');
+    
+    // 失败时恢复按钮状态
+    if (extractUrlsButton) {
+      extractUrlsButton.textContent = originalText;
+      extractUrlsButton.style.backgroundColor = originalBg;
+      extractUrlsButton.style.color = '';
+      extractUrlsButton.style.borderColor = '';
+      extractUrlsButton.disabled = false;
+      extractUrlsButton.style.cursor = 'pointer';
+    }
+    return;
+  }
+  
+  // 处理找到的链接
+  if (resultLinks && resultLinks.length > 0) {
+    let uniqueUrls = new Set(); // 使用Set去重
+    let filteredCount = 0; // 记录被过滤的URL数量
+    
+    resultLinks.forEach(link => {
+      if (!link || !link.href) return;
+      
+      let url = link.href;
+      
+      // 各种过滤条件
+      // 1. 过滤掉以@开头的URL
+      if (url.startsWith('@')) {
+        filteredCount++;
+        return;
+      }
+      
+      // 2. 过滤百度内部域名
+      const baiduInternalDomains = [
+        'zhanzhang.baidu.com', 'top.baidu.com', 'tieba.baidu.com', 
+        'map.baidu.com', 'image.baidu.com', 'hao123.com', 
+        'pan.baidu.com', 'baike.baidu.com', 'wenku.baidu.com', 
+        'fanyi.baidu.com', 'zhidao.baidu.com', 'music.baidu.com', 
+        'v.baidu.com'
+      ];
+      
+      try {
+        const urlObj = new URL(url);
+        
+        // 检查是否为百度内部域名
+        if (baiduInternalDomains.some(domain => urlObj.hostname === domain || urlObj.hostname.endsWith('.' + domain))) {
+          filteredCount++;
+          return;
+        }
+        
+        // 检查格式明显有问题的URL
+        if (urlObj.hostname === '' || url.includes('javascript:')) {
+          filteredCount++;
+          return;
+        }
+        
+        // 去除URL中的无关参数
+        if (currentSearchEngine === 'google') {
+          urlObj.searchParams.delete('ved');
+          urlObj.searchParams.delete('usg');
+          urlObj.searchParams.delete('ei');
+          urlObj.searchParams.delete('sa');
+        } else if (currentSearchEngine === 'baidu') {
+          // 百度的一些特定参数
+          if (urlObj.hostname === 'www.baidu.com') {
+            return; // 跳过百度自己的链接
+          }
+          
+          // 处理百度跳转链接
+          if (urlObj.pathname.startsWith('/link') || urlObj.hostname.includes('baidu.com')) {
+            const realUrl = urlObj.searchParams.get('url');
+            if (realUrl) {
+              url = decodeURIComponent(realUrl);
+              try {
+                // 确保是有效的URL
+                new URL(url);
+              } catch (e) {
+                filteredCount++;
+                return; // 如果不是有效URL则跳过
+              }
+            }
+          }
+        }
+        url = urlObj.toString();
+      } catch (e) {
+        console.error('URL解析错误:', e);
+        filteredCount++;
+        return; // 跳过无效URL
+      }
+      
+      if (url && !uniqueUrls.has(url)) {
+        uniqueUrls.add(url);
+      }
+    });
+    
+    // 将Set转为数组
+    extractedUrls = Array.from(uniqueUrls);
+    
+    // 显示提取的URL
+    displayExtractedUrls();
+    
+    // 成功提取后显示视觉反馈
+    if (extractUrlsButton) {
+      extractUrlsButton.textContent = '提取成功!';
+      extractUrlsButton.style.backgroundColor = '#e6f4ea';
+      extractUrlsButton.style.color = '#188038';
+      extractUrlsButton.style.borderColor = '#b7e1c1';
+      extractUrlsButton.disabled = false;
+      extractUrlsButton.style.cursor = 'pointer';
+      
+      // 2秒后恢复原始状态
+      setTimeout(() => {
+        extractUrlsButton.textContent = originalText;
+        extractUrlsButton.style.backgroundColor = originalBg;
+        extractUrlsButton.style.color = '';
+        extractUrlsButton.style.borderColor = '';
+      }, 2000);
+    }
+  } else {
+    console.log("未找到搜索结果链接");
+    showAlert('未找到搜索结果链接');
+    
+    // 失败时恢复按钮状态
+    if (extractUrlsButton) {
+      extractUrlsButton.textContent = originalText;
+      extractUrlsButton.style.backgroundColor = originalBg;
+      extractUrlsButton.style.color = '';
+      extractUrlsButton.style.borderColor = '';
+      extractUrlsButton.disabled = false;
+      extractUrlsButton.style.cursor = 'pointer';
+    }
+  }
+}
+
+/**
+ * 显示提取的URL列表
+ */
+function displayExtractedUrls() {
+  const urlPanel = document.querySelector('.ghacking-url-panel');
+  const urlList = document.querySelector('.ghacking-url-list');
+  const urlCount = document.querySelector('.ghacking-url-count');
+  
+  if (!urlPanel || !urlList || !urlCount) {
+    console.error("URL面板元素未找到");
+    return;
+  }
+  
+  // 清空URL列表
+  urlList.innerHTML = '';
+  
+  // 更新URL计数
+  urlCount.textContent = `(${extractedUrls.length})`;
+  
+  // 如果没有提取到URL
+  if (extractedUrls.length === 0) {
+    const noUrlMsg = document.createElement('div');
+    noUrlMsg.textContent = '未找到URL';
+    noUrlMsg.style.padding = '8px';
+    noUrlMsg.style.color = '#5f6368';
+    urlList.appendChild(noUrlMsg);
+    
+    // 添加简洁的帮助提示
+    const helpMsg = document.createElement('div');
+    helpMsg.textContent = '搜索结果页面可能结构变化，或所有URL均被过滤';
+    helpMsg.style.padding = '8px';
+    helpMsg.style.marginTop = '8px';
+    helpMsg.style.fontSize = '11px';
+    helpMsg.style.color = '#5f6368';
+    helpMsg.style.borderTop = '1px dashed #ebebeb';
+    urlList.appendChild(helpMsg);
+  } else {
+    // 添加URL列表项
+    extractedUrls.forEach((url, index) => {
+      const urlItem = document.createElement('div');
+      urlItem.className = 'ghacking-url-item';
+      urlItem.textContent = url;
+      urlItem.title = '点击复制此URL';
+      urlItem.dataset.url = url;
+      
+      // 添加点击事件复制单个URL
+      urlItem.addEventListener('click', (e) => {
+        const url = e.target.dataset.url;
+        copyTextToClipboard(url, () => {
+          // 点击复制成功的视觉反馈
+          const originalBg = e.target.style.backgroundColor;
+          e.target.style.backgroundColor = '#e6f4ea';
+          setTimeout(() => {
+            e.target.style.backgroundColor = originalBg;
+          }, 1000);
+        });
+      });
+      
+      urlList.appendChild(urlItem);
+    });
+  }
+  
+  // 显示URL面板
+  urlPanel.classList.add('active');
+}
+
+/**
+ * 复制所有提取的URL到剪贴板
+ */
+function copyAllExtractedUrls() {
+  if (extractedUrls.length === 0) {
+    showAlert('没有可复制的URL');
+    return;
+  }
+  
+  const allUrls = extractedUrls.join('\n');
+  copyTextToClipboard(allUrls, () => {
+    const copyAllButton = document.querySelector('.ghacking-copy-all-urls');
+    if (copyAllButton) {
+      const originalText = copyAllButton.textContent;
+      const originalBg = copyAllButton.style.backgroundColor;
+      
+      copyAllButton.textContent = '复制成功!';
+      copyAllButton.style.backgroundColor = '#e6f4ea';
+      copyAllButton.style.color = '#188038';
+      copyAllButton.style.borderColor = '#b7e1c1';
+      
+      setTimeout(() => {
+        copyAllButton.textContent = originalText;
+        copyAllButton.style.backgroundColor = originalBg;
+        copyAllButton.style.color = '';
+        copyAllButton.style.borderColor = '';
+      }, 2000);
+    }
+  });
+}
+
+/**
+ * 通用函数：复制文本到剪贴板
+ * @param {string} text - 要复制的文本
+ * @param {Function} successCallback - 复制成功后的回调函数
+ */
+function copyTextToClipboard(text, successCallback) {
+  if (!text) {
+    console.error("没有要复制的文本");
+    return;
+  }
+  
+  try {
+    navigator.clipboard.writeText(text).then(() => {
+      if (typeof successCallback === 'function') {
+        successCallback();
+      }
+    }).catch(err => {
+      console.error('复制失败:', err);
+      showAlert('复制失败: ' + err.message);
+    });
+  } catch (error) {
+    console.error('复制功能不可用:', error);
+    showAlert('复制功能不可用，请检查浏览器权限');
+  }
 }
 
 // 启动脚本

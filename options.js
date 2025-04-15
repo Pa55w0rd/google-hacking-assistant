@@ -47,14 +47,15 @@ const texts = {
     confirmNo: "取消",
     version: "版本:",
     lastUpdated: "最后更新:",
-    aboutTitle: "Google Hacking 助手",
+    aboutTitle: "Search Hacking 助手",
     clearAllCustomButtons: "清除所有自定义语法",
     productIntro: "产品简介",
     projectInfo: "项目信息",
     disclaimer: "免责声明：",
     disclaimerText: " 本扩展仅供安全研究和合法渗透测试使用。请勿用于未授权的安全测试或非法活动。使用者需承担因使用本扩展而产生的所有法律责任。",
     saveFailed: "保存失败",
-    loadingError: "加载数据失败"
+    loadingError: "加载数据失败",
+    productIntroText: "Search Hacking 助手是一款强大的浏览器扩展，专为安全研究人员和渗透测试人员打造。它能在包含 site: 查询的 Google 和百度搜索结果页面自动注入固定在右侧的侧边栏，提供丰富的 Hacking 语法功能。本工具支持多搜索引擎，提供智能侧边栏、一键提取URL、自定义语法、灵活控制和实时更新等特性，适用于信息收集、漏洞挖掘和安全评估等专业场景。"
 };
 
 /**
@@ -233,6 +234,10 @@ document.addEventListener('DOMContentLoaded', function() {
       
       const productIntroTitle = document.querySelector('.about-section h4');
       if (productIntroTitle) productIntroTitle.textContent = getText('productIntro');
+      
+      // 更新产品简介文本
+      const productIntroText = document.querySelector('#productIntroText');
+      if (productIntroText) productIntroText.textContent = getText('productIntroText');
       
       const projectInfoTitle = document.querySelector('.about-section:nth-child(2) h4');
       if (projectInfoTitle) projectInfoTitle.textContent = getText('projectInfo');

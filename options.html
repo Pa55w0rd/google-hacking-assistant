@@ -892,7 +892,8 @@
       <div class="setting-item">
         <label>Google Hacking 资源</label>
         <div class="description">
-          如果您对 Google Hacking 语法不太熟悉或想寻找更多高级用法，强烈推荐参考 <a href="https://www.exploit-db.com/google-hacking-database" target="_blank">Google Hacking Database (GHDB)</a>。这是一个由安全专家维护的丰富资源库，包含了大量用于发现漏洞和敏感信息的搜索语法，是学习和获取灵感的绝佳去处。
+          如果您对 Google Hacking 语法不太熟悉或想寻找更多高级用法，强烈推荐参考 <a href="https://www.exploit-db.com/google-hacking-database" target="_blank">Google Hacking Database (GHDB)</a>。这是一个由安全专家维护的丰富资源库，包含了大量用于发现漏洞和敏感信息的搜索语法，是学习和获取灵感的绝佳去处。<br><br>
+          <strong>注意：</strong>Google Hacking 和百度 Hacking 语法存在一定差异。例如，Google 支持 <code>filetype:</code> 而百度使用 <code>ext:</code>，Google 的 <code>intext:</code> 在百度中对应 <code>inbody:</code>。添加自定义语法时，请根据目标搜索引擎选择合适的语法格式，并正确设置"支持的搜索引擎"选项。
         </div>
       </div>
       <div class="setting-item">
@@ -990,17 +991,17 @@
       
       <div class="about-header">
         <div class="about-logo">
-          <img src="images/icon128.png" alt="Google Hacking 助手图标">
+          <img src="images/icon128.png" alt="Search Hacking 助手图标">
         </div>
         <div class="about-title">
-          <h3>Google Hacking 助手</h3>
+          <h3>Search Hacking 助手</h3>
           <p>版本 <span id="aboutVersion"></span> | 最后更新: <span id="lastUpdated">2024-03-21</span></p>
         </div>
       </div>
 
       <div class="about-section">
         <h4>产品简介</h4>
-        <p>Google Hacking 助手是一款专为安全研究人员、渗透测试人员和开发人员设计的工具，通过特定搜索语法快速发现网站敏感信息或潜在漏洞。本扩展提供了丰富的预置语法库和自定义功能，让您只需一键点击即可执行复杂的安全搜索，大幅提升工作效率和安全评估能力。</p>
+        <p id="productIntroText">Search Hacking 助手是一款强大的浏览器扩展，专为安全研究人员和渗透测试人员打造。它能在包含 site: 查询的 Google 和百度搜索结果页面自动注入固定在右侧的侧边栏，提供丰富的 Hacking 语法功能。本工具支持多搜索引擎，提供智能侧边栏、一键提取URL、自定义语法、灵活控制和实时更新等特性，适用于信息收集、漏洞挖掘和安全评估等专业场景。</p>
         <div class="warning">
             <strong>免责声明：</strong> <!-- 只保留 strong 标签，文本由 JS 填充 -->
         </div>
