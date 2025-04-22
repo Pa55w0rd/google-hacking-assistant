@@ -1,0 +1,345 @@
+body {
+  font-family: 'Roboto', 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  background-color: #f8f9fa;
+  font-size: 16px;
+}
+
+/* 导航栏字体大小 */
+.nav-item {
+  font-size: 1.125rem; /* 18px */
+}
+
+/* 主标题字体大小 */
+h1 {
+  font-size: 1.5rem !important; /* 24px */
+}
+
+/* 二级标题字体大小 */
+h2 {
+  font-size: 1.375rem !important; /* 22px */
+}
+
+/* 三级标题字体大小 */
+h3 {
+  font-size: 1.25rem !important; /* 20px */
+}
+
+/* 四级标题字体大小 */
+h4 {
+  font-size: 1.125rem !important; /* 18px */
+}
+
+/* 正文文本字体大小 */
+p, div, span, label {
+  font-size: 1rem !important; /* 16px */
+}
+
+/* 小号文本字体大小 */
+.text-sm {
+  font-size: 0.9375rem !important; /* 15px */
+}
+
+/* 超小号文本字体大小 */
+.text-xs {
+  font-size: 0.875rem !important; /* 14px */
+}
+
+/* 模态窗口标题字体大小 */
+.modal-container h3 {
+  font-size: 1.25rem !important; /* 20px */
+}
+
+/* 按钮文本字体大小 */
+button {
+  font-size: 1rem !important; /* 16px */
+}
+
+/* 表单输入框字体大小 */
+input, textarea {
+  font-size: 1rem !important; /* 16px */
+}
+
+/* 导航菜单字体大小 */
+.container .flex.text-gray-600 a {
+  font-size: 1.125rem !important; /* 18px */
+  padding: 1rem 1.5rem !important;
+}
+
+/* 标签和徽章字体大小 */
+.badge-info, .badge-low, .badge-medium, .badge-high {
+  font-size: 0.875rem !important; /* 14px */
+}
+
+/* 通知文本字体大小 */
+.notification {
+  font-size: 1rem !important; /* 16px */
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+.gradient-bg {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+}
+
+.tab-active {
+  color: #1a73e8;
+  border-bottom: 3px solid #1a73e8;
+}
+
+.toggle-switch {
+  width: 48px;
+  height: 24px;
+  border-radius: 12px;
+  background-color: #e0e0e0;
+  transition: all 0.3s;
+  cursor: pointer;
+  position: relative;
+}
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: white;
+  top: 2px;
+  left: 2px;
+  transition: all 0.3s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.toggle-switch.active {
+  background-color: #1a73e8;
+}
+
+.toggle-switch.active::after {
+  left: 26px;
+}
+
+.syntax-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(32,33,36,.10);
+}
+
+.badge-info { background-color: #e8f0fe; color: #174ea6; }
+.badge-low { background-color: #e6f4ea; color: #0d652d; }
+.badge-medium { background-color: #fef7e0; color: #b06000; }
+.badge-high { background-color: #fce8e6; color: #c5221f; }
+
+.btn-effect:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.btn-effect:active {
+  transform: translateY(0);
+}
+
+/* 通知相关样式 */
+.notification {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s, transform 0.3s;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -100px;
+}
+
+.notification.show {
+  top: 16px;
+}
+
+.notification.opacity-0 {
+  opacity: 0;
+  top: -10px;
+}
+
+/* 模态窗口样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-container {
+  background-color: white;
+  max-width: 500px;
+  width: 90%;
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+.modal-overlay.show .modal-container {
+  transform: scale(1);
+}
+
+.modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+}
+
+.modal-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 1rem;
+}
+
+.modal-icon.warning {
+  background-color: #fef7e0;
+  color: #b06000;
+}
+
+.modal-icon.danger {
+  background-color: #fce8e6;
+  color: #c5221f;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  background-color: #f9fafb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.modal-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-btn-cancel {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.modal-btn-cancel:hover {
+  background-color: #e5e7eb;
+}
+
+.modal-btn-confirm {
+  background-color: #ef4444;
+  color: white;
+}
+
+.modal-btn-confirm:hover {
+  background-color: #dc2626;
+}
+
+/* 添加/编辑语法模态窗口样式 */
+.radio-container {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.radio-container:hover {
+  background-color: #f3f4f6;
+}
+
+.custom-radio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d1d5db;
+  border-radius: 50%;
+  position: relative;
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-radio::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #1e3c72;
+  opacity: 0;
+  transition: all 0.3s;
+}
+
+input[type="radio"]:checked + .custom-radio {
+  border-color: #1e3c72;
+}
+
+input[type="radio"]:checked + .custom-radio::after {
+  opacity: 1;
+}
+
+.syntax-example {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.syntax-example-content {
+  visibility: hidden;
+  position: absolute;
+  z-index: 10;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  background-color: #1e293b;
+  color: #fff;
+  text-align: left;
+  border-radius: 6px;
+  padding: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.syntax-example:hover .syntax-example-content {
+  visibility: visible;
+  opacity: 1;
+}
+
+.syntax-modal-container {
+  max-width: 1000px;
+  width: 95%;
+}
+
+.gradient-header {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  border-radius: 12px 12px 0 0;
+} 

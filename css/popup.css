@@ -1,0 +1,77 @@
+body {
+  width: 320px;
+  height: 400px;
+  overflow: hidden;
+  font-family: 'Roboto', 'Segoe UI', 'Microsoft YaHei', sans-serif;
+}
+
+.bg-gradient {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+}
+
+/* 文本样式 */
+h1 {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+p {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+select {
+  font-size: 12px;
+}
+
+button {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* 自定义开关样式 */
+.toggle-switch {
+  width: 48px;
+  height: 24px;
+  border-radius: 12px;
+  background-color: #e0e0e0;
+  transition: all 0.3s;
+  cursor: pointer;
+  position: relative;
+}
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: white;
+  top: 2px;
+  left: 2px;
+  transition: all 0.3s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.toggle-switch.active {
+  background-color: #3b82f6;
+}
+
+.toggle-switch.active::after {
+  left: 26px;
+}
+
+/* 按钮效果 */
+.btn-effect:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.btn-effect:active {
+  transform: translateY(0);
+} 

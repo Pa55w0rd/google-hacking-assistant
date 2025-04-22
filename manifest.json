@@ -1,12 +1,14 @@
 {
   "manifest_version": 3,
   "name": "Search Hacking 助手",
-  "version": "1.4",
-  "description": "一键触发Google和百度Hacking搜索语法，简化安全研究和渗透测试流程",
+  "version": "2.0.0",
+  "description": "在Google和百度搜索结果页面显示Hacking语法侧边栏，帮助用户进行高级搜索操作",
   "homepage_url": "https://github.com/Pa55w0rd/google-hacking-assistant",
-  "permissions": [
-    "storage"
-  ],
+  "icons": {
+    "16": "images/icon16.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -15,83 +17,36 @@
       "128": "images/icon128.png"
     }
   },
-  "icons": {
-    "16": "images/icon16.png",
-    "48": "images/icon48.png",
-    "128": "images/icon128.png"
-  },
-  "content_scripts": [
-    {
-      "matches": [
-        "*://*.google.com/search?*",
-        "*://*.google.co.uk/search?*",
-        "*://*.google.co.jp/search?*",
-        "*://*.google.co.kr/search?*",
-        "*://*.google.co.in/search?*",
-        "*://*.google.co.id/search?*",
-        "*://*.google.co.th/search?*",
-        "*://*.google.co.za/search?*",
-        "*://*.google.co.nz/search?*",
-        "*://*.google.co.il/search?*",
-        "*://*.google.com.au/search?*",
-        "*://*.google.com.br/search?*",
-        "*://*.google.com.mx/search?*",
-        "*://*.google.com.ar/search?*",
-        "*://*.google.com.co/search?*",
-        "*://*.google.com.sg/search?*",
-        "*://*.google.com.tr/search?*",
-        "*://*.google.com.tw/search?*",
-        "*://*.google.com.ua/search?*",
-        "*://*.google.com.hk/search?*",
-        "*://*.google.ad/search?*",
-        "*://*.google.ae/search?*",
-        "*://*.google.al/search?*",
-        "*://*.google.am/search?*",
-        "*://*.google.as/search?*",
-        "*://*.google.at/search?*",
-        "*://*.google.az/search?*",
-        "*://*.google.ba/search?*",
-        "*://*.google.be/search?*",
-        "*://*.google.bg/search?*",
-        "*://*.google.by/search?*",
-        "*://*.google.ca/search?*",
-        "*://*.google.ch/search?*",
-        "*://*.google.ci/search?*",
-        "*://*.google.cl/search?*",
-        "*://*.google.cn/search?*",
-        "*://*.google.cz/search?*",
-        "*://*.google.de/search?*",
-        "*://*.google.dk/search?*",
-        "*://*.google.es/search?*",
-        "*://*.google.fi/search?*",
-        "*://*.google.fr/search?*",
-        "*://*.google.gr/search?*",
-        "*://*.google.hr/search?*",
-        "*://*.google.hu/search?*",
-        "*://*.google.ie/search?*",
-        "*://*.google.is/search?*",
-        "*://*.google.it/search?*",
-        "*://*.google.lt/search?*",
-        "*://*.google.lu/search?*",
-        "*://*.google.lv/search?*",
-        "*://*.google.nl/search?*",
-        "*://*.google.no/search?*",
-        "*://*.google.pl/search?*",
-        "*://*.google.pt/search?*",
-        "*://*.google.ro/search?*",
-        "*://*.google.ru/search?*",
-        "*://*.google.se/search?*",
-        "*://*.google.si/search?*",
-        "*://*.google.sk/search?*",
-        "*://www.baidu.com/s?*"
-      ],
-      "js": ["content.js"],
-      "css": ["content.css"],
-      "run_at": "document_end"
-    }
-  ],
+  "options_page": "options.html",
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "js/background.js"
   },
-  "options_page": "options.html"
+  "permissions": [
+    "storage",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "*://*.google.com/*",
+    "*://*.google.co.jp/*",
+    "*://*.google.co.uk/*",
+    "*://*.google.com.hk/*",
+    "*://*.google.co.in/*",
+    "*://*.google.fr/*",
+    "*://*.google.de/*",
+    "*://*.google.it/*",
+    "*://*.google.es/*",
+    "*://*.google.ca/*",
+    "*://*.google.com.br/*",
+    "*://*.google.com.au/*",
+    "*://*.google.ru/*",
+    "*://*.google.nl/*",
+    "*://*.baidu.com/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["images/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 } 

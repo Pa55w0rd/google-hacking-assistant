@@ -3,188 +3,75 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Google Hacking 助手</title>
-  <!-- Material Icons -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
-  <style>
-    :root {
-      /* Google Material Design Colors */
-      --md-primary-color: #1976d2;
-      --md-primary-light-color: #e3f2fd;
-      --md-background-color: #f5f5f5;
-      --md-surface-color: #ffffff;
-      --md-on-surface-color: #212121;
-      --md-on-surface-medium-color: #616161;
-      --md-on-surface-disabled-color: #bdbdbd;
-      --md-divider-color: #e0e0e0;
-
-      /* Font */
-      --md-font-family: 'Roboto', 'Segoe UI', 'Microsoft YaHei', sans-serif;
-      
-      /* Border Radius */
-      --md-border-radius: 4px;
-    }
-
-    body {
-      font-family: var(--md-font-family);
-      width: 280px;
-      margin: 0;
-      padding: 0;
-      background-color: var(--md-surface-color);
-      color: var(--md-on-surface-color);
-      font-size: 14px;
-    }
-
-    header {
-      padding: 16px;
-      text-align: center;
-      background-color: var(--md-primary-color);
-      color: white;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 500;
-    }
-
-    .container {
-      padding: 16px 20px;
-    }
-
-    .setting-item-popup {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .setting-label {
-        font-size: 14px;
-        color: var(--md-on-surface-color);
-    }
-
-    /* Toggle Switch Styles (Material Design) */
-    .toggle-switch {
-      position: relative;
-      display: inline-block;
-      width: 36px; 
-      height: 14px; 
-      vertical-align: middle;
-    }
-    .toggle-switch input { opacity: 0; width: 0; height: 0; }
-    .toggle-switch .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #bdbdbd;
-      transition: .4s;
-      border-radius: 7px; 
-    }
-    .toggle-switch .slider:before {
-      position: absolute;
-      content: "";
-      height: 20px; 
-      width: 20px;
-      left: -2px; 
-      bottom: -3px; 
-      background-color: white;
-      transition: .4s;
-      border-radius: 50%;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
-    }
-    .toggle-switch input:checked + .slider {
-      background-color: var(--md-primary-light-color);
-    }
-    .toggle-switch input:checked + .slider:before {
-      background-color: var(--md-primary-color);
-      transform: translateX(18px);
-    }
-
-    /* Button Styles (Material Design) */
-    button.md-button {
-        font-family: var(--md-font-family);
-        border: none;
-        border-radius: var(--md-border-radius);
-        padding: 8px 16px;
-        font-size: 14px;
-        font-weight: 500;
-        text-transform: uppercase;
-        cursor: pointer;
-        outline: none;
-        transition: background-color 0.2s, box-shadow 0.2s;
-        min-width: 64px;
-        text-align: center;
-        line-height: 1.75;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        vertical-align: middle;
-        box-sizing: border-box;
-    }
-    button.md-button .material-icons-outlined {
-        margin-right: 8px;
-        font-size: 18px;
-    }
-    /* Contained Button */
-    button.md-button.primary-btn {
-        background-color: var(--md-primary-color);
-        color: #fff;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-    }
-    button.md-button.primary-btn:hover {
-        background-color: #1565c0;
-        box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
-    }
-
-    /* Footer Styles */
-    footer {
-        padding: 12px 20px;
-        border-top: 1px solid var(--md-divider-color);
-        text-align: center;
-        font-size: 12px;
-        color: var(--md-on-surface-medium-color);
-        background-color: var(--md-background-color);
-    }
-    footer a {
-        color: var(--md-primary-color);
-        text-decoration: none;
-        font-weight: 500;
-    }
-    footer a:hover {
-        text-decoration: underline;
-    }
-
-    /* Button Container */
-    .button-container {
-      display: flex;
-      justify-content: center;
-      margin-top: 10px;
-    }
-  </style>
+  <title>Search Hacking 助手 - 弹出窗口</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/popup.css">
 </head>
-<body>
-  <header>
-    <h1>Search Hacking 助手</h1>
-  </header>
-  <div class="container">
-    <div class="setting-item-popup">
-      <label class="setting-label">启用侧边栏</label>
-      <label class="toggle-switch">
-        <input type="checkbox" id="toggleSidebar">
-        <span class="slider"></span>
-      </label>
-    </div>
-    <div class="button-container">
-      <button id="openOptions" class="md-button primary-btn">
-          <span class="material-icons-outlined">settings</span> 打开设置
-      </button>
+<body class="bg-gray-100 flex flex-col h-full">
+  <!-- 顶部导航栏 -->
+  <div class="bg-gradient text-white py-4 px-6 shadow-lg">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <i class="fas fa-search text-xl"></i>
+        <h1 class="text-lg font-medium">Search Hacking 助手</h1>
+      </div>
     </div>
   </div>
-  <footer>
-    版本: <span id="popupVersion"></span> | <a href="https://github.com/Pa55w0rd/google-hacking-assistant" id="githubLink" target="_blank">GitHub</a>
-  </footer>
-  <script src="popup.js"></script>
+  
+  <!-- 内容区域 -->
+  <div class="flex-grow p-6 flex flex-col justify-between">
+    <!-- 设置项 -->
+    <div>
+      <div class="mb-5">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-gray-700 text-base font-medium">启用侧边栏</label>
+          <div class="toggle-switch" id="sidebarToggle"></div>
+        </div>
+        <p class="text-gray-500 text-xs">开启后，在包含site:的搜索结果页面显示Hacking语法侧边栏</p>
+      </div>
+      
+      <div class="mb-5">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-gray-700 text-base font-medium">Google搜索</label>
+          <div class="toggle-switch" id="googleToggle"></div>
+        </div>
+        <p class="text-gray-500 text-xs">是否在Google搜索引擎中启用语法工具</p>
+      </div>
+      
+      <div class="mb-5">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-gray-700 text-base font-medium">百度搜索</label>
+          <div class="toggle-switch" id="baiduToggle"></div>
+        </div>
+        <p class="text-gray-500 text-xs">是否在百度搜索引擎中启用语法工具</p>
+      </div>
+      
+      <div class="text-center mt-6">
+        <button id="openOptions" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-full shadow-md transition-all duration-300 btn-effect flex items-center mx-auto">
+          <i class="fas fa-cog mr-2"></i> 打开更多设置
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 底部信息 -->
+  <div class="py-3 px-6 text-center border-t border-gray-200 bg-gray-50 text-xs text-gray-500">
+    <div class="flex items-center justify-center space-x-3">
+      <a href="https://github.com/Pa55w0rd/google-hacking-assistant" target="_blank" class="text-gray-600 hover:text-blue-600 transition-colors">
+        <i class="fab fa-github"></i> GitHub
+      </a>  
+      <span>|</span>
+      <a href="https://github.com/Pa55w0rd/google-hacking-assistant/issues/new" target="_blank" class="text-gray-600 hover:text-blue-600 transition-colors">
+        <i class="fas fa-bug"></i> 反馈
+      </a>
+      <span>|</span>
+      <div class="text-gray-600">
+        <i class="fas fa-code-branch"></i> 版本 <span class="version-text">2.0.0</span>
+      </div>
+    </div>
+  </div>
+  
+  <script src="js/popup.js"></script>
 </body>
 </html> 

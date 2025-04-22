@@ -3,1030 +3,634 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Google Hacking 助手 - 设置</title>
-  <!-- 引入 Material Icons -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
-  <style>
-    :root {
-      /* Google Material Design 色板 (示例) */
-      --md-primary-color: #1976d2; /* Google Blue 700 */
-      --md-primary-light-color: #e3f2fd; /* Google Blue 50 */
-      --md-accent-color: #ffab40; /* Google Amber A400 */
-      --md-background-color: #f5f5f5; /* Grey 100 */
-      --md-surface-color: #ffffff;
-      --md-on-surface-color: #212121; /* Grey 900 */
-      --md-on-surface-medium-color: #616161; /* Grey 700 */
-      --md-on-surface-disabled-color: #bdbdbd; /* Grey 500 */
-      --md-error-color: #d32f2f; /* Red 700 */
-      --md-divider-color: #e0e0e0; /* Grey 300 */
-      --md-ripple-color: rgba(0, 0, 0, 0.1);
-
-      /* 字体 */
-      --md-font-family: 'Roboto', 'Segoe UI', 'Microsoft YaHei', sans-serif;
-
-      /* 圆角 */
-      --md-border-radius: 4px;
-      
-      /* 阴影 */
-      --md-shadow-1dp: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-      --md-shadow-2dp: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
-    }
-
-    body {
-      font-family: var(--md-font-family);
-      margin: 0;
-      background-color: var(--md-background-color);
-      color: var(--md-on-surface-color);
-      display: flex;
-      min-height: 100vh;
-      font-size: 14px; /* 基础字号 */
-    }
-
-    /* 左侧菜单栏 */
-    #optionsMenu {
-      width: 240px;
-      background-color: var(--md-surface-color);
-      border-right: 1px solid var(--md-divider-color);
-      padding: 16px 0; /* 上下留白，左右语法自己控制 */
-      box-sizing: border-box;
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-    }
-
-    #optionsMenu .menu-header {
-        padding: 0 24px 16px 24px;
-        margin-bottom: 8px;
-        border-bottom: 1px solid var(--md-divider-color);
-    }
-
-    #optionsMenu .menu-header h1 {
-      color: var(--md-primary-color);
-      font-size: 20px;
-      margin: 0;
-      font-weight: 500;
-    }
-
-    #optionsMenu ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      flex-grow: 1; /* 占据剩余空间 */
-    }
-
-    #optionsMenu li {
-      margin-bottom: 4px;
-    }
-
-    #optionsMenu button {
-      background: none;
-      border: none;
-      color: var(--md-on-surface-medium-color);
-      cursor: pointer;
-      padding: 12px 24px;
-      width: 100%;
-      text-align: left;
-      border-radius: 0 var(--md-border-radius) var(--md-border-radius) 0; /* 右侧圆角 */
-      font-size: 14px;
-      font-weight: 500;
-      transition: background-color 0.2s, color 0.2s;
-      display: flex; /* 使用 flex 对齐图标和文本 */
-      align-items: center;
-    }
-    
-    #optionsMenu button .material-icons-outlined {
-        margin-right: 16px; /* 图标和文本间距 */
-        font-size: 20px; /* 图标大小 */
-        opacity: 0.7;
-    }
-
-    #optionsMenu button.active,
-    #optionsMenu button:hover {
-      background-color: var(--md-primary-light-color);
-      color: var(--md-primary-color);
-    }
-    
-    #optionsMenu button.active .material-icons-outlined,
-    #optionsMenu button:hover .material-icons-outlined {
-        opacity: 1;
-    }
-
-    #optionsMenu .menu-footer {
-        padding: 16px 24px 0 24px;
-        color: var(--md-on-surface-disabled-color);
-        font-size: 12px;
-        margin-top: auto; /* 推到底部 */
-        border-top: 1px solid var(--md-divider-color);
-    }
-
-    /* 右侧内容区 */
-    #optionsContent {
-      flex-grow: 1;
-      padding: 24px 32px; /* 增加内边距 */
-      box-sizing: border-box;
-      overflow-y: auto;
-    }
-
-    .content-section {
-      display: none;
-      max-width: 800px; /* 稍微加宽 */
-      margin: 0 auto;
-    }
-
-    .content-section.active {
-      display: block;
-    }
-
-    h2 {
-      color: var(--md-on-surface-color);
-      margin-top: 0;
-      margin-bottom: 24px;
-      font-size: 24px;
-      font-weight: 400; /* Material Design 标题通常用 Regular */
-      border-bottom: 1px solid var(--md-divider-color);
-      padding-bottom: 16px;
-    }
-
-    /* 卡片式设置项 */
-    .setting-item {
-      margin-bottom: 24px;
-      background-color: var(--md-surface-color);
-      padding: 20px 24px; /* 增加内边距 */
-      border-radius: var(--md-border-radius);
-      border: 1px solid var(--md-divider-color);
-      /* box-shadow: var(--md-shadow-1dp); */ /* 可选：添加阴影 */
-    }
-
-    .setting-item label,
-    .form-group label {
-      display: block;
-      font-weight: 500; /* Medium weight */
-      margin-bottom: 8px;
-      font-size: 16px; /* 稍微增大 */
-      color: var(--md-on-surface-color);
-    }
-
-    .setting-item .description,
-    .form-group .description {
-      font-size: 13px;
-      color: var(--md-on-surface-medium-color);
-      margin-top: -4px; /* 靠近 Label */
-      margin-bottom: 16px;
-      line-height: 1.5;
-    }
-    
-    /* Material Design 风格语法 */
-    button.md-button {
-        font-family: var(--md-font-family);
-        border: none;
-        border-radius: var(--md-border-radius);
-        padding: 8px 16px;
-        font-size: 14px;
-        font-weight: 500;
-        text-transform: uppercase; /* 字母大写 */
-        cursor: pointer;
-        outline: none;
-        transition: background-color 0.2s, box-shadow 0.2s;
-        min-width: 64px;
-        text-align: center;
-        line-height: 1.75;
-        display: inline-flex; /* 用于对齐图标 */
-        align-items: center;
-        justify-content: center;
-        vertical-align: middle;
-        box-sizing: border-box;
-    }
-    button.md-button .material-icons-outlined {
-        margin-right: 8px;
-        font-size: 18px;
-    }
-    button.md-button.icon-only .material-icons-outlined {
-        margin-right: 0;
-    }
-    /* Contained Button (主要语法) */
-    button.md-button.primary-btn {
-        background-color: var(--md-primary-color);
-        color: #fff;
-        box-shadow: var(--md-shadow-1dp);
-    }
-    button.md-button.primary-btn:hover {
-        background-color: #1565c0; /* darken primary */
-        box-shadow: var(--md-shadow-2dp);
-    }
-    /* Danger Button */
-    button.md-button.danger-btn {
-        background-color: var(--md-error-color);
-        color: #fff;
-        box-shadow: var(--md-shadow-1dp);
-    }
-    button.md-button.danger-btn:hover {
-        background-color: #c62828; /* darken error */
-        box-shadow: var(--md-shadow-2dp);
-    }
-    /* Text Button (次要/取消语法) */
-    button.md-button.secondary-btn {
-        background-color: transparent;
-        color: var(--md-primary-color);
-    }
-    button.md-button.secondary-btn:hover {
-        background-color: rgba(25, 118, 210, 0.08); /* primary color with low opacity */
-    }
-    /* Action Button (编辑/删除等文本语法) */
-    button.md-button.action-button {
-        background-color: transparent;
-        color: var(--md-on-surface-medium-color);
-        padding: 6px 8px; /* 紧凑型 */
-        min-width: auto;
-        text-transform: none;
-    }
-    button.md-button.action-button:hover {
-        background-color: var(--md-ripple-color);
-    }
-    button.md-button.action-button.delete-btn {
-        color: var(--md-error-color);
-    }
-    button.md-button.action-button.delete-btn:hover {
-        background-color: rgba(211, 47, 47, 0.08); /* error color with low opacity */
-    }
-
-    /* 为编辑/删除语法添加图标 */
-    .button-actions .md-button.action-button .material-icons-outlined {
-        font-size: 18px; /* 图标大小 */
-        vertical-align: middle; /* 垂直对齐 */
-        margin: 0; /* 移除默认间距 */
-    }
-    /* 给删除语法加点间距 */
-    .button-actions .md-button.action-button.delete-btn {
-        margin-left: 8px; 
-    }
-
-    /* 开关样式 (Material Design) */
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 36px; /* 缩小宽度 */
-      height: 14px; /* 缩小高度 */
-      vertical-align: middle;
-    }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #bdbdbd; /* 关闭状态灰色 */
-      transition: .4s;
-      border-radius: 7px; /* 调整圆角 */
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 20px; /* 调整滑块大小 */
-      width: 20px;
-      left: -2px; /* 调整初始位置 */
-      bottom: -3px; /* 调整垂直位置 */
-      background-color: white;
-      transition: .4s;
-      border-radius: 50%;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.4); /* 添加阴影 */
-    }
-    input:checked + .slider {
-      background-color: var(--md-primary-light-color); /* 开启状态背景色淡化 */
-    }
-    input:checked + .slider:before {
-      background-color: var(--md-primary-color); /* 开启状态滑块颜色 */
-      transform: translateX(18px); /* 调整移动距离 */
-    }
-
-    /* 语法列表样式 */
-    .button-list {
-      max-height: 350px; /* 增加高度 */
-      overflow-y: auto;
-      margin-top: 10px;
-      border: 1px solid var(--md-divider-color);
-      border-radius: var(--md-border-radius);
-      background-color: var(--md-background-color); /* 列表背景 */
-    }
-    .button-item {
-      display: flex;
-      align-items: center;
-      padding: 12px 16px; /* 调整内边距 */
-      border-bottom: 1px solid var(--md-divider-color);
-      background-color: var(--md-surface-color); /* 列表项背景 */
-    }
-    .button-item:last-child { border-bottom: none; }
-    .button-info {
-      flex-grow: 1;
-      margin-right: 16px;
-    }
-    .button-name {
-      font-weight: 500;
-      font-size: 14px;
-      color: var(--md-on-surface-color);
-      display: inline-block; /* 允许与风险等级同行 */
-      margin-right: 8px;
-    }
-    .button-syntax {
-      font-family: 'Roboto Mono', monospace; /* 代码字体 */
-      font-size: 13px;
-      color: var(--md-on-surface-medium-color);
-      margin-top: 4px;
-      word-break: break-all;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 450px; /* 防止过长 */
-      display: block; /* 确保独占一行 */
-    }
-    .button-actions {
-        display: flex;
-        align-items: center;
-     }
-    
-    /* 搜索引擎支持图标 */
-    .button-engines {
-      display: flex;
-      align-items: center;
-      margin-right: 16px;
-    }
-    .engine-icon {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-left: 4px;
-      font-weight: bold;
-      font-size: 12px;
-      background-color: #f5f5f5;
-      border: 1px solid #e0e0e0;
-      color: #5f6368;
-    }
-    .engine-icon:first-child {
-      margin-left: 0;
-    }
-    .engine-google {
-      background-color: #4285F4;
-      color: white;
-    }
-    .engine-baidu {
-      background-color: #2932E1;
-      color: white;
-    }
-    .engine-disabled {
-      background-color: #f5f5f5;
-      color: #bdbdbd;
-      opacity: 0.5;
-    }
-    
-    .risk-level {
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 10px;
-      color: white;
-      font-weight: 500;
-      white-space: nowrap;
-      display: inline-block; /* 同行显示 */
-      vertical-align: middle;
-      margin-left: 4px; /* 微调间距 */
-    }
-    .risk-high { background-color: var(--md-error-color); }
-    .risk-medium { background-color: #ffa000; } /* Amber 700 */
-    .risk-info { background-color: #0288d1; } /* Light Blue 700 */
-    .risk-default { background-color: #757575; } /* Grey 600 */
-
-    .add-button-container {
-      margin-top: 24px; /* 增加上边距 */
-      display: flex; /* 使用 Flexbox 布局 */
-      justify-content: flex-end; /* 语法靠右对齐 */
-      gap: 8px; /* 语法之间的间距 */
-    }
-    
-    /* 表单样式 (Material Design Text Fields 风格) */
-    #buttonForm {
-      background-color: var(--md-surface-color);
-      border: 1px solid var(--md-divider-color);
-      border-radius: 8px; /* 增加圆角 */
-      padding: 32px; /* 增加内边距 */
-      margin-top: 30px;
-      display: none; /* 默认隐藏 */
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* 添加阴影 */
-    }
-    
-    #buttonForm h3 {
-      margin-top: 0;
-      margin-bottom: 30px; /* 增加下边距 */
-      font-size: 20px; /* 增加字体大小 */
-      font-weight: 500;
-    }
-    
-    .form-group {
-      margin-bottom: 30px; /* 增加下边距 */
-      position: relative;
-    }
-    
-    /* 删除旧的标签浮动样式 */
-    .form-group label {
-      display: block;
-      font-size: 15px;
-      color: var(--md-on-surface-color);
-      font-weight: 500;
-      margin-bottom: 12px;
-      position: relative;
-      top: auto;
-      left: auto;
-      background: none;
-      padding: 0;
-    }
-    
-    /* 输入框样式调整 */
-    .form-group input[type="text"],
-    .form-group textarea,
-    .form-group select {
-      width: 100%;
-      padding: 12px 16px; /* 调整内边距 */
-      border: 1px solid var(--md-divider-color);
-      border-radius: 6px; /* 增加圆角 */
-      font-size: 15px; /* 增加字体大小 */
-      box-sizing: border-box;
-      background-color: #f8f9fa; /* 轻微的背景色 */
-      transition: border-color 0.2s;
-      margin-top: 0; /* 重置上边距 */
-      height: auto; /* 自动高度 */
-    }
-    
-    .form-group textarea {
-      min-height: 100px; /* 增加文本域高度 */
-      font-family: 'Roboto Mono', monospace;
-      resize: vertical;
-      line-height: 1.5; /* 增加行高 */
-    }
-    
-    .form-group select {
-      height: 46px; /* 确保下拉框高度合适 */
-      appearance: none; /* 移除默认箭头 */
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23616161' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 16px center;
-      background-size: 18px;
-      padding-right: 48px; /* 为箭头腾出空间 */
-    }
-
-    /* 表单操作区域样式 */
-    .form-actions {
-      margin-top: 36px;
-      display: flex;
-      justify-content: flex-end;
-      gap: 16px;
-    }
-    
-    .form-actions .md-button {
-      font-size: 15px;
-      padding: 10px 24px;
-      height: 44px;
-      min-width: 100px;
-    }
-    
-    /* 覆盖旧的样式 */
-    .form-actions button + button {
-      margin-left: 0;
-    }
-
-    /* 开关控制组样式 */
-    .switch-control-group {
-        display: flex;
-        align-items: center; /* 垂直居中对齐 */
-        margin-bottom: 12px;
-        min-height: 32px; /* 确保最小高度，使文字和开关对齐 */
-    }
-    /* 开关前的标签文本样式 */
-    .switch-label-text {
-        font-size: 14px;
-        color: var(--md-on-surface-medium-color);
-        margin-right: 16px;
-        min-width: 100px;
-        flex-shrink: 0;
-        line-height: 32px; /* 与开关高度对齐 */
-    }
-    .switch-control-group .switch {
-        position: relative;
-        display: inline-block;
-        width: 36px;
-        height: 14px;
-        margin: 9px 12px 9px 0; /* 调整垂直边距使开关居中 */
-        flex-shrink: 0;
-    }
-    .switch-control-group .description {
-        margin: 0;
-        line-height: 32px; /* 与开关高度对齐 */
-        color: var(--md-on-surface-medium-color);
-        font-size: 13px;
-        flex-grow: 1;
-    }
-    /* 开关滑块样式优化 */
-    .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #bdbdbd;
-        transition: .4s;
-        border-radius: 7px;
-    }
-    .slider:before {
-        position: absolute;
-        content: "";
-        height: 20px;
-        width: 20px;
-        left: -2px;
-        bottom: -3px;
-        background-color: white;
-        transition: .4s;
-        border-radius: 50%;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.4);
-    }
-    input:checked + .slider {
-        background-color: var(--md-primary-light-color);
-    }
-    input:checked + .slider:before {
-        background-color: var(--md-primary-color);
-        transform: translateX(18px);
-    }
-    .form-group input[type="text"]:focus,
-    .form-group textarea:focus,
-    .form-group select:focus {
-        outline: none;
-        border-color: var(--md-primary-color);
-        box-shadow: 0 0 0 1px var(--md-primary-color); /* 模拟边框加粗 */
-    }
-    .form-group .description {
-        margin-top: 8px; /* 描述距离输入框的间距 */
-        margin-bottom: 0;
-    }
-
-    /* Radio 语法 (简化 Material 风格) */
-    .radio-group label {
-      display: flex; /* 使用 flex 对齐 */
-      align-items: center;
-      margin-bottom: 12px;
-      font-weight: normal;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    .radio-group input[type="radio"] {
-      appearance: none; /* 隐藏默认样式 */
-      width: 20px;
-      height: 20px;
-      border: 2px solid var(--md-on-surface-medium-color);
-      border-radius: 50%;
-      margin-right: 12px;
-      position: relative;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .radio-group input[type="radio"]::before {
-      content: '';
-      display: block;
-      width: 10px;
-      height: 10px;
-      background-color: var(--md-primary-color);
-      border-radius: 50%;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0); /* 默认隐藏 */
-      transition: transform 0.2s;
-    }
-    .radio-group input[type="radio"]:checked {
-      border-color: var(--md-primary-color);
-    }
-    .radio-group input[type="radio"]:checked::before {
-      transform: translate(-50%, -50%) scale(1); /* 显示选中点 */
-    }
-    .radio-group label:hover input[type="radio"] {
-        border-color: var(--md-primary-color);
-    }
-
-    /* 关于页面样式 */
-    .about-header {
-      display: flex;
-      align-items: center;
-      background-color: var(--md-surface-color);
-      padding: 24px;
-      border-radius: var(--md-border-radius);
-      border: 1px solid var(--md-divider-color);
-      margin-bottom: 24px;
-    }
-    .about-logo {
-      width: 64px;
-      height: 64px;
-      margin-right: 24px;
-      border-radius: 50%;
-      overflow: hidden; /* 确保图片不超出 */
-    }
-    .about-logo img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    .about-title h3 {
-      margin: 0 0 4px 0;
-      font-size: 20px;
-      font-weight: 500;
-      color: var(--md-on-surface-color);
-    }
-    .about-title p {
-      margin: 0;
-      font-size: 14px;
-      color: var(--md-on-surface-medium-color);
-    }
-    .about-section {
-      background-color: var(--md-surface-color);
-      padding: 24px;
-      border-radius: var(--md-border-radius);
-      border: 1px solid var(--md-divider-color);
-      margin-bottom: 24px;
-    }
-    .about-section h4 {
-      margin: 0 0 16px 0;
-        font-size: 16px;
-      font-weight: 500;
-      color: var(--md-on-surface-color);
-      border-bottom: 1px solid var(--md-divider-color);
-      padding-bottom: 12px;
-    }
-    .about-section p {
-        font-size: 14px;
-      line-height: 1.7;
-      color: var(--md-on-surface-color);
-      margin-bottom: 16px;
-    }
-    .about-section p:last-child {
-        margin-bottom: 0;
-    }
-    .project-links a {
-      display: inline-flex; 
-      align-items: center;
-      background-color: var(--md-primary-light-color);
-      color: var(--md-primary-color);
-      padding: 8px 16px;
-      border-radius: 18px; /* 胶囊形状 */
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 500;
-      margin-right: 12px;
-      margin-bottom: 12px;
-      transition: background-color 0.2s, box-shadow 0.2s;
-    }
-    .project-links a:hover {
-      background-color: #d1e3fa; /* slightly darker light blue */
-      box-shadow: var(--md-shadow-1dp);
-    }
-    .project-links a .material-icons-outlined {
-        margin-right: 8px;
-        font-size: 18px;
-    }
-    .warning {
-      background-color: #fff3e0; /* Orange 50 */
-      border-left: 4px solid #ffa000; /* Amber 700 */
-      padding: 16px;
-      margin: 16px 0;
-      font-size: 14px;
-      border-radius: var(--md-border-radius);
-      color: #4d3a19;
-    }
-    .warning strong {
-        font-weight: 500;
-        color: #bf360c; /* Deep Orange 900 */
-    }
-
-    /* Toast (Snackbar 风格) - 改为顶部居中 */
-    .save-success-toast {
-      position: fixed;
-      top: 20px; 
-      left: 50%;
-      transform: translate(-50%, -100px); /* 初始在屏幕上方 */
-      min-width: 288px;
-      max-width: 568px;
-      background-color: #323232;
-      color: #ffffff;
-      padding: 14px 24px;
-      border-radius: var(--md-border-radius);
-      box-shadow: var(--md-shadow-2dp);
-      z-index: 9999; /* 提高层级 */
-      font-weight: 400;
-      font-size: 14px;
-      transition: transform 0.3s ease-out, opacity 0.3s ease-out;
-      opacity: 0; /* 初始透明 */
-      pointer-events: none; /* 初始不可交互 */
-    }
-    .save-success-toast.show {
-        opacity: 1;
-        transform: translate(-50%, 0); /* 滑入 */
-        pointer-events: auto; /* 显示时可交互 */
-    }
-    /* 根据类型调整颜色 (可选) */
-    .save-success-toast.success { background-color: #4caf50; } /* 绿色 */
-    .save-success-toast.error { background-color: var(--md-error-color); } /* 错误用红色 */
-    .save-success-toast.warning { background-color: #ffa000; } /* 警告用橙色 */
-
-    /* 对话框遮罩层 */
-    .dialog-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.32); /* 半透明黑色遮罩 */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000; /* 低于对话框，高于页面内容 */
-        opacity: 0;
-        transition: opacity 0.2s ease-out;
-    }
-    .dialog-overlay.show {
-        opacity: 1;
-    }
-
-    /* 自定义确认对话框样式 (Material Design Dialog 风格) */
-    .custom-confirm-dialog {
-        position: relative; /* 相对于 overlay 定位 */
-        z-index: 1001; /* 比 Toast 高一层 */
-        background-color: var(--md-surface-color);
-        border-radius: var(--md-border-radius);
-        box-shadow: var(--md-shadow-2dp);
-        padding: 20px 24px;
-        min-width: 280px;
-        max-width: 400px;
-        font-size: 14px;
-        color: var(--md-on-surface-color);
-    }
-    .custom-confirm-dialog .confirm-content p {
-        margin: 0 0 20px 0;
-        line-height: 1.6;
-        color: var(--md-on-surface-medium-color);
-    }
-    .custom-confirm-dialog .confirm-buttons {
-        text-align: right;
-    }
-    .custom-confirm-dialog .confirm-buttons button {
-        margin-left: 8px;
-    }
-
-    /* 开关组的容器样式 */
-    .form-group-switch {
-        margin-bottom: 16px;
-        padding-top: 8px;
-    }
-    
-    /* 当form-group-switch在form-group内时的特殊样式 */
-    .form-group .form-group-switch {
-        margin-top: 8px;
-    }
-    
-    /* 确保开关组之间有合适的间距 */
-    .form-group-switch .switch-control-group + .switch-control-group {
-        margin-top: 8px;
-    }
-
-    /* 水平排列的开关容器 */
-    .switch-row {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 36px; /* 增加间距 */
-      margin: 20px 0; /* 增加上下外边距 */
-    }
-    
-    /* 调整水平排列的开关样式 */
-    .switch-row .switch-control-group {
-      display: flex;
-      align-items: center;
-      margin-bottom: 0;
-      min-height: 40px; /* 增加高度 */
-      background-color: #f8f9fa;
-      padding: 10px 20px; /* 增加内边距 */
-      border-radius: 8px; /* 增加圆角 */
-      border: 1px solid var(--md-divider-color);
-      min-width: 300px; /* 增加宽度 */
-      position: relative;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* 添加轻微阴影 */
-    }
-    
-    .switch-row .switch-label-text {
-      font-size: 15px; /* 增加字体大小 */
-      color: var(--md-on-surface-color);
-      font-weight: 500;
-      margin-right: 20px; /* 增加右边距 */
-      min-width: auto;
-      flex-shrink: 0;
-    }
-    
-    .switch-row .switch {
-      margin: 0 0 0 auto;
-      transform: scale(1.2); /* 稍微放大开关 */
-    }
-    
-    .switch-row .description {
-      margin-left: 20px; /* 增加左边距 */
-      font-size: 14px; /* 增加字体大小 */
-      color: var(--md-on-surface-medium-color);
-    }
-    
-    /* 表单下方描述文本 */
-    .form-group > .description {
-      margin-top: 12px;
-      line-height: 1.5;
-    }
-
-  </style>
+  <title>Search Hacking 助手 - 设置</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/options.css">
 </head>
-<body>
-
-  <!-- 保存成功Toast提示 (移到底部，结构不变) -->
-  <div id="saveSuccessToast" class="save-success-toast">设置已保存！</div>
-
-  <!-- 左侧菜单 -->
-  <div id="optionsMenu">
-    <div class="menu-header">
-    <h1>设置</h1>
-    </div>
-    <ul>
-      <li><button data-section="generalSettings"><span class="material-icons-outlined">settings</span>基本设置</button></li>
-      <li><button data-section="buttonManagement"><span class="material-icons-outlined">edit</span>语法管理</button></li>
-      <li><button data-section="about" class="active"><span class="material-icons-outlined">info</span>关于</button></li>
-    </ul>
-    <div class="menu-footer" id="optionsMenuVersion">
-        v
+<body class="bg-gray-100 min-h-screen">
+  <!-- 顶部导航栏 -->
+  <div class="gradient-bg text-white shadow-lg">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+          <i class="fas fa-search text-xl"></i>
+          <h1 class="text-xl font-medium">Search Hacking 助手 - 设置</h1>
+        </div>
+        <div class="text-sm opacity-80 flex items-center">
+          <a href="https://github.com/Pa55w0rd/google-hacking-assistant" target="_blank" class="mr-3 hover:text-blue-200 transition-colors">
+            <i class="fab fa-github text-blue-100"></i> GitHub
+          </a>
+          <span class="ml-1">版本 2.0.0</span>
+        </div>
+        </div>
+      </div>
     </div>
   </div>
-
-  <!-- 右侧内容区 -->
-  <div id="optionsContent">
-    <!-- 基本设置内容 -->
-    <div id="generalSettings" class="content-section">
-      <h2>基本设置</h2>
-      <div class="setting-item">
-        <label>链接打开方式</label>
-        <div class="description">选择点击语法后，是在当前标签页打开搜索结果，还是在新标签页中打开，变更后需要刷新搜索页面。</div>
-        <div class="radio-group">
-          <label>
-            <input type="radio" name="linkTarget" value="_self" checked>
-            在当前标签页打开
-          </label>
-          <label>
-            <input type="radio" name="linkTarget" value="_blank">
-            在新标签页打开
-          </label>
-        </div>
+  
+  <!-- 选项卡导航 -->
+  <div class="bg-white border-b shadow-sm">
+    <div class="container mx-auto px-4">
+      <div class="flex text-gray-600">
+        <a href="#general" class="px-6 py-4 tab-active font-medium">基本设置</a>
+        <a href="#syntax" class="px-6 py-4 hover:bg-gray-50">语法管理</a>
+        <a href="#about" class="px-6 py-4 hover:bg-gray-50">关于</a>
       </div>
     </div>
-
-    <!-- 语法管理内容 -->
-    <div id="buttonManagement" class="content-section">
-      <h2>语法管理</h2>
-      <div class="setting-item">
-        <label>Google Hacking 资源</label>
-        <div class="description">
-          如果您对 Google Hacking 语法不太熟悉或想寻找更多高级用法，强烈推荐参考 <a href="https://www.exploit-db.com/google-hacking-database" target="_blank">Google Hacking Database (GHDB)</a>。这是一个由安全专家维护的丰富资源库，包含了大量用于发现漏洞和敏感信息的搜索语法，是学习和获取灵感的绝佳去处。<br><br>
-          <strong>注意：</strong>Google Hacking 和百度 Hacking 语法存在一定差异。例如，Google 支持 <code>filetype:</code> 而百度使用 <code>ext:</code>，Google 的 <code>intext:</code> 在百度中对应 <code>inbody:</code>。添加自定义语法时，请根据目标搜索引擎选择合适的语法格式，并正确设置"支持的搜索引擎"选项。
-        </div>
-      </div>
-      <div class="setting-item">
-        <label>内置语法</label>
-        <div class="description">管理预定义的常用 Google Hacking 语法。启用或禁用它们。</div>
-        <div id="defaultButtonList" class="button-list">
-          <!-- 内置语法列表将通过 JavaScript 动态生成 -->
-        </div>
-      </div>
-      <div class="setting-item">
-        <label>自定义语法</label>
-        <div class="description">添加、编辑或删除您自己的 Google Hacking 语法。</div>
-        <div id="customButtonList" class="button-list">
-          <!-- 自定义语法列表将通过 JavaScript 动态生成 -->
-        </div>
-        <div class="add-button-container">
-          <!-- 使用 Material Design 语法样式 -->
-          <button id="showAddFormButton" class="md-button primary-btn">
-              <span class="material-icons-outlined">add</span> 添加新语法
-          </button>
-          <button id="clearAllCustomButtons" class="md-button danger-btn">
-              <span class="material-icons-outlined">delete_sweep</span> 清除所有
-          </button>
-        </div>
-      </div>
-      <!-- 添加/编辑语法表单 -->
-      <div id="buttonForm" class="setting-item" style="display: none;">
-        <h3 id="formTitle">添加新语法</h3>
-        <input type="hidden" id="buttonId">
-        <div class="form-group">
-          <label for="buttonName">语法名称</label>
-          <input type="text" id="buttonName" required>
-        </div>
-        <div class="form-group">
-          <label for="buttonSyntax">搜索语法</label>
-          <textarea id="buttonSyntax" required></textarea>
-          <div class="description">使用 <code>{target_domain}</code> 作为目标域名的占位符。</div>
-        </div>
-        <div class="form-group">
-          <label for="riskLevel">风险等级</label>
-          <select id="riskLevel">
-            <option value="info">信息</option>
-            <option value="medium">中危</option>
-            <option value="high">高危</option>
-            <option value="default">低危</option>
-          </select>
-        </div>
-        <!-- 搜索引擎支持选项 -->
-        <div class="form-group">
-          <label>支持的搜索引擎</label>
-          <div class="switch-row">
-            <div class="switch-control-group">
-              <span class="switch-label-text">支持 Google</span>
-              <label class="switch"> 
-                <input type="checkbox" id="supportGoogle" checked>
-                <span class="slider"></span>
-              </label>
-              <span class="description">启用Google搜索支持</span>
-            </div>
-            <div class="switch-control-group">
-              <span class="switch-label-text">支持百度</span>
-              <label class="switch"> 
-                <input type="checkbox" id="supportBaidu">
-                <span class="slider"></span>
-              </label>
-              <span class="description">启用百度搜索支持</span>
-            </div>
+  </div>
+  
+  <!-- 主要内容区域 -->
+  <div class="container mx-auto px-4 py-8">
+    <!-- 基本设置部分 -->
+    <section id="general" class="mb-8">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">基本设置</h2>
+      
+      <div class="glass-card rounded-xl p-6 mb-6">
+        <h3 class="text-lg font-medium text-gray-800 mb-4">显示设置</h3>
+        
+        <div class="flex justify-between items-center mb-6 pb-4 border-b">
+          <div>
+            <div class="font-medium text-gray-700 mb-1">启用侧边栏</div>
+            <p class="text-gray-600 text-sm">在包含site:的搜索结果页面显示Hacking语法侧边栏</p>
           </div>
-          <div class="description" style="margin-top: 8px;">注意：百度搜索语法可能与 Google 不完全兼容</div>
+          <div class="toggle-switch active" id="toggleSidebar"></div>
+        </div>
+      </div>
+      
+      <div class="glass-card rounded-xl p-6 mb-6">
+        <h3 class="text-lg font-medium text-gray-800 mb-4">搜索引擎设置</h3>
+        
+        <div class="flex justify-between items-center mb-6 pb-4 border-b">
+          <div>
+            <div class="font-medium text-gray-700 mb-1">Google搜索支持</div>
+            <p class="text-gray-600 text-sm">在Google搜索结果页面显示侧边栏</p>
+          </div>
+          <div class="toggle-switch active" id="toggleGoogle"></div>
         </div>
         
-        <!-- 是否启用开关 -->
-        <div class="form-group">
-          <div class="switch-row">
-            <div class="switch-control-group">
-              <span class="switch-label-text">是否启用</span>
-              <label class="switch"> 
-                <input type="checkbox" id="buttonEnabled" checked>
-                <span class="slider"></span>
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="font-medium text-gray-700 mb-1">百度搜索支持</div>
+            <p class="text-gray-600 text-sm">在百度搜索结果页面显示侧边栏</p>
+          </div>
+          <div class="toggle-switch active" id="toggleBaidu"></div>
+        </div>
+      </div>
+      
+      <!-- URL黑名单设置 -->
+      <div class="glass-card rounded-xl p-6 mb-6">
+        <h3 class="text-lg font-medium text-gray-800 mb-4">URL黑名单设置</h3>
+        
+        <div class="mb-4">
+          <div class="font-medium text-gray-700 mb-2">黑名单过滤规则</div>
+          <p class="text-gray-600 text-sm mb-4">添加域名或URL模式以在提取URL时过滤匹配的结果，每行一个规则</p>
+          
+          <div class="relative">
+            <textarea 
+              id="urlBlacklist" 
+              rows="6" 
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+              placeholder="example.com&#10;*.example.org&#10;/.*\.gov$/&#10;/https:\/\/suspicious\..*/"></textarea>
+          </div>
+          
+          <div class="mt-2 flex items-center text-xs text-gray-500">
+            <i class="fas fa-info-circle mr-1"></i>
+            <span>支持通配符（如：*.example.com）和正则表达式（如：/.*\.edu$/）</span>
+          </div>
+        </div>
+        
+        <div class="flex justify-between items-center mt-4">
+          <div class="bg-blue-50 rounded-lg p-3 text-blue-700 text-sm flex-1 mr-3">
+            <div class="flex items-start">
+              <i class="fas fa-lightbulb text-blue-500 mt-1 mr-2"></i>
+              <div>
+                <p class="mb-1"><strong>规则说明：</strong></p>
+                <ul class="list-disc ml-4 space-y-1">
+                  <li><strong>精确匹配</strong>：直接输入域名，如 <code class="bg-blue-100 px-1 rounded">example.com</code></li>
+                  <li><strong>通配符</strong>：使用 * 表示任意字符，如 <code class="bg-blue-100 px-1 rounded">*.example.org</code></li>
+                  <li><strong>正则表达式</strong>：使用 / 包裹，如 <code class="bg-blue-100 px-1 rounded">/.*\.gov$/</code></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <button id="saveBlacklist" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-md transition-all duration-300 btn-effect">
+              <i class="fas fa-save mr-2"></i> 保存规则
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="glass-card rounded-xl p-6">
+        <h3 class="text-lg font-medium text-gray-800 mb-4">数据管理</h3>
+        
+        <div class="flex justify-between items-center mb-4 pb-4 border-b">
+          <div>
+            <div class="font-medium text-gray-700 mb-1">导出配置</div>
+            <p class="text-gray-600 text-sm">将当前所有设置和自定义语法导出为JSON文件</p>
+          </div>
+          <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 px-4 rounded-lg shadow-sm transition-all duration-300 text-sm flex items-center">
+            <i class="fas fa-download mr-2"></i> 导出
+          </button>
+        </div>
+        
+        <div class="flex justify-between items-center mb-4 pb-4 border-b">
+          <div>
+            <div class="font-medium text-gray-700 mb-1">导入配置</div>
+            <p class="text-gray-600 text-sm">从JSON文件中导入设置和自定义语法</p>
+          </div>
+          <div class="flex items-center">
+            <label for="import-file" class="bg-green-600 hover:bg-green-700 text-white font-medium py-1.5 px-4 rounded-lg shadow-sm transition-all duration-300 text-sm flex items-center cursor-pointer">
+              <i class="fas fa-upload mr-2"></i> 导入
+              <input type="file" id="import-file" accept=".json" class="hidden" />
+            </label>
+          </div>
+        </div>
+        
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="font-medium text-gray-700 mb-1">重置所有设置</div>
+            <p class="text-gray-600 text-sm">将所有设置和语法恢复到默认状态</p>
+          </div>
+          <button class="bg-red-600 hover:bg-red-700 text-white font-medium py-1.5 px-4 rounded-lg shadow-sm transition-all duration-300 text-sm flex items-center">
+            <i class="fas fa-trash-alt mr-2"></i> 重置
+          </button>
+        </div>
+        
+        <div class="mt-4 bg-yellow-50 rounded-lg p-4 flex text-yellow-800">
+          <i class="fas fa-exclamation-triangle text-yellow-600 text-lg mr-3 mt-1"></i>
+          <div>
+            <h4 class="font-medium mb-1">谨慎操作</h4>
+            <p class="text-sm">
+              重置操作将会清除所有自定义语法和设置，恢复到扩展的初始状态。此操作不可撤销，请谨慎操作。导入配置前建议先导出备份当前配置。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 语法管理部分 -->
+    <section id="syntax" class="hidden mb-8">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">语法管理</h2>
+      </div>
+      
+      <!-- 搜索框部分 -->
+      <div class="glass-card rounded-xl p-6 mb-6">
+        <div class="relative">
+          <input
+            type="text"
+            id="syntaxSearch"
+            placeholder="搜索语法..."
+            class="w-full px-4 py-2 pl-10 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+          <div class="absolute left-3 top-2.5 text-gray-400">
+            <i class="fas fa-search"></i>
+          </div>
+          <div class="mt-2 flex text-sm text-gray-500 justify-between">
+            <div>
+              <span class="mr-4"><i class="fas fa-filter mr-1"></i>过滤条件:</span>
+              <label class="inline-flex items-center mr-4 cursor-pointer">
+                <input type="checkbox" class="form-checkbox h-4 w-4 text-blue-600 rounded" checked>
+                <span class="ml-2">内置语法</span>
               </label>
-              <span class="description">控制此语法是否在侧边栏显示</span>
+              <label class="inline-flex items-center mr-4 cursor-pointer">
+                <input type="checkbox" class="form-checkbox h-4 w-4 text-blue-600 rounded" checked>
+                <span class="ml-2">自定义语法</span>
+              </label>
+            </div>
+            <div>
+              <span id="searchResult" class="text-gray-500">共找到 <span class="font-semibold">14</span> 条语法</span>
             </div>
           </div>
         </div>
-        <div class="form-actions">
-          <button id="saveButton" class="md-button primary-btn">保存语法</button>
-          <button id="cancelButton" class="md-button secondary-btn">取消</button>
-        </div>
       </div>
-    </div>
-
-    <!-- 关于内容 -->
-    <div id="about" class="content-section active">
-      <h2>关于</h2>
       
-      <div class="about-header">
-        <div class="about-logo">
-          <img src="images/icon128.png" alt="Search Hacking 助手图标">
+      <!-- 内置语法部分 -->
+      <div class="glass-card rounded-xl p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-medium text-gray-800">内置语法</h3>
+          <div class="text-sm text-gray-500" id="builtinSyntaxCount">0个语法</div>
         </div>
-        <div class="about-title">
-          <h3>Search Hacking 助手</h3>
-          <p>版本 <span id="aboutVersion"></span> | 最后更新: <span id="lastUpdated">2024-03-21</span></p>
-        </div>
-      </div>
-
-      <div class="about-section">
-        <h4>产品简介</h4>
-        <p id="productIntroText">Search Hacking 助手是一款强大的浏览器扩展，专为安全研究人员和渗透测试人员打造。它能在包含 site: 查询的 Google 和百度搜索结果页面自动注入固定在右侧的侧边栏，提供丰富的 Hacking 语法功能。本工具支持多搜索引擎，提供智能侧边栏、一键提取URL、自定义语法、灵活控制和实时更新等特性，适用于信息收集、漏洞挖掘和安全评估等专业场景。</p>
-        <div class="warning">
-            <strong>免责声明：</strong> <!-- 只保留 strong 标签，文本由 JS 填充 -->
+        
+        <div class="space-y-3" id="builtinSyntaxList">
+          <!-- 语法项将通过 JavaScript 动态加载 -->
         </div>
       </div>
       
-      <div class="about-section">
-          <h4>项目信息</h4>
-          <div class="project-links">
-            <!-- 使用 Material Icon -->
-            <a href="#" id="githubLinkOptions" target="_blank">
-              <span class="material-icons-outlined">code</span>
-              GitHub
-            </a>
-             <!-- 可以添加更多链接，例如反馈、文档等 -->
-            <a href="https://github.com/Pa55w0rd/google-hacking-assistant/issues" id="githubIssues" target="_blank">
-              <span class="material-icons-outlined">bug_report</span>
-              提交问题
-            </a>
+      <!-- 自定义语法部分 -->
+      <div class="glass-card rounded-xl p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-medium text-gray-800">自定义语法</h3>
+          <div class="text-sm text-gray-500" id="customSyntaxCount">0个语法</div>
+        </div>
+        
+        <div class="space-y-3" id="customSyntaxList">
+          <!-- 语法项将通过 JavaScript 动态加载 -->
+        </div>
+        
+        <div class="flex justify-end mt-6">
+          <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-md transition-all duration-300 btn-effect flex items-center" id="addSyntaxBtn">
+            <i class="fas fa-plus mr-2"></i> 添加语法
+          </button>
+          <button class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg shadow-md transition-all duration-300 btn-effect flex items-center ml-4" id="clearAllSyntaxBtn">
+            <i class="fas fa-trash-alt mr-2"></i> 清除所有自定义语法
+          </button>
+        </div>
+      </div>
+      
+      <!-- 添加语法提示 -->
+      <div class="bg-blue-50 rounded-lg p-4 flex">
+        <i class="fas fa-lightbulb text-blue-600 text-lg mr-3 mt-1"></i>
+        <div>
+          <h4 class="text-blue-800 font-medium mb-1">寻找灵感？</h4>
+          <p class="text-blue-700 text-sm">
+            可以访问 <a href="https://www.exploit-db.com/google-hacking-database" target="_blank" class="text-blue-600 hover:underline">Google Hacking Database (GHDB)</a> 查找更多有用的搜索语法。在添加语法时使用 <code class="bg-blue-100 px-1 rounded">{target_domain}</code> 作为占位符，它会自动替换为site:指定的域名。
+          </p>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 关于部分 -->
+    <section id="about" class="hidden mb-8">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">关于</h2>
+      
+      <div class="glass-card rounded-xl p-6 mb-6">
+        <div class="flex flex-col md:flex-row items-center mb-6 pb-6 border-b">
+          <img src="../images/icon128.png" alt="扩展图标" class="w-24 h-24 mb-4 md:mb-0 md:mr-6">
+          <div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Search Hacking 助手</h3>
+            <p class="text-gray-600 mb-2">版本 2.0.0</p>
           </div>
+        </div>
+        
+        <div class="mb-6 pb-6 border-b">
+          <h4 class="text-lg font-medium text-gray-800 mb-3">产品简介</h4>
+          <p class="text-gray-600 mb-3">
+            Search Hacking 助手是一款专为安全研究人员和渗透测试人员设计的浏览器扩展，一键触发Google和百度Hacking搜索语法，简化安全研究和渗透测试流程。
+          </p>
+          <div class="bg-blue-50 rounded-lg p-4 mb-3">
+            <h5 class="text-blue-800 font-medium mb-2">核心功能</h5>
+            <ul class="text-blue-700 text-sm space-y-2">
+              <li><i class="fas fa-check-circle mr-2"></i> <strong>多搜索引擎支持</strong> - 同时支持 Google 和百度搜索</li>
+              <li><i class="fas fa-check-circle mr-2"></i> <strong>智能侧边栏</strong> - 自动检测搜索查询并显示相关 Hacking 语法</li>
+              <li><i class="fas fa-check-circle mr-2"></i> <strong>一键提取 URL</strong> - 快速从搜索结果中提取所有网址</li>
+              <li><i class="fas fa-check-circle mr-2"></i> <strong>自定义语法</strong> - 根据具体需求添加和管理自定义搜索语法</li>
+              <li><i class="fas fa-check-circle mr-2"></i> <strong>灵活控制</strong> - 精确控制功能启用状态和结果打开方式</li>
+            </ul>
+          </div>
+          <div class="bg-yellow-50 rounded-lg p-4">
+            <h5 class="text-yellow-800 font-medium mb-2">免责声明</h5>
+            <p class="text-yellow-700 text-sm">
+              本扩展仅供安全研究和授权渗透测试使用。请勿用于未授权的安全测试或任何非法活动。使用者需承担因使用本扩展而产生的所有法律责任。
+            </p>
+          </div>
+        </div>
+        
+        <div class="mb-6 pb-6 border-b">
+          <h4 class="text-lg font-medium text-gray-800 mb-3">开发者</h4>
+          <p class="text-gray-600 mb-2">
+            <i class="fas fa-user mr-2 text-gray-500"></i> <a href="https://github.com/Pa55w0rd/" target="_blank" class="text-blue-600 hover:underline">Pa55w0rd</a>
+          </p>
+          <p class="text-gray-600 mb-2">
+            <i class="fab fa-github mr-2 text-gray-500"></i> <a href="https://github.com/Pa55w0rd/google-hacking-assistant" target="_blank" class="text-blue-600 hover:underline">GitHub 仓库</a>
+          </p>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-medium text-gray-800 mb-3">隐私政策</h4>
+          <p class="text-gray-600 mb-3">
+            Search Hacking 助手不会收集或上传任何个人数据。所有设置和自定义语法只存储在您的浏览器本地存储中。扩展不会追踪您的搜索历史或浏览活动。
+          </p>
+        </div>
       </div>
-
-    </div>
-
+      
+      <div class="glass-card rounded-xl p-6">
+        <h3 class="text-lg font-medium text-gray-800 mb-4">更新日志</h3>
+        
+        <div class="space-y-6">
+          <div>
+            <h4 class="font-medium text-gray-800 mb-2 flex items-center">
+              <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mr-2">v2.0</span>
+              <span>2025年4月22日</span>
+            </h4>
+            <ul class="list-disc pl-5 text-gray-600 space-y-1">
+              <li>核心重构：完全重构底层代码，提高稳定性和性能</li>
+              <li>URL黑名单：新增URL黑名单功能，支持域名、通配符子域名和正则表达式匹配</li>
+              <li>稳定性增强：优化扩展上下文管理，解决百度搜索页面闪烁问题</li>
+              <li>性能优化：精确DOM观察器配置，优化防抖处理，减少CPU和内存使用</li>
+              <li>UI优化：改进URL提取面板界面，优化错误提示展示方式</li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 class="font-medium text-gray-800 mb-2 flex items-center">
+              <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mr-2">v1.4</span>
+              <span>2025年4月15日</span>
+            </h4>
+            <ul class="list-disc pl-5 text-gray-600 space-y-1">
+              <li>添加"提取URL"功能，可以一键从搜索结果中提取所有URL</li>
+              <li>优化在不同搜索引擎结果页面的显示效果</li>
+              <li>更新扩展名称为"Search Hacking 助手"</li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 class="font-medium text-gray-800 mb-2 flex items-center">
+              <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mr-2">v1.3</span>
+              <span>2025年4月15日</span>
+            </h4>
+            <ul class="list-disc pl-5 text-gray-600 space-y-1">
+              <li>添加百度搜索支持</li>
+              <li>添加语法支持搜索引擎选项</li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 class="font-medium text-gray-800 mb-2 flex items-center">
+              <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mr-2">v1.2</span>
+              <span>2025年4月10日</span>
+            </h4>
+            <ul class="list-disc pl-5 text-gray-600 space-y-1">
+              <li>添加 Google Hacking Database (GHDB) 的推荐资源</li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 class="font-medium text-gray-800 mb-2 flex items-center">
+              <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mr-2">v1.1</span>
+              <span>2025年4月9日</span>
+            </h4>
+            <ul class="list-disc pl-5 text-gray-600 space-y-1">
+              <li>兼容 Google 搜索查询中 site: 指令后带有 http:// 或 https:// 协议的域名</li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 class="font-medium text-gray-800 mb-2 flex items-center">
+              <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mr-2">v1.0</span>
+              <span>2025年4月7日</span>
+            </h4>
+            <ul class="list-disc pl-5 text-gray-600 space-y-1">
+              <li>正式提交该项目</li>
+              <li>使用google搜索时，一键触发google hacking</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
-
-  <script src="options.js"></script>
+  
+  <!-- 模态窗口 - 重置设置 -->
+  <div id="resetModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-icon danger">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 class="text-lg font-medium">重置所有设置</h3>
+      </div>
+      <div class="modal-body">
+        <p class="text-gray-600">此操作将会清除所有自定义语法和设置，恢复到扩展的初始状态。此操作<span class="font-semibold text-red-600">不可撤销</span>，确定要继续吗？</p>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn modal-btn-cancel" data-action="close">取消</button>
+        <button class="modal-btn modal-btn-confirm" data-action="reset-settings">确定重置</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 模态窗口 - 删除单个语法 -->
+  <div id="deleteSyntaxModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-icon warning">
+          <i class="fas fa-trash-alt"></i>
+        </div>
+        <h3 class="text-lg font-medium">删除语法</h3>
+      </div>
+      <div class="modal-body">
+        <p class="text-gray-600">确定要删除语法 "<span id="syntaxToDelete" class="font-medium"></span>" 吗？此操作不可撤销。</p>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn modal-btn-cancel" data-action="close">取消</button>
+        <button class="modal-btn modal-btn-confirm" data-action="delete-syntax">确定删除</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 模态窗口 - 清除所有自定义语法 -->
+  <div id="clearAllSyntaxModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-icon danger">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 class="text-lg font-medium">清除所有自定义语法</h3>
+      </div>
+      <div class="modal-body">
+        <p class="text-gray-600">此操作将会删除所有自定义语法。内置语法不会受到影响。此操作<span class="font-semibold text-red-600">不可撤销</span>，确定要继续吗？</p>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn modal-btn-cancel" data-action="close">取消</button>
+        <button class="modal-btn modal-btn-confirm" data-action="clear-all-syntax">确定清除</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 模态窗口 - 添加/编辑语法 -->
+  <div id="syntaxFormModal" class="modal-overlay">
+    <div class="syntax-modal-container modal-container">
+      <!-- 对话框标题 -->
+      <div class="gradient-header text-white py-4 px-6 flex justify-between items-center">
+        <h2 class="text-xl font-medium" id="syntaxFormTitle">添加自定义语法</h2>
+        <button class="text-white hover:text-gray-200 transition-colors" data-action="close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <!-- 对话框内容 -->
+      <div class="p-6 bg-white rounded-b-xl">
+        <div class="flex flex-col lg:flex-row lg:space-x-6">
+          <div class="flex-grow lg:w-3/5">
+            <form id="syntaxForm">
+              <input type="hidden" id="syntaxId" value="">
+              
+              <!-- 表单错误通知区域 -->
+              <div id="formError" class="mb-4 rounded-lg p-4 border text-sm hidden">
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                <span id="formErrorMessage"></span>
+              </div>
+              
+              <!-- 名称字段 -->
+              <div class="mb-5">
+                <label for="syntaxName" class="block text-gray-700 font-medium mb-2">语法名称</label>
+                <input type="text" id="syntaxName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 transition-colors" placeholder="如：登录页面" required>
+              </div>
+              
+              <!-- 语法字段 -->
+              <div class="mb-5">
+                <div class="flex justify-between items-center mb-2">
+                  <label for="syntaxContent" class="block text-gray-700 font-medium">搜索语法</label>
+                  <div class="syntax-example text-blue-600 text-sm">
+                    <i class="fas fa-info-circle mr-1"></i> 查看示例
+                    <div class="syntax-example-content">
+                      <div class="mb-2 font-medium">语法示例：</div>
+                      <div class="mb-1">site:{target_domain} intitle:index.of</div>
+                      <div class="mb-1">site:{target_domain} filetype:pdf</div>
+                      <div class="mb-1">site:{target_domain} inurl:admin</div>
+                      <div class="text-xs opacity-80 mt-2">使用 {target_domain} 占位符表示搜索目标域名</div>
+                    </div>
+                  </div>
+                </div>
+                <textarea id="syntaxContent" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 transition-colors" rows="3" placeholder="如：site:{target_domain} inurl:login | inurl:signin | inurl:admin" required></textarea>
+                <p class="text-sm text-gray-500 mt-1">使用 {target_domain} 作为目标域名的占位符，它会自动替换为 site: 指定的域名</p>
+              </div>
+              
+              <!-- 风险等级 -->
+              <div class="mb-5">
+                <label class="block text-gray-700 font-medium mb-2">风险等级</label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <label class="radio-container border border-gray-200 rounded-lg p-3">
+                    <input type="radio" name="riskLevel" value="info" class="hidden" checked>
+                    <div class="custom-radio"></div>
+                    <div>
+                      <div class="text-gray-800 font-medium text-sm">信息</div>
+                      <div class="text-xs text-gray-500">低敏感度信息</div>
+                    </div>
+                  </label>
+                  
+                  <label class="radio-container border border-gray-200 rounded-lg p-3">
+                    <input type="radio" name="riskLevel" value="low" class="hidden">
+                    <div class="custom-radio"></div>
+                    <div>
+                      <div class="text-gray-800 font-medium text-sm">低风险</div>
+                      <div class="text-xs text-gray-500">一般敏感信息</div>
+                    </div>
+                  </label>
+                  
+                  <label class="radio-container border border-gray-200 rounded-lg p-3">
+                    <input type="radio" name="riskLevel" value="medium" class="hidden">
+                    <div class="custom-radio"></div>
+                    <div>
+                      <div class="text-gray-800 font-medium text-sm">中风险</div>
+                      <div class="text-xs text-gray-500">较敏感信息</div>
+                    </div>
+                  </label>
+                  
+                  <label class="radio-container border border-gray-200 rounded-lg p-3">
+                    <input type="radio" name="riskLevel" value="high" class="hidden">
+                    <div class="custom-radio"></div>
+                    <div>
+                      <div class="text-gray-800 font-medium text-sm">高风险</div>
+                      <div class="text-xs text-gray-500">高敏感信息</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+              
+              <!-- 搜索引擎支持 -->
+              <div class="mb-6">
+                <label class="block text-gray-700 font-medium mb-3">搜索引擎支持</label>
+                <div class="flex flex-wrap gap-3">
+                  <label class="flex items-center">
+                    <input type="checkbox" id="engineGoogle" class="form-checkbox text-blue-600 rounded w-5 h-5" checked>
+                    <span class="ml-2 text-gray-700">Google</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="checkbox" id="engineBaidu" class="form-checkbox text-blue-600 rounded w-5 h-5">
+                    <span class="ml-2 text-gray-700">百度</span>
+                  </label>
+                </div>
+                <p class="text-sm text-gray-500 mt-1">选择此语法支持的搜索引擎，语法仅在选中的搜索引擎结果页显示</p>
+                <p class="text-sm text-gray-500 mt-1">注意：Google Hacking 和百度 Hacking 语法存在一定差异，语法可能不完全兼容</p>
+              </div>
+              
+              <!-- 启用状态 -->
+              <div class="mb-6">
+                <label class="block text-gray-700 font-medium mb-3">语法状态</label>
+                <div class="flex items-center">
+                  <label class="radio-container border border-gray-200 rounded-lg p-3 mr-3">
+                    <input type="radio" name="syntaxStatus" value="enabled" class="hidden" checked>
+                    <div class="custom-radio"></div>
+                    <div>
+                      <div class="text-gray-800 font-medium text-sm">启用</div>
+                      <div class="text-xs text-gray-500">语法将在搜索结果页显示</div>
+                    </div>
+                  </label>
+                  
+                  <label class="radio-container border border-gray-200 rounded-lg p-3">
+                    <input type="radio" name="syntaxStatus" value="disabled" class="hidden">
+                    <div class="custom-radio"></div>
+                    <div>
+                      <div class="text-gray-800 font-medium text-sm">禁用</div>
+                      <div class="text-xs text-gray-500">语法不会显示，但保留配置</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+              
+              <!-- 测试按钮 -->
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-start">
+                <i class="fas fa-flask text-blue-600 mt-1 mr-3"></i>
+                <div>
+                  <h4 class="text-blue-800 font-medium mb-1">测试语法</h4>
+                  <p class="text-blue-700 text-sm mb-3">您可以在添加前测试此语法，检查是否能返回预期结果</p>
+                  <button type="button" id="testSyntaxBtn" class="bg-white border border-blue-300 text-blue-600 hover:bg-blue-50 font-medium py-1.5 px-4 rounded-lg text-sm transition-colors flex items-center">
+                    <i class="fas fa-external-link-alt mr-2"></i> 测试语法
+                  </button>
+                </div>
+              </div>
+              
+              <!-- 操作按钮 -->
+              <div class="flex justify-end space-x-3 border-t pt-5">
+                <button type="button" class="border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium py-2 px-5 rounded-lg transition-colors" data-action="close">
+                  取消
+                </button>
+                <button type="submit" id="saveSyntaxBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded-lg shadow-md transition-all duration-300 btn-effect flex items-center">
+                  <i class="fas fa-plus mr-2" id="syntaxBtnIcon"></i> <span id="syntaxBtnText">添加语法</span>
+                </button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- 常用Hacking语法参考 - 内嵌在模态窗口中 -->
+          <div class="lg:w-2/5 mt-6 lg:mt-0 bg-gray-50 p-4 rounded-lg">
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="font-medium text-gray-800">常用Hacking语法参考</h3>
+            </div>
+            <div class="text-sm text-gray-600 mb-3">
+              <p>以下是一些常用的Google Hacking语法，可以帮助您创建自定义语法：</p>
+            </div>
+            <div class="space-y-2 text-sm mb-3">
+              <div class="bg-white p-2 rounded border border-gray-100">
+                <span class="font-mono text-blue-600">site:</span> 限定搜索特定域名
+              </div>
+              <div class="bg-white p-2 rounded border border-gray-100">
+                <span class="font-mono text-blue-600">filetype:</span> 限定文件类型
+              </div>
+              <div class="bg-white p-2 rounded border border-gray-100">
+                <span class="font-mono text-blue-600">intitle:</span> 限定标题包含内容
+              </div>
+              <div class="bg-white p-2 rounded border border-gray-100">
+                <span class="font-mono text-blue-600">inurl:</span> 限定URL包含内容
+              </div>
+              <div class="bg-white p-2 rounded border border-gray-100">
+                <span class="font-mono text-blue-600">intext:</span> 限定页面文本内容
+              </div>
+            </div>
+            <div class="text-center">
+              <a href="https://www.exploit-db.com/google-hacking-database" target="_blank" class="text-blue-600 hover:underline text-sm flex items-center justify-center">
+                <i class="fas fa-external-link-alt mr-1"></i> 访问GHDB获取更多示例
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+<script src="js/options.js"></script>
 </body>
 </html> 

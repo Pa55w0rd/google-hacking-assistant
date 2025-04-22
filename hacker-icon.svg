@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景 -->
+  <rect width="128" height="128" rx="16" fill="#121212" />
+  
+  <!-- 环形矩阵 -->
+  <g opacity="0.15">
+    <text x="10" y="14" font-family="monospace" font-size="10" fill="#00ff00">01100101</text>
+    <text x="10" y="28" font-family="monospace" font-size="10" fill="#00ff00">01001000</text>
+    <text x="10" y="42" font-family="monospace" font-size="10" fill="#00ff00">00110101</text>
+    <text x="10" y="56" font-family="monospace" font-size="10" fill="#00ff00">01010001</text>
+    <text x="10" y="70" font-family="monospace" font-size="10" fill="#00ff00">10110100</text>
+    <text x="10" y="84" font-family="monospace" font-size="10" fill="#00ff00">11001010</text>
+    <text x="10" y="98" font-family="monospace" font-size="10" fill="#00ff00">01101100</text>
+    <text x="10" y="112" font-family="monospace" font-size="10" fill="#00ff00">10010110</text>
+  </g>
+  
+  <!-- 搜索放大镜 - 主体 -->
+  <circle cx="54" cy="52" r="26" fill="none" stroke="#00ff00" stroke-width="3" />
+  <line x1="72" y1="70" x2="92" y2="90" stroke="#00ff00" stroke-width="5" stroke-linecap="round" />
+  
+  <!-- 放大镜内部扫描线 -->
+  <line x1="38" y1="52" x2="70" y2="52" stroke="#00ff00" stroke-width="1" stroke-dasharray="2,3" />
+  <line x1="54" y1="36" x2="54" y2="68" stroke="#00ff00" stroke-width="1" stroke-dasharray="2,3" />
+  
+  <!-- 搜索锁定框架 -->
+  <path d="M54 36 L58 36 L58 40 M54 68 L58 68 L58 64 M38 52 L38 48 L42 48 M70 52 L70 48 L66 48" stroke="#00ff00" stroke-width="1.5" />
+  
+  <!-- 数据流指示 -->
+  <path d="M82 90 C95 95, 100 85, 108 80" stroke="#00ff00" stroke-width="1.5" stroke-dasharray="3,2" />
+  <circle cx="110" cy="78" r="4" fill="#00ff00" />
+  
+  <!-- 雷达效果 -->
+  <circle cx="54" cy="52" r="15" fill="none" stroke="#00ff00" stroke-width="0.8" opacity="0.7" />
+  <circle cx="54" cy="52" r="10" fill="none" stroke="#00ff00" stroke-width="0.8" opacity="0.8" />
+  <circle cx="54" cy="52" r="5" fill="none" stroke="#00ff00" stroke-width="0.8" opacity="0.9" />
+  
+  <!-- 中心扫描点 -->
+  <circle cx="54" cy="52" r="2" fill="#00ff00" />
+  
+  <!-- 连接线 -->
+  <path d="M30 30 L20 20 M78 30 L88 20" stroke="#00ff00" stroke-width="1.5" stroke-linecap="round" />
+  
+  <!-- 搜索关键字指示 -->
+  <text x="30" y="104" font-family="monospace" font-size="8" fill="#00ff00">Search Hacking</text>
+  <line x1="30" y1="108" x2="90" y2="108" stroke="#00ff00" stroke-width="1" stroke-dasharray="1,1" />
+</svg> 
