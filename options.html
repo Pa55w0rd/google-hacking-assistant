@@ -18,10 +18,10 @@
           <h1 class="text-xl font-medium">Search Hacking 助手 - 设置</h1>
         </div>
         <div class="text-sm opacity-80 flex items-center">
-          <a href="https://github.com/Pa55w0rd/google-hacking-assistant" target="_blank" class="mr-3 hover:text-blue-200 transition-colors">
+          <a href="#" id="githubLink" target="_blank" class="mr-3 hover:text-blue-200 transition-colors">
             <i class="fab fa-github text-blue-100"></i> GitHub
           </a>
-          <span class="ml-1">版本 2.0.0</span>
+          <span class="ml-1">版本 <span id="versionText">加载中...</span></span>
         </div>
         </div>
       </div>
@@ -68,12 +68,20 @@
           <div class="toggle-switch active" id="toggleGoogle"></div>
         </div>
         
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center  mb-6 pb-4 border-b">
           <div>
             <div class="font-medium text-gray-700 mb-1">百度搜索支持</div>
             <p class="text-gray-600 text-sm">在百度搜索结果页面显示侧边栏</p>
           </div>
-          <div class="toggle-switch active" id="toggleBaidu"></div>
+          <div class="toggle-switch" id="toggleBaidu"></div>
+        </div>
+        
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="font-medium text-gray-700 mb-1">Bing搜索支持</div>
+            <p class="text-gray-600 text-sm">在Bing搜索结果页面显示侧边栏</p>
+          </div>
+          <div class="toggle-switch" id="toggleBing"></div>
         </div>
       </div>
       
@@ -130,7 +138,7 @@
             <div class="font-medium text-gray-700 mb-1">导出配置</div>
             <p class="text-gray-600 text-sm">将当前所有设置和自定义语法导出为JSON文件</p>
           </div>
-          <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 px-4 rounded-lg shadow-sm transition-all duration-300 text-sm flex items-center">
+          <button id="exportConfigBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 px-4 rounded-lg shadow-sm transition-all duration-300 text-sm flex items-center">
             <i class="fas fa-download mr-2"></i> 导出
           </button>
         </div>
@@ -218,7 +226,15 @@
           <!-- 语法项将通过 JavaScript 动态加载 -->
         </div>
       </div>
-      
+      <div class="bg-blue-50 rounded-lg p-4 flex  p-6 mb-6">
+        <i class="fas fa-lightbulb text-blue-600 text-lg mr-3 mt-1"></i>
+        <div>
+          <h4 class="text-blue-800 font-medium mb-1">寻找灵感？</h4>
+          <p class="text-blue-700 text-sm">
+            可以访问 <a href="https://www.exploit-db.com/google-hacking-database" target="_blank" class="text-blue-600 hover:underline">Google Hacking Database (GHDB)</a> 查找更多有用的搜索语法。在添加语法时使用 <code class="bg-blue-100 px-1 rounded">{target_domain}</code> 作为占位符，它会自动替换为site:指定的域名。
+          </p>
+        </div>
+      </div>
       <!-- 自定义语法部分 -->
       <div class="glass-card rounded-xl p-6 mb-6">
         <div class="flex justify-between items-center mb-4">
@@ -241,145 +257,477 @@
       </div>
       
       <!-- 添加语法提示 -->
-      <div class="bg-blue-50 rounded-lg p-4 flex">
-        <i class="fas fa-lightbulb text-blue-600 text-lg mr-3 mt-1"></i>
-        <div>
-          <h4 class="text-blue-800 font-medium mb-1">寻找灵感？</h4>
-          <p class="text-blue-700 text-sm">
-            可以访问 <a href="https://www.exploit-db.com/google-hacking-database" target="_blank" class="text-blue-600 hover:underline">Google Hacking Database (GHDB)</a> 查找更多有用的搜索语法。在添加语法时使用 <code class="bg-blue-100 px-1 rounded">{target_domain}</code> 作为占位符，它会自动替换为site:指定的域名。
-          </p>
-        </div>
-      </div>
+      
     </section>
     
     <!-- 关于部分 -->
     <section id="about" class="hidden mb-8">
       <h2 class="text-2xl font-bold text-gray-800 mb-6">关于</h2>
       
+      <!-- 产品概览 -->
       <div class="glass-card rounded-xl p-6 mb-6">
         <div class="flex flex-col md:flex-row items-center mb-6 pb-6 border-b">
           <img src="../images/icon128.png" alt="扩展图标" class="w-24 h-24 mb-4 md:mb-0 md:mr-6">
-          <div>
-            <h3 class="text-xl font-bold text-gray-800 mb-2">Search Hacking 助手</h3>
-            <p class="text-gray-600 mb-2">版本 2.0.0</p>
+          <div class="flex-1">
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Search Hacking 助手</h3>
+            <p class="text-lg text-blue-600 font-medium mb-2">专业的搜索引擎Hacking语法工具</p>
+            <p class="text-gray-600 mb-2">版本 <span id="aboutVersionText" class="font-medium">加载中...</span></p>
+            <div class="flex flex-wrap gap-2 mt-3">
+              <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Chrome扩展</span>
+              <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">开源项目</span>
+              <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">安全研究</span>
+              <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">渗透测试</span>
+            </div>
           </div>
         </div>
         
         <div class="mb-6 pb-6 border-b">
-          <h4 class="text-lg font-medium text-gray-800 mb-3">产品简介</h4>
-          <p class="text-gray-600 mb-3">
-            Search Hacking 助手是一款专为安全研究人员和渗透测试人员设计的浏览器扩展，一键触发Google和百度Hacking搜索语法，简化安全研究和渗透测试流程。
+          <h4 class="text-lg font-medium text-gray-800 mb-3">🔍 产品简介</h4>
+          <p class="text-gray-600 mb-4 leading-relaxed">
+            Search Hacking 助手是一个 Chrome 浏览器扩展，旨在简化安全研究和渗透测试人员使用搜索引擎Hacking语法的过程。它会在包含 <code class="bg-gray-100 px-1 rounded">site:</code> 查询的 Google、百度和Bing搜索结果页面自动注入一个<strong>固定在右侧</strong>的侧边栏，提供一系列预定义和可自定义的 Hacking 语法按钮。
           </p>
-          <div class="bg-blue-50 rounded-lg p-4 mb-3">
-            <h5 class="text-blue-800 font-medium mb-2">核心功能</h5>
-            <ul class="text-blue-700 text-sm space-y-2">
-              <li><i class="fas fa-check-circle mr-2"></i> <strong>多搜索引擎支持</strong> - 同时支持 Google 和百度搜索</li>
-              <li><i class="fas fa-check-circle mr-2"></i> <strong>智能侧边栏</strong> - 自动检测搜索查询并显示相关 Hacking 语法</li>
-              <li><i class="fas fa-check-circle mr-2"></i> <strong>一键提取 URL</strong> - 快速从搜索结果中提取所有网址</li>
-              <li><i class="fas fa-check-circle mr-2"></i> <strong>自定义语法</strong> - 根据具体需求添加和管理自定义搜索语法</li>
-              <li><i class="fas fa-check-circle mr-2"></i> <strong>灵活控制</strong> - 精确控制功能启用状态和结果打开方式</li>
-            </ul>
-          </div>
-          <div class="bg-yellow-50 rounded-lg p-4">
-            <h5 class="text-yellow-800 font-medium mb-2">免责声明</h5>
-            <p class="text-yellow-700 text-sm">
-              本扩展仅供安全研究和授权渗透测试使用。请勿用于未授权的安全测试或任何非法活动。使用者需承担因使用本扩展而产生的所有法律责任。
+          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+            <p class="text-blue-800 font-medium">
+              <i class="fas fa-magic mr-2"></i>
+              通过灵活的语法配置（可独立开关内置及自定义规则），您可以轻松打造专属的 Hacking 工具集，一键即可针对目标域名执行高级搜索。
             </p>
           </div>
         </div>
-        
+
+        <!-- 功能特色 -->
         <div class="mb-6 pb-6 border-b">
-          <h4 class="text-lg font-medium text-gray-800 mb-3">开发者</h4>
-          <p class="text-gray-600 mb-2">
-            <i class="fas fa-user mr-2 text-gray-500"></i> <a href="https://github.com/Pa55w0rd/" target="_blank" class="text-blue-600 hover:underline">Pa55w0rd</a>
-          </p>
-          <p class="text-gray-600 mb-2">
-            <i class="fab fa-github mr-2 text-gray-500"></i> <a href="https://github.com/Pa55w0rd/google-hacking-assistant" target="_blank" class="text-blue-600 hover:underline">GitHub 仓库</a>
+          <h4 class="text-lg font-medium text-gray-800 mb-4">✨ 功能特色</h4>
+          
+          <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <!-- 智能侧边栏注入 -->
+            <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+              <h5 class="text-blue-800 font-medium mb-2 flex items-center">
+                <i class="fas fa-magic mr-2"></i>智能侧边栏注入
+              </h5>
+              <ul class="text-blue-700 text-sm space-y-1">
+                <li>• 自动检测 - 仅在包含 <code>site:</code> 查询时显示</li>
+                <li>• 固定位置 - 始终固定在页面右侧</li>
+                <li>• 实时更新 - 设置更改立即生效，无需刷新</li>
+              </ul>
+            </div>
+
+            <!-- 多搜索引擎支持 -->
+            <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+              <h5 class="text-green-800 font-medium mb-2 flex items-center">
+                <i class="fas fa-globe mr-2"></i>多搜索引擎支持
+              </h5>
+              <ul class="text-green-700 text-sm space-y-1">
+                <li>• Google搜索 - 完整支持全球域名</li>
+                <li>• 百度搜索 - 针对中文环境优化</li>
+                <li>• Bing搜索 - 支持Microsoft Bing全球版本</li>
+              </ul>
+            </div>
+
+            <!-- URL提取工具 -->
+            <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
+              <h5 class="text-purple-800 font-medium mb-2 flex items-center">
+                <i class="fas fa-link mr-2"></i>URL提取工具
+              </h5>
+              <ul class="text-purple-700 text-sm space-y-1">
+                <li>• 一键提取 - 快速提取搜索结果中的所有URL</li>
+                <li>• 智能过滤 - 支持黑名单，自动过滤不需要的域名</li>
+                <li>• 多种匹配 - 精确、子域名、正则表达式匹配</li>
+              </ul>
+            </div>
+
+            <!-- 高度灵活的语法管理 -->
+            <div class="bg-orange-50 rounded-lg p-4 border border-orange-200">
+              <h5 class="text-orange-800 font-medium mb-2 flex items-center">
+                <i class="fas fa-cogs mr-2"></i>灵活语法管理
+              </h5>
+              <ul class="text-orange-700 text-sm space-y-1">
+                <li>• 内置语法 - 11个精心设计的内置语法</li>
+                <li>• 自定义语法 - 添加、编辑、删除自己的语法</li>
+                <li>• 精细控制 - 独立启用/禁用每一条语法</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <!-- 用户体验优化 -->
+            <div class="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
+              <h5 class="text-indigo-800 font-medium mb-2 flex items-center">
+                <i class="fas fa-heart mr-2"></i>用户体验优化
+              </h5>
+              <ul class="text-indigo-700 text-sm space-y-1">
+                <li>• 零配置启动 - 安装即用，无需复杂设置</li>
+                <li>• 现代化界面 - Material Design 风格</li>
+                <li>• 风险等级提示 - 语法按钮颜色编码</li>
+              </ul>
+            </div>
+
+            <!-- 安全与隐私 -->
+            <div class="bg-red-50 rounded-lg p-4 border border-red-200">
+              <h5 class="text-red-800 font-medium mb-2 flex items-center">
+                <i class="fas fa-shield-alt mr-2"></i>安全与隐私
+              </h5>
+              <ul class="text-red-700 text-sm space-y-1">
+                <li>• 本地存储 - 所有数据仅存储在本地</li>
+                <li>• 零追踪 - 不收集任何用户数据</li>
+                <li>• 开源透明 - 完全开源，代码公开可审计</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 使用场景 -->
+        <div class="mb-6 pb-6 border-b">
+          <h4 class="text-lg font-medium text-gray-800 mb-4">📊 使用场景</h4>
+          
+          <div class="grid md:grid-cols-3 gap-4">
+            <div class="text-center p-4 bg-gradient-to-b from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+              <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-search text-white text-lg"></i>
+              </div>
+              <h5 class="font-medium text-blue-800 mb-2">安全研究</h5>
+              <ul class="text-blue-700 text-sm space-y-1">
+                <li>• 漏洞挖掘</li>
+                <li>• 信息收集</li>
+                <li>• 威胁情报</li>
+              </ul>
+            </div>
+
+            <div class="text-center p-4 bg-gradient-to-b from-green-50 to-green-100 rounded-lg border border-green-200">
+              <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-bug text-white text-lg"></i>
+              </div>
+              <h5 class="font-medium text-green-800 mb-2">渗透测试</h5>
+              <ul class="text-green-700 text-sm space-y-1">
+                <li>• 侦察阶段</li>
+                <li>• 漏洞评估</li>
+                <li>• 报告生成</li>
+              </ul>
+            </div>
+
+            <div class="text-center p-4 bg-gradient-to-b from-purple-50 to-purple-100 rounded-lg border border-purple-200">
+              <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-graduation-cap text-white text-lg"></i>
+              </div>
+              <h5 class="font-medium text-purple-800 mb-2">安全教育</h5>
+              <ul class="text-purple-700 text-sm space-y-1">
+                <li>• 学习工具</li>
+                <li>• 实践平台</li>
+                <li>• 知识分享</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 内置语法库 -->
+        <div class="mb-6 pb-6 border-b">
+          <h4 class="text-lg font-medium text-gray-800 mb-4">🛡️ 内置语法库</h4>
+          
+          <!-- 通用语法 -->
+          <div class="mb-4">
+            <h5 class="font-medium text-gray-700 mb-2 flex items-center">
+              <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded mr-2">通用</span>
+              所有搜索引擎支持
+            </h5>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div class="bg-gray-50 p-3 rounded border">
+                <div class="flex justify-between items-center">
+                  <span class="font-medium text-gray-800">文档文件</span>
+                  <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded">信息</span>
+                </div>
+                <p class="text-gray-600 text-sm mt-1">查找PDF、DOC、PPT等常见文档</p>
+              </div>
+              <div class="bg-gray-50 p-3 rounded border">
+                <div class="flex justify-between items-center">
+                  <span class="font-medium text-gray-800">配置文件</span>
+                  <span class="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded">高风险</span>
+                </div>
+                <p class="text-gray-600 text-sm mt-1">查找XML、INI、ENV等配置文件</p>
+              </div>
+              <div class="bg-gray-50 p-3 rounded border">
+                <div class="flex justify-between items-center">
+                  <span class="font-medium text-gray-800">备份文件</span>
+                  <span class="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded">高风险</span>
+                </div>
+                <p class="text-gray-600 text-sm mt-1">发现SQL、BAK等备份文件</p>
+              </div>
+              <div class="bg-gray-50 p-3 rounded border">
+                <div class="flex justify-between items-center">
+                  <span class="font-medium text-gray-800">登录页面</span>
+                  <span class="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded">低风险</span>
+                </div>
+                <p class="text-gray-600 text-sm mt-1">发现登录和管理入口</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Google语法 -->
+          <div class="mb-4">
+            <h5 class="font-medium text-gray-700 mb-2 flex items-center">
+              <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-2">Google</span>
+              Google搜索专用
+            </h5>
+            <div class="grid md:grid-cols-3 gap-3">
+              <div class="bg-blue-50 p-3 rounded border border-blue-200">
+                <div class="flex justify-between items-center">
+                  <span class="font-medium text-blue-800">目录列表</span>
+                  <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded">中风险</span>
+                </div>
+                <p class="text-blue-600 text-sm mt-1">利用Google的intitle优势发现目录遍历</p>
+              </div>
+              <div class="bg-blue-50 p-3 rounded border border-blue-200">
+                <div class="flex justify-between items-center">
+                  <span class="font-medium text-blue-800">错误信息</span>
+                  <span class="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded">高风险</span>
+                </div>
+                <p class="text-blue-600 text-sm mt-1">查找各类程序错误信息</p>
+              </div>
+              <div class="bg-blue-50 p-3 rounded border border-blue-200">
+                <div class="flex justify-between items-center">
+                  <span class="font-medium text-blue-800">PHP信息</span>
+                  <span class="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded">高风险</span>
+                </div>
+                <p class="text-blue-600 text-sm mt-1">发现phpinfo页面泄露</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 百度语法 -->
+          <div class="mb-4">
+            <h5 class="font-medium text-gray-700 mb-2 flex items-center">
+              <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded mr-2">百度</span>
+              百度搜索专用
+            </h5>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div class="bg-red-50 p-3 rounded border border-red-200">
+                <div class="flex justify-between items-center">
+                  <span class="font-medium text-red-800">中文敏感信息</span>
+                  <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded">中风险</span>
+                </div>
+                <p class="text-red-600 text-sm mt-1">针对中文环境的敏感信息搜索</p>
+              </div>
+              <div class="bg-red-50 p-3 rounded border border-red-200">
+                <div class="flex justify-between items-center">
+                  <span class="font-medium text-red-800">日志文件</span>
+                  <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded">中风险</span>
+                </div>
+                <p class="text-red-600 text-sm mt-1">查找日志文件泄露</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bing语法 -->
+          <div class="mb-4">
+            <h5 class="font-medium text-gray-700 mb-2 flex items-center">
+              <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded mr-2">Bing</span>
+              Bing搜索专用
+            </h5>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div class="bg-green-50 p-3 rounded border border-green-200">
+                <div class="flex justify-between items-center">
+                  <span class="font-medium text-green-800">文档内容搜索</span>
+                  <span class="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded">高风险</span>
+                </div>
+                <p class="text-green-600 text-sm mt-1">利用contains语法深度搜索文档内容</p>
+              </div>
+              <div class="bg-green-50 p-3 rounded border border-green-200">
+                <div class="flex justify-between items-center">
+                  <span class="font-medium text-green-800">API文档</span>
+                  <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded">中风险</span>
+                </div>
+                <p class="text-green-600 text-sm mt-1">查找API文档和接口信息</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 注意事项 -->
+        <div class="mb-6 pb-6 border-b">
+          <h4 class="text-lg font-medium text-gray-800 mb-3">⚠️ 注意事项</h4>
+          <div class="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+            <h5 class="text-yellow-800 font-medium mb-2 flex items-center">
+              <i class="fas fa-exclamation-triangle mr-2"></i>搜索引擎语法差异
+            </h5>
+            <div class="text-yellow-700 text-sm space-y-2">
+              <p>虽然本扩展同时支持Google、百度和Bing搜索引擎，但请注意三者的搜索语法存在一些差异：</p>
+              <ul class="list-disc ml-4 space-y-1">
+                <li><strong>语法兼容性</strong>：某些高级搜索语法在Google上有效，但在百度或Bing上可能无效，反之亦然</li>
+                <li><strong>搜索结果差异</strong>：即使使用相同的语法，三个搜索引擎返回的结果也可能有显著差异</li>
+                <li><strong>语法组合限制</strong>：百度和Bing对复杂语法组合的支持可能不如Google完善</li>
+              </ul>
+              <p class="mt-2">建议根据目标和需求选择合适的搜索引擎，并针对不同搜索引擎调整语法。</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 免责声明 -->
+        <div class="bg-red-50 rounded-lg p-4 border border-red-200">
+          <h5 class="text-red-800 font-medium mb-2 flex items-center">
+            <i class="fas fa-exclamation-triangle mr-2"></i>免责声明
+          </h5>
+          <p class="text-red-700 text-sm">
+            本工具仅供合法的安全研究和授权渗透测试使用。用户需遵守当地法律法规，不得用于任何非法活动。开发者不承担因误用本工具而产生的任何法律责任。
           </p>
         </div>
+      </div>
+      
+      <!-- 开发者信息 -->
+      <div class="glass-card rounded-xl p-6 mb-6">
+        <h3 class="text-lg font-medium text-gray-800 mb-4">👨‍💻 开发者信息</h3>
         
-        <div>
-          <h4 class="text-lg font-medium text-gray-800 mb-3">隐私政策</h4>
-          <p class="text-gray-600 mb-3">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 rounded-full overflow-hidden mr-4 border-2 border-gray-200">
+            <img src="https://github.com/Pa55w0rd.png" alt="Pa55w0rd" class="w-full h-full object-cover">
+          </div>
+          <div>
+            <h4 class="font-medium text-gray-800">Pa55w0rd</h4>
+            <p class="text-gray-600 text-sm">安全研究员</p>
+          </div>
+        </div>
+        
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+            <i class="fab fa-github text-gray-600 text-lg mr-3"></i>
+            <div>
+              <p class="font-medium text-gray-800">GitHub</p>
+              <a href="https://github.com/Pa55w0rd/" target="_blank" class="text-blue-600 hover:underline text-sm">@Pa55w0rd</a>
+            </div>
+          </div>
+          
+          <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+            <i class="fas fa-code-branch text-gray-600 text-lg mr-3"></i>
+            <div>
+              <p class="font-medium text-gray-800">项目仓库</p>
+              <a href="#" id="aboutGithubLink" target="_blank" class="text-blue-600 hover:underline text-sm">GitHub Repository</a>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h5 class="text-blue-800 font-medium mb-2">🔒 隐私政策</h5>
+          <p class="text-blue-700 text-sm">
             Search Hacking 助手不会收集或上传任何个人数据。所有设置和自定义语法只存储在您的浏览器本地存储中。扩展不会追踪您的搜索历史或浏览活动。
           </p>
         </div>
       </div>
       
+      <!-- 更新日志 -->
       <div class="glass-card rounded-xl p-6">
-        <h3 class="text-lg font-medium text-gray-800 mb-4">更新日志</h3>
+        <h3 class="text-lg font-medium text-gray-800 mb-4">📝 更新日志</h3>
         
         <div class="space-y-6">
-          <div>
+          <div class="border-l-4 border-blue-500 pl-4">
             <h4 class="font-medium text-gray-800 mb-2 flex items-center">
-              <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mr-2">v2.0</span>
-              <span>2025年4月22日</span>
+              <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mr-2">v2.1</span>
+              <span>Bing搜索支持与语法优化</span>
+              <span class="text-gray-500 text-sm ml-auto">2025年6月3日</span>
             </h4>
-            <ul class="list-disc pl-5 text-gray-600 space-y-1">
-              <li>核心重构：完全重构底层代码，提高稳定性和性能</li>
-              <li>URL黑名单：新增URL黑名单功能，支持域名、通配符子域名和正则表达式匹配</li>
-              <li>稳定性增强：优化扩展上下文管理，解决百度搜索页面闪烁问题</li>
-              <li>性能优化：精确DOM观察器配置，优化防抖处理，减少CPU和内存使用</li>
-              <li>UI优化：改进URL提取面板界面，优化错误提示展示方式</li>
+            <ul class="list-disc pl-5 text-gray-600 space-y-1 text-sm">
+              <li><strong>Bing搜索支持</strong>：新增对Bing搜索引擎的完整支持，享受与Google、百度相同的功能体验</li>
+              <li><strong>语法开关优化</strong>：添加语法支持搜索引擎选项，可以精确控制每个语法在不同搜索引擎中的显示</li>
+              <li><strong>内置语法精简</strong>：优化内置语法库，针对不同搜索引擎提供更精准的语法组合</li>
             </ul>
           </div>
           
-          <div>
+          <div class="border-l-4 border-green-500 pl-4">
             <h4 class="font-medium text-gray-800 mb-2 flex items-center">
-              <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mr-2">v1.4</span>
-              <span>2025年4月15日</span>
+              <span class="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded mr-2">v2.0</span>
+              <span>核心重构与稳定性提升</span>
+              <span class="text-gray-500 text-sm ml-auto">2025年4月22日</span>
             </h4>
-            <ul class="list-disc pl-5 text-gray-600 space-y-1">
+            <ul class="list-disc pl-5 text-gray-600 space-y-1 text-sm">
+              <li><strong>核心重构</strong>：完全重构底层代码，提高稳定性和性能</li>
+              <li><strong>URL黑名单</strong>：新增URL黑名单功能，支持域名、通配符子域名和正则表达式匹配</li>
+              <li><strong>稳定性增强</strong>：优化扩展上下文管理，解决百度搜索页面闪烁问题</li>
+              <li><strong>性能优化</strong>：精确DOM观察器配置，优化防抖处理，减少CPU和内存使用</li>
+            </ul>
+          </div>
+          
+          <div class="border-l-4 border-purple-500 pl-4">
+            <h4 class="font-medium text-gray-800 mb-2 flex items-center">
+              <span class="bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded mr-2">v1.4</span>
+              <span>URL提取功能</span>
+              <span class="text-gray-500 text-sm ml-auto">2025年4月15日</span>
+            </h4>
+            <ul class="list-disc pl-5 text-gray-600 space-y-1 text-sm">
               <li>添加"提取URL"功能，可以一键从搜索结果中提取所有URL</li>
               <li>优化在不同搜索引擎结果页面的显示效果</li>
               <li>更新扩展名称为"Search Hacking 助手"</li>
             </ul>
           </div>
           
-          <div>
+          <div class="border-l-4 border-orange-500 pl-4">
             <h4 class="font-medium text-gray-800 mb-2 flex items-center">
-              <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mr-2">v1.3</span>
-              <span>2025年4月15日</span>
+              <span class="bg-orange-100 text-orange-800 text-xs px-2 py-0.5 rounded mr-2">v1.3</span>
+              <span>百度搜索支持</span>
+              <span class="text-gray-500 text-sm ml-auto">2025年4月15日</span>
             </h4>
-            <ul class="list-disc pl-5 text-gray-600 space-y-1">
-              <li>添加百度搜索支持</li>
-              <li>添加语法支持搜索引擎选项</li>
+            <ul class="list-disc pl-5 text-gray-600 space-y-1 text-sm">
+              <li>添加百度搜索支持，扩展多搜索引擎覆盖</li>
+              <li>添加语法支持搜索引擎选项，提供更精细的控制</li>
             </ul>
           </div>
           
-          <div>
+          <div class="border-l-4 border-gray-400 pl-4">
             <h4 class="font-medium text-gray-800 mb-2 flex items-center">
-              <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mr-2">v1.2</span>
-              <span>2025年4月10日</span>
+              <span class="bg-gray-100 text-gray-800 text-xs px-2 py-0.5 rounded mr-2">v1.0-1.2</span>
+              <span>项目初期版本</span>
+              <span class="text-gray-500 text-sm ml-auto">2025年4月7日</span>
             </h4>
-            <ul class="list-disc pl-5 text-gray-600 space-y-1">
-              <li>添加 Google Hacking Database (GHDB) 的推荐资源</li>
+            <ul class="list-disc pl-5 text-gray-600 space-y-1 text-sm">
+              <li>项目正式发布，实现基础Google Hacking功能</li>
+              <li>添加GHDB推荐资源，完善用户指导</li>
+              <li>兼容site:指令的协议前缀处理</li>
             </ul>
           </div>
-          
-          <div>
-            <h4 class="font-medium text-gray-800 mb-2 flex items-center">
-              <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mr-2">v1.1</span>
-              <span>2025年4月9日</span>
-            </h4>
-            <ul class="list-disc pl-5 text-gray-600 space-y-1">
-              <li>兼容 Google 搜索查询中 site: 指令后带有 http:// 或 https:// 协议的域名</li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 class="font-medium text-gray-800 mb-2 flex items-center">
-              <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mr-2">v1.0</span>
-              <span>2025年4月7日</span>
-            </h4>
-            <ul class="list-disc pl-5 text-gray-600 space-y-1">
-              <li>正式提交该项目</li>
-              <li>使用google搜索时，一键触发google hacking</li>
-            </ul>
+        </div>
+        
+        <div class="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <h5 class="text-blue-800 font-medium mb-1">🚀 持续更新中</h5>
+              <p class="text-blue-700 text-sm">我们会持续改进产品，为安全研究社区提供更好的工具支持</p>
+            </div>
+            <div class="text-right">
+              <a href="#" id="starProjectLink" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg transition-colors inline-flex items-center">
+                <i class="fas fa-star mr-2"></i>关注更新
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </section>
+  </div>
+  
+  <!-- 模态窗口 - Star项目引导 -->
+  <div id="starProjectModal" class="modal-overlay">
+    <div class="modal-container max-w-md">
+      <div class="modal-header">
+        <div class="modal-icon success">
+          <i class="fas fa-star"></i>
+        </div>
+        <h3 class="text-lg font-medium">支持项目发展</h3>
+      </div>
+      <div class="modal-body text-center">
+        <p class="text-gray-600 mb-4">如果这个工具对您有帮助，请考虑给项目一个Star ⭐</p>
+        <div class="bg-blue-50 rounded-lg p-4 mb-4">
+          <div class="flex items-center justify-center mb-2">
+            <img src="https://github.com/Pa55w0rd.png" alt="Pa55w0rd" class="w-8 h-8 rounded-full mr-2">
+            <span class="font-medium text-blue-800">Pa55w0rd/google-hacking-assistant</span>
+          </div>
+          <p class="text-blue-700 text-sm">您的支持是我们持续改进的动力</p>
+        </div>
+        <div class="text-sm text-gray-500">
+          <p>点击下方按钮将跳转到GitHub仓库</p>
+          <p>在页面右上角找到Star按钮并点击即可</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn modal-btn-cancel" data-action="close">稍后再说</button>
+        <button class="modal-btn modal-btn-confirm" id="confirmStarBtn">
+          <i class="fas fa-star mr-2"></i>去Star项目
+        </button>
+      </div>
+    </div>
   </div>
   
   <!-- 模态窗口 - 重置设置 -->
@@ -542,9 +890,13 @@
                     <input type="checkbox" id="engineBaidu" class="form-checkbox text-blue-600 rounded w-5 h-5">
                     <span class="ml-2 text-gray-700">百度</span>
                   </label>
+                  <label class="flex items-center">
+                    <input type="checkbox" id="engineBing" class="form-checkbox text-blue-600 rounded w-5 h-5">
+                    <span class="ml-2 text-gray-700">Bing</span>
+                  </label>
                 </div>
                 <p class="text-sm text-gray-500 mt-1">选择此语法支持的搜索引擎，语法仅在选中的搜索引擎结果页显示</p>
-                <p class="text-sm text-gray-500 mt-1">注意：Google Hacking 和百度 Hacking 语法存在一定差异，语法可能不完全兼容</p>
+                <p class="text-sm text-gray-500 mt-1">注意：不同搜索引擎的语法存在一定差异，语法可能不完全兼容</p>
               </div>
               
               <!-- 启用状态 -->

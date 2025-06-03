@@ -1,0 +1,28 @@
+/* Bing搜索侧边栏样式 */
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* 针对Bing搜索结果页面的特定样式 */
+#b_content {
+  display: flex !important;
+  gap: 20px !important;
+}
+
+.b_searchboxForm {
+  margin-bottom: 20px !important;
+}
+
+/* Bing特有的响应式样式 */
+@media (max-width: 1200px) {
+  .hacking-sidebar {
+    width: 320px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .hacking-sidebar {
+    width: 300px;
+  }
+} 

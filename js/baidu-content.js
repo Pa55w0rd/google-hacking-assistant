@@ -291,57 +291,39 @@ if (!window.hackingSidebarInjected) {
     // 提供一个较为完整的内置语法库，确保基本功能可用
     return [
       {
-        id: "dir_list",
-        name: "目录列表漏洞",
-        template: "site:{target_domain} intitle:index.of",
+        id: "docs_fallback",
+        name: "文档文件",
+        template: "site:{target_domain} filetype:pdf OR filetype:doc OR filetype:docx",
         enabled: true,
-        risk: "medium",
-        engines: ["baidu", "google"],
+        risk: "info",
+        engines: ["google", "baidu", "bing"],
         builtin: true
       },
       {
         id: "config_files",
-        name: "配置文件暴露",
-        template: "site:{target_domain} filetype:xml OR filetype:conf OR filetype:cnf OR filetype:ini",
+        name: "配置文件",
+        template: "site:{target_domain} filetype:xml OR filetype:conf OR filetype:ini",
         enabled: true,
         risk: "high",
-        engines: ["baidu", "google"],
+        engines: ["google", "baidu", "bing"],
         builtin: true
       },
       {
         id: "backup_files",
-        name: "备份文件泄露",
-        template: "site:{target_domain} filetype:bak OR filetype:old OR filetype:backup OR filetype:swp",
+        name: "备份文件",
+        template: "site:{target_domain} filetype:bak OR filetype:sql OR filetype:backup",
         enabled: true,
         risk: "high",
-        engines: ["baidu", "google"],
+        engines: ["google", "baidu", "bing"],
         builtin: true
       },
       {
-        id: "sql_errors",
-        name: "SQL错误信息",
-        template: "site:{target_domain} intext:\"sql syntax near\" OR intext:\"syntax error has occurred\" OR intext:\"incorrect syntax near\"",
-        enabled: true,
-        risk: "high",
-        engines: ["baidu", "google"],
-        builtin: true
-      },
-      {
-        id: "login_pages",
-        name: "登录页面",
-        template: "site:{target_domain} inurl:login OR inurl:admin OR inurl:manage",
+        id: "chinese_sensitive",
+        name: "中文敏感信息 (百度)",
+        template: "site:{target_domain} \"密码\" OR \"账号\" OR \"管理员\"",
         enabled: true,
         risk: "medium",
-        engines: ["baidu", "google"],
-        builtin: true
-      },
-      {
-        id: "sensitive_docs",
-        name: "敏感文档",
-        template: "site:{target_domain} filetype:doc OR filetype:pdf OR filetype:xls OR filetype:xlsx",
-        enabled: true,
-        risk: "medium",
-        engines: ["baidu", "google"],
+        engines: ["baidu"],
         builtin: true
       }
     ];
@@ -653,7 +635,13 @@ if (!window.hackingSidebarInjected) {
       const customSyntaxItems = [];
       
       syntaxLibrary.forEach(syntax => {
-        if (syntax.enabled && (syntax.engines.includes('baidu') || syntax.engines.includes('all'))) {
+        // 检查语法是否启用以及是否支持百度搜索引擎
+        const isEnabledForBaidu = syntax.enabled && (
+          (syntax.engineSettings && syntax.engineSettings.baidu) || 
+          (!syntax.engineSettings && (syntax.engines.includes('baidu') || syntax.engines.includes('all')))
+        );
+        
+        if (isEnabledForBaidu) {
           if (syntax.builtin) {
             builtinSyntaxItems.push(syntax);
           } else {
@@ -690,13 +678,26 @@ if (!window.hackingSidebarInjected) {
           <a href="chrome-extension://${chrome.runtime.id}/options.html" class="sidebar-footer-link" target="_blank">
             <i class="fas fa-cog"></i>设置
           </a>
-          <a href="https://github.com/Pa55w0rd/google-hacking-assistant" class="sidebar-footer-link" target="_blank">
+          <a href="#" class="sidebar-footer-link" target="_blank" id="sidebarGithubLink">
             <i class="fab fa-github"></i>GitHub
           </a>
         </div>
-        <div class="sidebar-footer-version">v2.0.0</div>
+        <div class="sidebar-footer-version" id="sidebarVersion">加载中...</div>
       `;
       sidebarContainer.appendChild(footerElement);
+      
+      // 动态设置版本号和GitHub链接
+      const manifest = chrome.runtime.getManifest();
+      const versionElement = footerElement.querySelector('#sidebarVersion');
+      const githubLinkElement = footerElement.querySelector('#sidebarGithubLink');
+      
+      if (versionElement) {
+        versionElement.textContent = `v${manifest.version}`;
+      }
+      
+      if (githubLinkElement && manifest.homepage_url) {
+        githubLinkElement.href = manifest.homepage_url;
+      }
       
       return sidebarContainer;
     }
@@ -1076,163 +1077,6 @@ if (!window.hackingSidebarInjected) {
     });
   }
   
-  // 初始化样式
-  function initStyles() {
-    const style = document.createElement('style');
-    style.textContent = `
-      .hacking-sidebar {
-        transition: opacity 0.3s ease, transform 0.3s ease;
-        opacity: 0;
-        transform: translateX(20px);
-      }
-      .hacking-sidebar.visible {
-        opacity: 1;
-        transform: translateX(0);
-      }
-      .syntax-divider {
-        margin: 10px 0;
-        padding: 5px;
-        background-color: #f8f9fa;
-        border-radius: 4px;
-        text-align: center;
-        font-size: 14px;
-        color: #5f6368;
-        font-weight: 500;
-      }
-      .url-count {
-        color: #5f6368;
-        font-size: 12px;
-        font-weight: normal;
-      }
-      .url-item {
-        padding: 8px 12px;
-        border-bottom: 1px solid #f1f3f4;
-        cursor: pointer;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        transition: background-color 0.3s ease;
-        color: #1a73e8;
-        font-size: 14px;
-      }
-      .url-item:hover {
-        background-color: #f8f9fa;
-      }
-      .url-panel {
-        border-top: 1px solid #f1f3f4;
-        margin-top: 8px;
-        background-color: #fff;
-      }
-      .url-panel-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 15px;
-      }
-      .url-panel-title {
-        font-size: 14px;
-        font-weight: 500;
-        color: #3c4043;
-      }
-      .url-panel-actions {
-        display: flex;
-        gap: 5px;
-      }
-      .url-list {
-        max-height: 260px;
-        overflow-y: auto;
-        border-top: 1px solid #f1f3f4;
-        scrollbar-width: thin;
-      }
-      .url-list::-webkit-scrollbar {
-        width: 6px;
-      }
-      .url-list::-webkit-scrollbar-track {
-        background: #f1f3f4;
-      }
-      .url-list::-webkit-scrollbar-thumb {
-        background-color: #dadce0;
-        border-radius: 3px;
-      }
-      .url-debug-info {
-        padding: 8px;
-        margin: 5px 8px;
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-        display: flex;
-        align-items: flex-start;
-        border-left: 4px solid #f4c551;
-        overflow: hidden;
-        transition: all 0.3s ease;
-      }
-      .url-debug-info:hover {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-      }
-      .debug-icon {
-        margin-right: 10px;
-        color: #f4c551;
-        font-size: 20px;
-      }
-      .debug-content {
-        flex: 1;
-      }
-      .debug-title {
-        font-size: 16px;
-        font-weight: 500;
-        color: #3c4043;
-        margin-bottom: 8px;
-      }
-      .debug-tips {
-        color: #5f6368;
-        font-size: 13px;
-        line-height: 1.3;
-        overflow-wrap: break-word;
-        word-break: break-all;
-      }
-      .debug-tips p {
-        margin: 3px 0;
-      }
-      .debug-tips ul {
-        margin: 5px 0;
-        padding-left: 5px;
-        list-style-type: none;
-      }
-      .debug-tips li {
-        margin: 3px 0;
-        padding: 2px 0;
-      }
-      .debug-tips li i {
-        width: 16px;
-        margin-right: 8px;
-        text-align: center;
-        color: #5f6368;
-      }
-      .url-debug-info.error {
-        border-left: 4px solid #ea4335;
-      }
-      .url-debug-info.error .debug-icon {
-        color: #ea4335;
-      }
-      .copy-success, .copy-error {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        width: 100%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      .copy-success i {
-        color: #34a853;
-      }
-      .copy-error i {
-        color: #ea4335;
-      }
-    `;
-    document.head.appendChild(style);
-  }
-  
   // 初始化
   function initialize() {
     // 检测扩展状态并显示提示
@@ -1270,9 +1114,6 @@ if (!window.hackingSidebarInjected) {
       console.error('[初始化] 检测扩展状态出错:', e);
     }
   
-    // 添加样式
-    initStyles();
-    
     // 第一次注入 - 延迟增加到1000ms，给页面更多加载时间
     setTimeout(() => initHackingSidebar(true), 1000);
     

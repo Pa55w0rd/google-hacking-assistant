@@ -1,19 +1,6 @@
 /**
- * Search Hacking 助手 - Google搜索结果侧边栏注入脚本
+ * Search Hacking 助手 - Bing搜索结果侧边栏注入脚本
  */
-
-// 国际化工具函数
-function getMessage(key, substitutions = null) {
-  try {
-    if (typeof chrome !== 'undefined' && chrome.i18n && chrome.i18n.getMessage) {
-      return chrome.i18n.getMessage(key, substitutions) || key;
-    }
-    return key;
-  } catch (error) {
-    console.warn('Failed to get i18n message for key:', key, error);
-    return key;
-  }
-}
 
 // 防止重复注入
 if (!window.hackingSidebarInjected) {
@@ -144,20 +131,20 @@ if (!window.hackingSidebarInjected) {
     console.log('[侧边栏] 检查注入条件，设置:', settings);
 
     // 检查基本设置
-    if (settings.sidebarEnabled === false || settings.googleEnabled === false) {
-      console.log('[侧边栏] 侧边栏已禁用或Google搜索支持已禁用');
+    if (settings.sidebarEnabled === false || settings.bingEnabled === false) {
+      console.log('[侧边栏] 侧边栏已禁用或Bing搜索支持已禁用');
       return false;
     }
 
-    // 检查是否是Google搜索页面
-    const isGoogleSearch = 
-      location.hostname.includes('google.com') || 
-      location.hostname.includes('google.') ||  // 支持任何Google国别域名，如google.it, google.fr等
-      location.hostname === 'www.google' ||  // 部分环境下google.com会被解析为www.google
-      location.hostname.endsWith('.google'); // 处理可能的子域名情况
+    // 检查是否是Bing搜索页面
+    const isBingSearch = 
+      location.hostname.includes('bing.com') || 
+      location.hostname.includes('bing.') ||  // 支持任何Bing国别域名
+      location.hostname === 'www.bing' ||  // 部分环境下bing.com会被解析为www.bing
+      location.hostname.endsWith('.bing'); // 处理可能的子域名情况
     
-    if (!isGoogleSearch) {
-      console.log('[侧边栏] 不是Google搜索页面，当前域名:', location.hostname);
+    if (!isBingSearch) {
+      console.log('[侧边栏] 不是Bing搜索页面，当前域名:', location.hostname);
       return false;
     }
 
@@ -223,7 +210,7 @@ if (!window.hackingSidebarInjected) {
         
         // 使用Set去重，保存规范化后的URL
         const urlSet = new Set();
-        const excludeDomains = ['google.com', 'gstatic.com', 'googleusercontent.com'];
+        const excludeDomains = ['bing.com', 'microsoft.com', 'msn.com'];
         
         // 获取黑名单设置
         const settings = await getSafeStorageData('searchHackingSettings');
@@ -290,16 +277,16 @@ if (!window.hackingSidebarInjected) {
             let isBlacklisted = false;
             let blacklistReason = '';
             
-            // 排除插件自身的GitHub链接及Google产品页面
+            // 排除插件自身的GitHub链接及Bing产品页面
             if (url.includes('github.com/Pa55w0rd/google-hacking-assistant') ||
-                url.includes('google.cn/intl/zh-CN/about/products') ||
-                url.includes('google.com/intl/') ||
-                url.match(/\/\/[^\/]+google\.com\/products\/?/) ||
-                // 添加对所有Google域名下的产品页面和intl路径的过滤
-                url.match(/\/\/[^\/]+google\.[^\/]+\/intl\//) ||
-                url.match(/\/\/[^\/]+google\.[^\/]+\/about\/products/) ||
-                url.includes('/products') && url.match(/\/\/[^\/]+google\.[^\/]+\//)) {
-              console.log(`[URL黑名单] 过滤URL: ${url}, 原因: Google产品页面或固定链接`);
+                url.includes('bing.com/help') ||
+                url.includes('microsoft.com/') ||
+                url.match(/\/\/[^\/]+bing\.com\/help\/?/) ||
+                // 添加对所有Bing域名下的帮助页面和产品页面的过滤
+                url.match(/\/\/[^\/]+bing\.[^\/]+\/help\//) ||
+                url.match(/\/\/[^\/]+microsoft\.[^\/]+\//) ||
+                url.includes('/help') && url.match(/\/\/[^\/]+bing\.[^\/]+\//)) {
+              console.log(`[URL黑名单] 过滤URL: ${url}, 原因: Bing产品页面或固定链接`);
               return true;
             }
             
@@ -314,8 +301,8 @@ if (!window.hackingSidebarInjected) {
             // 检查特殊内置规则
             if (url.includes('chrome-extension://') || 
                 url.startsWith('javascript:') || 
-                url.includes('webcache.googleusercontent.com') ||
-                url.includes('translate.google.com')) {
+                url.includes('cc.bingj.com') ||
+                url.includes('translate.bing.com')) {
               console.log(`[URL黑名单] 过滤URL: ${url}, 原因: 特殊协议或服务过滤`);
               return true;
             }
@@ -363,11 +350,11 @@ if (!window.hackingSidebarInjected) {
           }
         };
         
-        // 规范化URL，类似于百度侧边栏逻辑
+        // 规范化URL，适配Bing搜索引擎
         const normalizeUrl = (url) => {
           try {
             const urlObj = new URL(url);
-            // 移除URL中的google重定向、utm参数等
+            // 移除URL中的Bing重定向、utm参数等
             if (urlObj.searchParams.has('url')) {
               const redirectUrl = urlObj.searchParams.get('url');
               if (redirectUrl.startsWith('http')) {
@@ -375,8 +362,8 @@ if (!window.hackingSidebarInjected) {
               }
             }
             
-            // 移除Google的其他参数
-            const paramsToRemove = ['ved', 'usg', 'ei', 'sa', 'source', 'cd', 'rct', 'cad', 'uact', 'aqs', 'sourceid', 'sxsrf'];
+            // 移除Bing的其他参数
+            const paramsToRemove = ['cvid', 'FORM', 'pq', 'sc', 'sp', 'sk', 'first', 'count', 'cc', 'setlang'];
             paramsToRemove.forEach(param => {
               urlObj.searchParams.delete(param);
             });
@@ -406,20 +393,20 @@ if (!window.hackingSidebarInjected) {
         };
         
         // 专注于提取搜索结果链接
-        console.log('[URL提取] 开始检索Google搜索结果');
+        console.log('[URL提取] 开始检索Bing搜索结果');
         
-        // 1. 主要搜索结果链接 - 这是最准确的选择器组合
+        // 1. 主要搜索结果链接 - Bing搜索结果选择器
         const mainSelectors = [
-          '.g a[href^="http"]', // 最基本的选择器：所有g类下的链接
-          '.yuRUbf > a[href]', // 标准搜索结果链接
-          '.tF2Cxc > a[href]', // 另一种标准结果链接
-          '.Z26q7c > a[href]', // 新版搜索结果链接
-          'div[data-snf] a[href^="http"]', // 基于data属性的搜索结果
-          '.g h3.LC20lb', // 带标题的结果(向上查找父链接)
-          '[data-header-feature] a[href^="http"]', // 特性头部的链接
-          '.rc a[href^="http"]', // 旧版搜索结果容器中的链接
-          '.jtfYYd a[href^="http"]', // 另一种搜索结果容器中的链接
-          '.kCrYT > a[href]' // 移动版搜索结果
+          '.b_algo h2 a[href^="http"]', // Bing主要搜索结果标题链接
+          '.b_algo .b_title a[href]', // Bing搜索结果标题链接
+          '.b_algo a[href^="http"]', // Bing搜索结果中的所有链接
+          '.b_results .b_algo a[href]', // Bing搜索结果容器中的链接
+          '#b_results a[href^="http"]', // Bing搜索结果区域的所有链接
+          '.b_algoheader a[href]', // Bing搜索结果头部链接
+          '.b_attribution a[href^="http"]', // Bing搜索结果归属链接
+          '.b_factrow a[href^="http"]', // Bing事实行链接
+          '.b_ans a[href^="http"]', // Bing答案区域链接
+          '.b_rich a[href^="http"]' // Bing富媒体结果链接
         ];
         
         // 记录找到的链接数量
@@ -428,14 +415,15 @@ if (!window.hackingSidebarInjected) {
         // 排除的容器选择器，不应从其中提取链接
         const excludedContainers = [
           'footer',
-          '.bj9MHd',
-          '.SzZmKb',
-          '.ikrT4e',
-          '.o3j99',
-          '#footcnt',
-          '#botstuff',
+          '.b_footer',
+          '.b_header',
+          '.b_nav',
+          '.b_pag',
+          '.b_context',
           '.hacking-sidebar',
-          '[aria-label="Footer"]'
+          '[aria-label="Footer"]',
+          '.b_searchboxForm',
+          '.b_logo'
         ];
         
         // 检查元素是否在排除容器内
@@ -487,7 +475,7 @@ if (!window.hackingSidebarInjected) {
         if (foundLinks < 5) {
           console.log('[URL提取] 链接不足，尝试从cite元素获取');
           
-          const citeElements = document.querySelectorAll('.g cite');
+          const citeElements = document.querySelectorAll('.b_algo cite, .b_attribution cite');
           citeElements.forEach(cite => {
             if (isInExcludedContainer(cite)) return;
             
@@ -518,9 +506,9 @@ if (!window.hackingSidebarInjected) {
           console.log('[URL提取] 链接严重不足，尝试最直接的选择器');
           
           // 直接输出主要搜索结果容器信息，帮助调试
-          const mainContainer = document.getElementById('search');
+          const mainContainer = document.getElementById('b_results');
           if (mainContainer) {
-            console.log('[URL提取] 找到搜索结果主容器 #search');
+            console.log('[URL提取] 找到搜索结果主容器 #b_results');
             const mainLinks = mainContainer.querySelectorAll('a[href^="http"]');
             console.log(`[URL提取] 主容器中共有 ${mainLinks.length} 个链接`);
             
@@ -540,11 +528,11 @@ if (!window.hackingSidebarInjected) {
           
           // 直接使用更简单的选择器
           const directSelectors = [
-            '#search a[href^="http"]',
-            '#rso a[href^="http"]',
-            '#main a[href^="http"]',
-            'div[data-hveid] a[href^="http"]',
-            '.g a[href^="http"]'
+            '#b_results a[href^="http"]',
+            '#b_content a[href^="http"]',
+            '.b_algo a[href^="http"]',
+            '.b_results a[href^="http"]',
+            'main a[href^="http"]'
           ];
           
           for (const selector of directSelectors) {
@@ -601,10 +589,10 @@ if (!window.hackingSidebarInjected) {
           
           if (openInNewTab) {
             // 使用window.open在新标签页中打开
-            window.open(`https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`, '_blank');
+            window.open(`https://www.bing.com/search?q=${encodeURIComponent(searchQuery)}`, '_blank');
           } else {
             // 在当前页面打开
-            window.location.href = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+            window.location.href = `https://www.bing.com/search?q=${encodeURIComponent(searchQuery)}`;
           }
         } else {
           alert('无法确定目标域名，请确保URL中包含 site: 参数');
@@ -628,10 +616,10 @@ if (!window.hackingSidebarInjected) {
       const headerElement = document.createElement('div');
       headerElement.className = 'sidebar-header';
       headerElement.innerHTML = `
-        <div class="sidebar-header-title">${getMessage('sidebarTitle')}</div>
+        <div class="sidebar-header-title">Search Hacking 助手</div>
         <div class="sidebar-header-actions">
           <button id="extractUrlBtn" class="sidebar-button blue-button">
-            <i class="fas fa-link"></i> ${getMessage('extractUrlBtn')}
+            <i class="fas fa-link"></i> 提取URL
           </button>
         </div>
       `;
@@ -644,10 +632,10 @@ if (!window.hackingSidebarInjected) {
       urlPanel.style.display = 'none';
       urlPanel.innerHTML = `
         <div class="url-panel-header">
-          <div class="url-panel-title">${getMessage('urlPanelTitle')} <span id="urlCount" class="url-count">(0)</span></div>
+          <div class="url-panel-title">已提取的URL <span id="urlCount" class="url-count">(0)</span></div>
           <div class="url-panel-actions">
             <button id="copyAllUrlsBtn" class="sidebar-button blue-button">
-              ${getMessage('copyAllUrlsBtn')}
+              复制全部
             </button>
             <button id="collapseUrlPanelBtn" class="sidebar-button gray-button">
               <i class="fas fa-chevron-up"></i>
@@ -667,13 +655,13 @@ if (!window.hackingSidebarInjected) {
       const customSyntaxItems = [];
       
       syntaxLibrary.forEach(syntax => {
-        // 检查语法是否启用以及是否支持Google搜索引擎
-        const isEnabledForGoogle = syntax.enabled && (
-          (syntax.engineSettings && syntax.engineSettings.google) || 
-          (!syntax.engineSettings && (syntax.engines.includes('google') || syntax.engines.includes('all')))
+        // 检查语法是否启用以及是否支持Bing搜索引擎
+        const isEnabledForBing = syntax.enabled && (
+          (syntax.engineSettings && syntax.engineSettings.bing) || 
+          (!syntax.engineSettings && (syntax.engines.includes('bing') || syntax.engines.includes('all')))
         );
         
-        if (isEnabledForGoogle) {
+        if (isEnabledForBing) {
           if (syntax.builtin) {
             builtinSyntaxItems.push(syntax);
           } else {
@@ -691,7 +679,7 @@ if (!window.hackingSidebarInjected) {
       if (customSyntaxItems.length > 0) {
         const divider = document.createElement('div');
         divider.className = 'syntax-divider';
-        divider.textContent = getMessage('customSyntaxDivider');
+        divider.textContent = '自定义语法';
         syntaxContainer.appendChild(divider);
         
         // 添加自定义语法
@@ -708,13 +696,13 @@ if (!window.hackingSidebarInjected) {
       footerElement.innerHTML = `
         <div class="sidebar-footer-links">
           <a href="chrome-extension://${chrome.runtime.id}/options.html" class="sidebar-footer-link" target="_blank">
-            <i class="fas fa-cog"></i> ${getMessage('settingsBtn')}
+            <i class="fas fa-cog"></i>设置
           </a>
           <a href="#" class="sidebar-footer-link" target="_blank" id="sidebarGithubLink">
-            <i class="fab fa-github"></i> ${getMessage('githubBtn')}
+            <i class="fab fa-github"></i>GitHub
           </a>
         </div>
-        <div class="sidebar-footer-version" id="sidebarVersion">${getMessage('loading')}</div>
+        <div class="sidebar-footer-version" id="sidebarVersion">加载中...</div>
       `;
       sidebarContainer.appendChild(footerElement);
       
@@ -762,7 +750,7 @@ if (!window.hackingSidebarInjected) {
       return '';
     }
     
-    // 注入侧边栏到页面
+    // 注入侧边栏到Bing搜索页面
     function injectSidebar(syntaxLibrary) {
       // 检查是否已经存在侧边栏
       if (document.querySelector('.hacking-sidebar')) {
@@ -770,7 +758,7 @@ if (!window.hackingSidebarInjected) {
         return;
       }
       
-      console.log('[侧边栏] 开始注入侧边栏到页面');
+      console.log('[侧边栏] 开始注入侧边栏到Bing页面');
       
       // 注入Font Awesome
       injectFontAwesome();
@@ -778,52 +766,90 @@ if (!window.hackingSidebarInjected) {
       // 创建侧边栏元素
       const sidebar = createSidebar(syntaxLibrary);
       
-      // 查找Google搜索结果布局容器
-      // 针对 google.com 和其他区域 Google 搜索页面进行特殊处理
-      const rcnt = document.querySelector('#rcnt');
-      const centerCol = document.querySelector('#center_col');
-      const main = document.querySelector('#main');
-      const rhs = document.querySelector('#rhs'); // Google右侧栏
+      // 查找Bing搜索结果布局容器
+      // Bing搜索页面的主要容器选择器
+      const bingMain = document.querySelector('#b_content');
+      const bingResults = document.querySelector('#b_results');
+      const bingContext = document.querySelector('#b_context');
+      const bingPole = document.querySelector('#b_pole');
       
-      console.log('[侧边栏] 容器检测 - rcnt:', !!rcnt, 'centerCol:', !!centerCol, 'main:', !!main, 'rhs:', !!rhs);
+      console.log('[侧边栏] Bing容器检测 - b_content:', !!bingMain, 'b_results:', !!bingResults, 'b_context:', !!bingContext, 'b_pole:', !!bingPole);
       
-      // 使用层级组合选择器定位目标元素
-      const googleSearchResults = centerCol || main || (rcnt ? rcnt.querySelector('div') : null);
-      
-      // 更多详细的搜索结果布局检测
-      if (!googleSearchResults) {
-        console.log('[侧边栏] 无法找到标准搜索结果容器，尝试查找替代容器');
+      // Bing搜索页面注入策略
+      if (bingContext) {
+        // 标准注入：在右侧栏顶部插入
+        console.log('[侧边栏] 使用标准Bing右侧栏注入');
+        bingContext.insertBefore(sidebar, bingContext.firstChild);
+      } else if (bingMain && bingResults) {
+        // 如果没有右侧栏，创建一个并插入到布局中
+        console.log('[侧边栏] 创建新的Bing右侧栏');
         
-        // 尝试查找所有可能的结果容器选择器
+        const newBingContext = document.createElement('div');
+        newBingContext.id = 'b_context';
+        newBingContext.className = 'b_context';
+        newBingContext.style.width = '340px';
+        newBingContext.style.marginLeft = '20px';
+        newBingContext.appendChild(sidebar);
+        
+        // 创建一个flex容器来包含左侧和右侧内容
+        const wrapper = document.createElement('div');
+        wrapper.style.display = 'flex';
+        wrapper.style.width = '100%';
+        wrapper.style.maxWidth = '1250px';
+        wrapper.style.margin = '0 auto';
+        wrapper.className = 'search-hacking-bing-wrapper';
+        
+        // 将搜索结果移动到flex容器中
+        if (bingResults.parentNode) {
+          const parent = bingResults.parentNode;
+          parent.insertBefore(wrapper, bingResults);
+          wrapper.appendChild(bingResults);
+          wrapper.appendChild(newBingContext);
+        }
+      } else {
+        // 备用注入策略：查找其他可能的容器
+        console.log('[侧边栏] 使用备用Bing注入策略');
+        
         const possibleContainers = [
-          '.main', // 可能的主容器
-          '#search', // 搜索结果区
-          '.srg', // 搜索结果组
-          '.RzSX7d', // 新的结果容器类
-          'div[data-hveid]', // 带有数据属性的结果容器
-          '#res', // 旧版结果容器
-          '#search-results' // 通用搜索结果选择器
+          '#b_main',
+          '.b_searchboxForm',
+          '#b_header',
+          '.b_content',
+          '#main',
+          '.main'
         ];
         
         let alternativeContainer = null;
         for (const selector of possibleContainers) {
           const element = document.querySelector(selector);
           if (element) {
-            console.log(`[侧边栏] 找到替代容器: ${selector}`);
+            console.log(`[侧边栏] 找到Bing替代容器: ${selector}`);
             alternativeContainer = element;
             break;
           }
         }
         
-        if (!alternativeContainer) {
-          console.error('[侧边栏] 无法找到任何可用的搜索结果容器，尝试强制注入到页面');
+        if (alternativeContainer) {
+          // 创建固定位置的侧边栏
+          const fixedContainer = document.createElement('div');
+          fixedContainer.className = 'search-hacking-bing-fixed';
+          fixedContainer.style.position = 'fixed';
+          fixedContainer.style.top = '120px';
+          fixedContainer.style.right = '20px';
+          fixedContainer.style.zIndex = '9999';
+          fixedContainer.style.width = '320px';
+          fixedContainer.appendChild(sidebar);
           
-          // 强制注入到页面上
-          const mainContent = document.querySelector('body > div') || document.body;
+          document.body.appendChild(fixedContainer);
+          console.log('[侧边栏] 已使用固定位置注入到Bing页面');
+        } else {
+          // 最后的备用方案：强制注入到页面顶部
+          console.log('[侧边栏] 使用最终备用方案注入到Bing页面');
+          
           const forceContainer = document.createElement('div');
-          forceContainer.className = 'search-hacking-force-container';
+          forceContainer.className = 'search-hacking-bing-force';
           forceContainer.style.display = 'flex';
-          forceContainer.style.justifyContent = 'space-between';
+          forceContainer.style.justifyContent = 'flex-end';
           forceContainer.style.width = '100%';
           forceContainer.style.maxWidth = '1200px';
           forceContainer.style.margin = '10px auto';
@@ -833,145 +859,20 @@ if (!window.hackingSidebarInjected) {
           sidebarWrapper.style.width = '320px';
           sidebarWrapper.appendChild(sidebar);
           
+          const mainContent = document.querySelector('body > div') || document.body;
           mainContent.insertBefore(forceContainer, mainContent.firstChild);
           forceContainer.appendChild(sidebarWrapper);
-          
-          console.log('[侧边栏] 已强制注入到页面顶部');
-          
-          // 绑定事件处理程序
-          bindSidebarEvents(sidebar);
-          
-          // 淡入效果
-          setTimeout(() => {
-            sidebar.style.opacity = '1';
-            sidebar.style.transform = 'translateX(0)';
-          }, 50);
-          
-          return;
-        } else {
-          // 使用找到的替代容器
-          const forceContainer = document.createElement('div');
-          forceContainer.className = 'search-hacking-alt-container';
-          forceContainer.style.display = 'flex';
-          forceContainer.style.width = '100%';
-          forceContainer.style.margin = '10px 0';
-          
-          const sidebarWrapper = document.createElement('div');
-          sidebarWrapper.style.width = '320px';
-          sidebarWrapper.style.minWidth = '320px';
-          sidebarWrapper.style.marginLeft = '20px';
-          sidebarWrapper.appendChild(sidebar);
-          
-          alternativeContainer.parentNode.insertBefore(forceContainer, alternativeContainer.nextSibling);
-          forceContainer.appendChild(sidebarWrapper);
-          
-          console.log('[侧边栏] 已注入到替代容器之后');
-          
-          // 绑定事件处理程序
-          bindSidebarEvents(sidebar);
-          
-          // 淡入效果
-          setTimeout(() => {
-            sidebar.style.opacity = '1';
-            sidebar.style.transform = 'translateX(0)';
-          }, 50);
-          
-          return;
         }
-      }
-      
-      // 查找右侧栏或创建一个新的
-      let rightColumn = document.querySelector('#rhs');
-      
-      // 如果没有找到右侧栏，则创建一个
-      if (!rightColumn) {
-        // 获取父容器
-        let parentContainer = null;
-        
-        // 尝试查找 Google 搜索结果的各种可能父容器
-        if (rcnt) {
-          parentContainer = rcnt;
-        } else if (googleSearchResults.parentElement) {
-          parentContainer = googleSearchResults.parentElement;
-        } else {
-          // 创建一个新的container并插入到body
-          parentContainer = document.createElement('div');
-          parentContainer.style.display = 'flex';
-          parentContainer.style.width = '100%';
-          parentContainer.style.justifyContent = 'center';
-          document.body.insertBefore(parentContainer, document.body.firstChild);
-        }
-        
-        if (!parentContainer) {
-          console.error('无法找到父容器');
-          return;
-        }
-        
-        // 创建右侧栏
-        rightColumn = document.createElement('div');
-        rightColumn.id = 'rhs';
-        rightColumn.style.marginLeft = '20px';
-        rightColumn.style.maxWidth = '320px';
-        rightColumn.style.minWidth = '320px';
-        
-        // 创建容器包裹搜索结果和右侧栏
-        const wrapperContainer = document.createElement('div');
-        wrapperContainer.style.display = 'flex';
-        wrapperContainer.style.width = '100%';
-        wrapperContainer.className = 'search-hacking-wrapper';
-        
-        // 移动搜索结果到新容器
-        if (rcnt && rcnt.contains(googleSearchResults)) {
-          // 对于标准布局，不克隆而是直接添加右侧栏
-          wrapperContainer.appendChild(rightColumn);
-          // 将包装容器添加到rcnt中的正确位置
-          if (googleSearchResults.nextSibling) {
-            parentContainer.insertBefore(wrapperContainer, googleSearchResults.nextSibling);
-          } else {
-            parentContainer.appendChild(wrapperContainer);
-          }
-        } else {
-          // 对于非标准布局，直接在搜索结果旁边添加侧边栏
-          try {
-            // 创建简单的右侧栏，不干扰搜索结果
-            parentContainer.appendChild(rightColumn);
-          } catch (e) {
-            console.error('添加右侧栏时出错:', e);
-            // 如果出错，尝试最简单的注入方式
-            parentContainer.appendChild(rightColumn);
-          }
-        }
-      }
-      
-      // 插入侧边栏到右侧栏
-      try {
-        rightColumn.insertBefore(sidebar, rightColumn.firstChild);
-        
-        // 淡入效果
-        setTimeout(() => {
-          sidebar.style.opacity = '1';
-          sidebar.style.transform = 'translateX(0)';
-        }, 50);
-      } catch (e) {
-        console.error('插入侧边栏时出错:', e);
-        // 如果插入失败，尝试直接添加到body
-        const standaloneContainer = document.createElement('div');
-        standaloneContainer.style.position = 'fixed';
-        standaloneContainer.style.top = '80px';
-        standaloneContainer.style.right = '20px';
-        standaloneContainer.style.zIndex = '9999';
-        standaloneContainer.appendChild(sidebar);
-        document.body.appendChild(standaloneContainer);
-        
-        // 淡入效果
-        setTimeout(() => {
-          sidebar.style.opacity = '1';
-          sidebar.style.transform = 'translateX(0)';
-        }, 50);
       }
       
       // 绑定事件处理程序
       bindSidebarEvents(sidebar);
+      
+      // 淡入效果
+      setTimeout(() => {
+        sidebar.style.opacity = '1';
+        sidebar.style.transform = 'translateX(0)';
+      }, 50);
     }
     
     // 绑定侧边栏事件
@@ -1028,7 +929,13 @@ if (!window.hackingSidebarInjected) {
                     <div class="debug-content">
                       <div class="debug-title">无法提取URL</div>
                       <div class="debug-tips">
-                        <p>${getMessage('urlExtractionErrorTips')}</p>
+                        <p>可能的原因：</p>
+                        <ul>
+                          <li><i class="fas fa-search"></i> 当前页面不是Bing搜索结果</li>
+                          <li><i class="fas fa-code"></i> 缺少"site:"搜索语法</li>
+                          <li><i class="fas fa-ban"></i> 目标域名在黑名单中</li>
+                          <li><i class="fas fa-exclamation-triangle"></i> 页面结构已更改</li>
+                        </ul>
                       </div>
                       
                     </div>
@@ -1077,7 +984,7 @@ if (!window.hackingSidebarInjected) {
                           // 显示复制成功的临时提示
                           urlItem.style.backgroundColor = '#e6f4ea';
                           urlItem.style.borderLeft = '3px solid #34a853';
-                          urlItem.innerHTML = `<div class="copy-success"><i class="fas fa-check"></i> ${getMessage('copySuccess')}: ${url}</div>`;
+                          urlItem.innerHTML = `<div class="copy-success"><i class="fas fa-check"></i> 已复制：${url}</div>`;
                           setTimeout(() => {
                             urlItem.style.backgroundColor = '';
                             urlItem.style.borderLeft = '';
@@ -1088,7 +995,7 @@ if (!window.hackingSidebarInjected) {
                           // 显示错误
                           urlItem.style.backgroundColor = '#fce8e6';
                           urlItem.style.borderLeft = '3px solid #ea4335';
-                          urlItem.innerHTML = `<div class="copy-error"><i class="fas fa-times"></i> ${getMessage('copyError')}: ${url}</div>`;
+                          urlItem.innerHTML = `<div class="copy-error"><i class="fas fa-times"></i> 复制失败：${url}</div>`;
                           setTimeout(() => {
                             urlItem.style.backgroundColor = '';
                             urlItem.style.borderLeft = '';
@@ -1113,10 +1020,15 @@ if (!window.hackingSidebarInjected) {
                   <div class="debug-content">
                     <div class="debug-title">提取过程中出错</div>
                     <div class="debug-tips">
-                      <p>${getMessage('urlExtractionErrorTips')}</p>
+                      <p>提取URL时遇到了技术问题，请尝试：</p>
+                      <ul>
+                        <li><i class="fas fa-sync-alt"></i> 刷新页面后重试</li>
+                        <li><i class="fas fa-globe"></i> 尝试使用其他浏览器</li>
+                        <li><i class="fas fa-cog"></i> 检查扩展是否最新版本</li>
+                      </ul>
                     </div>
                     <div class="debug-action">
-                      <button class="refresh-btn"><i class="fas fa-sync-alt"></i> ${getMessage('refreshBtn')}</button>
+                      <button class="refresh-btn"><i class="fas fa-sync-alt"></i> 重试</button>
                     </div>
                   </div>
                 `;
@@ -1229,7 +1141,6 @@ if (!window.hackingSidebarInjected) {
     return new Promise(resolve => {
       safeSendMessage({action: 'getSyntaxLibrary'}).then(response => {
         if (response && response.syntaxLibrary) {
-          // 注入侧边栏
           injectSidebar(response.syntaxLibrary);
           resolve();
         } else {
@@ -1247,7 +1158,6 @@ if (!window.hackingSidebarInjected) {
             }
           ];
           
-          // 注入侧边栏
           injectSidebar(fallbackSyntax);
           resolve();
         }
@@ -1281,7 +1191,7 @@ if (!window.hackingSidebarInjected) {
       initHackingSidebar(true);
     }, 1000); // 延长首次注入的等待时间，确保DOM完全加载
     
-    // 监听URL变化（Google使用pushState/replaceState进行页面切换）
+    // 监听URL变化（Bing使用pushState/replaceState进行页面切换）
     let lastUrl = location.href;
     const urlChangeHandler = debounce(() => {
       const currentUrl = location.href;
@@ -1300,7 +1210,7 @@ if (!window.hackingSidebarInjected) {
     // 配置URL变化观察器
     urlChangeObserver.observe(document, { subtree: true, childList: true });
     
-    // 添加Google搜索结果观察器，以便处理动态加载的内容
+    // 添加Bing搜索结果观察器，以便处理动态加载的内容
     const domChangeHandler = debounce(() => {
       const sidebar = document.querySelector('.hacking-sidebar');
       if (!sidebar && !state.injectionInProgress) {
@@ -1325,7 +1235,7 @@ if (!window.hackingSidebarInjected) {
     
     // 在页面加载后设置观察器
     setTimeout(() => {
-      const container = document.querySelector('#rcnt') || document.querySelector('#main') || document.body;
+      const container = document.querySelector('#b_content') || document.querySelector('#b_results') || document.body;
       console.log('[侧边栏] 设置DOM变化观察器，观察容器:', container);
       searchResultsObserver.observe(container, { childList: true, subtree: true });
       
@@ -1379,12 +1289,12 @@ if (!window.hackingSidebarInjected) {
       console.error('注册存储变化监听器时出错:', error);
     }
     
-    // 监听页面点击事件，可能触发Google搜索
+    // 监听页面点击事件，可能触发Bing搜索
     document.addEventListener('click', function(event) {
       // 检测搜索相关点击
       if (event.target.closest('button[type="submit"]') || 
-          event.target.closest('a.g') || 
-          event.target.closest('.g a')) {
+          event.target.closest('.b_algo a') || 
+          event.target.closest('.b_results a')) {
         // 使用防抖处理点击事件
         debounce(() => initHackingSidebar(true), 800, 'clickSearch')();
       }

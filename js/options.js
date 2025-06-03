@@ -34,6 +34,8 @@ document.querySelectorAll('.toggle-switch').forEach(toggle => {
       settingName = 'Google搜索支持';
     } else if (this.id === 'toggleBaidu') {
       settingName = '百度搜索支持';
+    } else if (this.id === 'toggleBing') {
+      settingName = 'Bing搜索支持';
     } else if (this.dataset.id) {
       // 这是语法项的开关
       const syntaxName = this.closest('.syntax-item').querySelector('.font-medium').textContent;
@@ -69,17 +71,47 @@ document.getElementById('syntaxSearch').addEventListener('input', function() {
 // 导出配置
 function exportConfig() {
   chrome.storage.local.get(['searchHackingSettings', 'syntaxLibrary'], function(result) {
+    // 获取manifest信息
+    const manifest = chrome.runtime.getManifest();
+    
     // 获取当前配置
     const config = {
+      version: manifest.version, // 从manifest获取版本信息
+      exportDate: new Date().toISOString(), // 添加导出时间
       settings: result.searchHackingSettings || {},
       syntaxLibrary: result.syntaxLibrary || []
     };
+    
+    // 验证和清理语法库数据
+    config.syntaxLibrary = config.syntaxLibrary.map(syntax => {
+      // 确保所有必要字段都存在
+      const cleanedSyntax = {
+        id: syntax.id,
+        name: syntax.name,
+        template: syntax.template || syntax.syntax,
+        syntax: syntax.syntax || syntax.template, // 保持兼容性
+        risk: syntax.risk || 'info',
+        engines: Array.isArray(syntax.engines) ? syntax.engines : ['google'],
+        enabled: syntax.enabled !== false,
+        builtin: syntax.builtin || false
+      };
+      
+      // 如果是内置语法且有engineSettings，也导出
+      if (syntax.builtin && syntax.engineSettings) {
+        cleanedSyntax.engineSettings = syntax.engineSettings;
+      }
+      
+      return cleanedSyntax;
+    });
     
     // 创建并下载配置文件
     const dataStr = JSON.stringify(config, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
     
-    const exportFileDefaultName = 'search-hacking-config.json';
+    // 生成带时间戳的文件名
+    const now = new Date();
+    const timestamp = now.toISOString().slice(0, 19).replace(/[T:]/g, '-');
+    const exportFileDefaultName = `search-hacking-config-${timestamp}.json`;
     
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
@@ -87,28 +119,87 @@ function exportConfig() {
     linkElement.click();
     
     // 显示成功消息
-    showNotification('配置已成功导出', 'success');
+    showNotification(`配置已成功导出为 ${exportFileDefaultName}`, 'success');
+    console.log('导出的配置:', config);
   });
 }
 
 // 验证语法结构
 function validateSyntax(syntax) {
+  // 检查基本类型
+  if (!syntax || typeof syntax !== 'object') {
+    return false;
+  }
+  
   // 检查必要字段是否存在
-  const requiredFields = ['id', 'name', 'template', 'risk', 'engines'];
+  const requiredFields = ['id', 'name'];
   for (const field of requiredFields) {
-    if (!syntax.hasOwnProperty(field)) {
+    if (!syntax.hasOwnProperty(field) || !syntax[field]) {
+      console.warn(`语法验证失败: 缺少必要字段 ${field}`, syntax);
       return false;
     }
   }
   
+  // 检查template或syntax字段（至少有一个）
+  if (!syntax.template && !syntax.syntax) {
+    console.warn('语法验证失败: 缺少template或syntax字段', syntax);
+    return false;
+  }
+  
   // 验证risk字段值
   const validRisks = ['info', 'low', 'medium', 'high'];
-  if (!validRisks.includes(syntax.risk)) {
+  if (syntax.risk && !validRisks.includes(syntax.risk)) {
+    console.warn(`语法验证失败: 无效的risk值 ${syntax.risk}`, syntax);
     return false;
   }
   
   // 验证engines是否为数组
-  if (!Array.isArray(syntax.engines)) {
+  if (syntax.engines && !Array.isArray(syntax.engines)) {
+    console.warn('语法验证失败: engines不是数组', syntax);
+    return false;
+  }
+  
+  // 验证engines数组中的值
+  if (syntax.engines) {
+    const validEngines = ['google', 'baidu', 'bing', 'all'];
+    for (const engine of syntax.engines) {
+      if (!validEngines.includes(engine)) {
+        console.warn(`语法验证失败: 无效的引擎 ${engine}`, syntax);
+        return false;
+      }
+    }
+  }
+  
+  // 验证engineSettings（如果存在）
+  if (syntax.engineSettings) {
+    if (typeof syntax.engineSettings !== 'object') {
+      console.warn('语法验证失败: engineSettings不是对象', syntax);
+      return false;
+    }
+    
+    const validEngineKeys = ['google', 'baidu', 'bing'];
+    for (const key of Object.keys(syntax.engineSettings)) {
+      if (!validEngineKeys.includes(key)) {
+        console.warn(`语法验证失败: 无效的engineSettings键 ${key}`, syntax);
+        return false;
+      }
+      
+      if (typeof syntax.engineSettings[key] !== 'boolean') {
+        console.warn(`语法验证失败: engineSettings.${key}不是布尔值`, syntax);
+        return false;
+      }
+    }
+  }
+  
+  // 验证enabled字段（如果存在）
+  if (syntax.hasOwnProperty('enabled') && typeof syntax.enabled !== 'boolean') {
+    console.warn('语法验证失败: enabled不是布尔值', syntax);
+    return false;
+  }
+  
+  // 验证builtin字段（如果存在）
+  if (syntax.hasOwnProperty('builtin') && typeof syntax.builtin !== 'boolean') {
+    console.warn('语法验证失败: builtin不是布尔值', syntax);
     return false;
   }
   
@@ -120,41 +211,74 @@ function importConfig(fileContent) {
   try {
     const config = JSON.parse(fileContent);
     
-    if (!config.settings || !config.syntaxLibrary) {
+    // 检查基本结构
+    if (!config.settings && !config.syntaxLibrary) {
       showNotification('导入失败：配置文件格式不正确', 'error');
       return;
     }
+    
+    // 版本兼容性检查
+    const configVersion = config.version || '1.0.0';
+    console.log(`导入配置文件版本: ${configVersion}`);
+    
+    // 验证和处理设置
+    const settings = config.settings || {};
+    
+    // 确保所有必要的设置字段都存在
+    const defaultSettings = {
+      sidebarEnabled: true,
+      googleEnabled: true,
+      baiduEnabled: false,
+      bingEnabled: false,
+      urlBlacklist: []
+    };
+    
+    const mergedSettings = { ...defaultSettings, ...settings };
     
     // 验证语法库结构
     let invalidSyntaxCount = 0;
     const validatedSyntaxLibrary = [];
     
-    for (const syntax of config.syntaxLibrary) {
-      if (validateSyntax(syntax)) {
-        // 确保syntax和template字段一致
-        if (!syntax.syntax) {
-          syntax.syntax = syntax.template;
+    if (Array.isArray(config.syntaxLibrary)) {
+      for (const syntax of config.syntaxLibrary) {
+        if (validateSyntax(syntax)) {
+          // 确保语法对象包含所有必要字段
+          const validatedSyntax = {
+            id: syntax.id,
+            name: syntax.name,
+            template: syntax.template || syntax.syntax,
+            syntax: syntax.syntax || syntax.template,
+            risk: syntax.risk || 'info',
+            engines: Array.isArray(syntax.engines) ? syntax.engines : ['google'],
+            enabled: syntax.enabled !== false,
+            builtin: syntax.builtin || false
+          };
+          
+          // 如果是内置语法且有engineSettings，保留它
+          if (syntax.builtin && syntax.engineSettings) {
+            validatedSyntax.engineSettings = syntax.engineSettings;
+          }
+          
+          validatedSyntaxLibrary.push(validatedSyntax);
+        } else {
+          invalidSyntaxCount++;
+          console.warn('跳过无效语法:', syntax);
         }
-        validatedSyntaxLibrary.push(syntax);
-      } else {
-        invalidSyntaxCount++;
       }
     }
     
-    if (invalidSyntaxCount > 0) {
-      console.warn(`导入过程中跳过了 ${invalidSyntaxCount} 条无效语法`);
-    }
+    console.log(`验证完成: ${validatedSyntaxLibrary.length} 条有效语法, ${invalidSyntaxCount} 条无效语法`);
     
     // 保存基本设置
-    chrome.storage.local.set({searchHackingSettings: config.settings}, function() {
-      console.log('基本设置已导入:', config.settings);
+    chrome.storage.local.set({searchHackingSettings: mergedSettings}, function() {
+      console.log('基本设置已导入:', mergedSettings);
       // 应用设置到UI
-      applySettings(config.settings);
+      applySettings(mergedSettings);
       
       // 广播设置变更消息，实现实时同步
       chrome.runtime.sendMessage({
         action: 'settingsChanged',
-        settings: config.settings
+        settings: mergedSettings
       });
     });
     
@@ -170,15 +294,22 @@ function importConfig(fileContent) {
         syntaxLibrary: validatedSyntaxLibrary
       });
       
+      // 显示导入结果
       if (invalidSyntaxCount > 0) {
-        showNotification(`配置已导入，但跳过了 ${invalidSyntaxCount} 条无效语法`, 'warning');
+        showNotification(`配置已导入！成功导入 ${validatedSyntaxLibrary.length} 条语法，跳过 ${invalidSyntaxCount} 条无效语法`, 'warning');
       } else {
-        showNotification('配置已成功导入', 'success');
+        showNotification(`配置已成功导入！共导入 ${validatedSyntaxLibrary.length} 条语法`, 'success');
+      }
+      
+      // 如果有导出时间，显示额外信息
+      if (config.exportDate) {
+        const exportDate = new Date(config.exportDate).toLocaleString('zh-CN');
+        console.log(`导入的配置导出时间: ${exportDate}`);
       }
     });
     
   } catch (error) {
-    showNotification('导入失败：无效的配置文件', 'error');
+    showNotification('导入失败：无效的配置文件格式', 'error');
     console.error('配置导入错误:', error);
   }
 }
@@ -209,14 +340,7 @@ document.querySelectorAll('.syntax-item button').forEach(button => {
       const engineBadges = syntaxItem.querySelectorAll('.bg-blue-100');
       const supportedEngines = Array.from(engineBadges).map(badge => badge.textContent.trim());
       
-      openSyntaxModal('edit', {
-        id: syntaxId,
-        name: syntaxName,
-        syntax: syntaxCode,
-        risk: riskLevel,
-        engines: supportedEngines,
-        enabled: isActive
-      });
+      openSyntaxFormModal(syntaxId);
     } else {
       // 删除操作 - 使用模态窗口
       document.getElementById('syntaxToDelete').textContent = syntaxName;
@@ -232,7 +356,7 @@ document.querySelectorAll('.syntax-item button').forEach(button => {
 const addSyntaxButton = document.querySelector('.glass-card .btn-effect:first-child');
 if (addSyntaxButton) {
   addSyntaxButton.addEventListener('click', function() {
-    openSyntaxModal('add');
+    openSyntaxFormModal();
   });
 }
 
@@ -329,25 +453,69 @@ function closeModal(modalId) {
   modal.classList.remove('show');
 }
 
-// 添加表单提交事件处理
-function setupSyntaxFormSubmit() {
-  const form = document.getElementById('syntaxForm');
+// 打开语法表单模态窗口
+function openSyntaxFormModal(syntaxId = null) {
+  const modal = document.getElementById('syntaxFormModal');
+  const title = document.getElementById('syntaxFormTitle');
+  const submitBtnIcon = document.getElementById('syntaxBtnIcon');
+  const submitBtnText = document.getElementById('syntaxBtnText');
   
-  // 移除旧的事件监听器
+  // 清除之前的表单错误
+  hideFormError();
+
+  // 重置表单
+  document.getElementById('syntaxForm').reset();
+  document.getElementById('syntaxId').value = '';
+
+  if (syntaxId) {
+    // 编辑模式
+    title.textContent = '编辑自定义语法';
+    submitBtnIcon.className = 'fas fa-save mr-2';
+    submitBtnText.textContent = '保存更改';
+    
+    // 加载语法数据
+    chrome.storage.local.get(['syntaxLibrary'], (result) => {
+      if (result.syntaxLibrary) {
+        const syntax = result.syntaxLibrary.find(s => s.id === syntaxId);
+        if (syntax) {
+          document.getElementById('syntaxId').value = syntax.id;
+          document.getElementById('syntaxName').value = syntax.name;
+          document.getElementById('syntaxContent').value = syntax.template || syntax.syntax;
+          document.querySelector(`input[name="riskLevel"][value="${syntax.risk}"]`).checked = true;
+          document.getElementById('engineGoogle').checked = syntax.engines.includes('google');
+          document.getElementById('engineBaidu').checked = syntax.engines.includes('baidu');
+          document.getElementById('engineBing').checked = syntax.engines.includes('bing');
+          document.querySelector(`input[name="syntaxStatus"][value="${syntax.enabled ? 'enabled' : 'disabled'}"]`).checked = true;
+        }
+      }
+    });
+  } else {
+    // 添加模式
+    title.textContent = '添加自定义语法';
+    submitBtnIcon.className = 'fas fa-plus mr-2';
+    submitBtnText.textContent = '添加语法';
+  }
+
+  modal.classList.add('show');
+  
+  // 先重新绑定表单提交事件
+  const form = document.getElementById('syntaxForm');
   const newForm = form.cloneNode(true);
   form.parentNode.replaceChild(newForm, form);
   
+  // 重新绑定表单提交事件
   newForm.addEventListener('submit', function(e) {
     e.preventDefault();
     
-    // 获取表单数据
-    const syntaxId = document.getElementById('syntaxId').value;
-    const syntaxName = document.getElementById('syntaxName').value;
-    const syntaxTemplate = document.getElementById('syntaxContent').value;
-    const riskLevel = document.querySelector('input[name="riskLevel"]:checked').value;
-    const googleEnabled = document.getElementById('engineGoogle').checked;
-    const baiduEnabled = document.getElementById('engineBaidu').checked;
-    const isEnabled = document.querySelector('input[name="syntaxStatus"]:checked').value === 'enabled';
+    // 获取表单数据（使用新表单中的元素）
+    const syntaxId = newForm.querySelector('#syntaxId').value;
+    const syntaxName = newForm.querySelector('#syntaxName').value;
+    const syntaxTemplate = newForm.querySelector('#syntaxContent').value;
+    const riskLevel = newForm.querySelector('input[name="riskLevel"]:checked').value;
+    const googleEnabled = newForm.querySelector('#engineGoogle').checked;
+    const baiduEnabled = newForm.querySelector('#engineBaidu').checked;
+    const bingEnabled = newForm.querySelector('#engineBing').checked;
+    const isEnabled = newForm.querySelector('input[name="syntaxStatus"]:checked').value === 'enabled';
     
     // 表单验证
     if (!syntaxName || !syntaxTemplate) {
@@ -360,7 +528,7 @@ function setupSyntaxFormSubmit() {
       return false;
     }
     
-    if (!googleEnabled && !baiduEnabled) {
+    if (!googleEnabled && !baiduEnabled && !bingEnabled) {
       showFormError('请至少选择一个搜索引擎');
       return false;
     }
@@ -394,6 +562,7 @@ function setupSyntaxFormSubmit() {
         
         if (googleEnabled) syntaxData.engines.push('google');
         if (baiduEnabled) syntaxData.engines.push('baidu');
+        if (bingEnabled) syntaxData.engines.push('bing');
         
         // 更新语法库
         if (syntaxId) {
@@ -412,7 +581,6 @@ function setupSyntaxFormSubmit() {
               syntaxLibrary: updatedLibrary
             });
             
-            const modal = document.getElementById('syntaxFormModal');
             modal.classList.remove('show');
             updateSyntaxLists();
           });
@@ -430,7 +598,6 @@ function setupSyntaxFormSubmit() {
               syntaxLibrary: syntaxLibrary
             });
             
-            const modal = document.getElementById('syntaxFormModal');
             modal.classList.remove('show');
             updateSyntaxLists();
           });
@@ -438,67 +605,10 @@ function setupSyntaxFormSubmit() {
       }
     });
   });
-}
-
-// 添加/编辑语法模态窗口功能
-function openSyntaxModal(mode, syntaxData = null) {
-  const modal = document.getElementById('syntaxFormModal');
-  const form = document.getElementById('syntaxForm');
-  const titleElement = document.getElementById('syntaxFormTitle');
-  const btnTextElement = document.getElementById('syntaxBtnText');
-  const btnIconElement = document.getElementById('syntaxBtnIcon');
   
-  // 重置表单
-  form.reset();
-  
-  // 清除任何现有的表单错误
-  hideFormError();
-  
-  // 设置模式（添加/编辑）
-  if (mode === 'edit' && syntaxData) {
-    titleElement.textContent = '编辑自定义语法';
-    btnTextElement.textContent = '保存修改';
-    btnIconElement.className = 'fas fa-save mr-2';
-    
-    // 填充表单数据
-    document.getElementById('syntaxId').value = syntaxData.id;
-    document.getElementById('syntaxName').value = syntaxData.name;
-    document.getElementById('syntaxContent').value = syntaxData.syntax || syntaxData.template;
-    
-    // 设置风险等级
-    const riskRadio = document.querySelector(`input[name="riskLevel"][value="${syntaxData.risk}"]`);
-    if (riskRadio) riskRadio.checked = true;
-    
-    // 设置搜索引擎支持
-    document.getElementById('engineGoogle').checked = syntaxData.engines.includes('google');
-    document.getElementById('engineBaidu').checked = syntaxData.engines.includes('baidu');
-    
-    // 设置语法状态
-    if (syntaxData.status) {
-      document.querySelector(`input[name="syntaxStatus"][value="${syntaxData.status}"]`).checked = true;
-    } else {
-      // 兼容旧数据，根据enabled属性设置
-      const statusValue = syntaxData.enabled ? 'enabled' : 'disabled';
-      document.querySelector(`input[name="syntaxStatus"][value="${statusValue}"]`).checked = true;
-    }
-    
-    showNotification('正在编辑语法', 'info');
-  } else {
-    // 添加模式
-    titleElement.textContent = '添加自定义语法';
-    btnTextElement.textContent = '添加语法';
-    btnIconElement.className = 'fas fa-plus mr-2';
-    document.getElementById('syntaxId').value = '';
-    
-    showNotification('正在添加新语法', 'info');
-  }
-  
-  // 显示模态窗口
-  modal.classList.add('show');
-  
-  // 关闭按钮事件 - 确保清除所有旧事件监听器并重新添加
-  const closeButtons = modal.querySelectorAll('[data-action="close"], #cancelSyntaxBtn');
-  closeButtons.forEach(btn => {
+  // 重新绑定取消按钮（在模态窗口级别，不在表单内）
+  const cancelBtns = modal.querySelectorAll('[data-action="close"]');
+  cancelBtns.forEach(btn => {
     const newBtn = btn.cloneNode(true);
     btn.parentNode.replaceChild(newBtn, btn);
     newBtn.addEventListener('click', function(e) {
@@ -508,71 +618,86 @@ function openSyntaxModal(mode, syntaxData = null) {
     });
   });
   
-  // 点击背景关闭模态窗口
-  const modalClickHandler = function(e) {
-    if (e.target === modal) {
-      showNotification('已取消操作', 'info');
-      closeModal('syntaxFormModal');
-    }
-  };
-  
-  // 移除旧的点击事件监听器并添加新的
-  modal.removeEventListener('click', modalClickHandler);
-  modal.addEventListener('click', modalClickHandler);
-  
-  // 添加测试语法按钮事件监听
-  const testSyntaxBtn = document.getElementById('testSyntaxBtn');
-  testSyntaxBtn.addEventListener('click', function() {
-    const syntax = document.getElementById('syntaxContent').value.trim();
-    if (!syntax) {
-      showFormError('请先输入搜索语法');
-      return;
-    }
+  // 重新绑定测试按钮（在新表单中）
+  const testSyntaxBtn = newForm.querySelector('#testSyntaxBtn');
+  if (testSyntaxBtn) {
+    const newTestBtn = testSyntaxBtn.cloneNode(true);
+    testSyntaxBtn.parentNode.replaceChild(newTestBtn, testSyntaxBtn);
     
-    // 获取选中的搜索引擎
-    const isGoogleSelected = document.getElementById('engineGoogle').checked;
-    const isBaiduSelected = document.getElementById('engineBaidu').checked;
-    
-    if (!isGoogleSelected && !isBaiduSelected) {
-      showFormError('请至少选择一个搜索引擎');
-      return;
-    }
-    
-    // 使用pa55w0rd.online作为测试域名
-    const testDomain = 'pa55w0rd.online';
-    const testSyntax = syntax.replace(/{target_domain}/g, testDomain);
-    
-    try {
-      // 跟踪是否至少成功打开了一个窗口
-      let openedWindow = false;
-      
-      // 根据选择的搜索引擎打开对应页面
-      if (isGoogleSelected) {
-        const googleWindow = window.open(`https://www.google.com/search?q=${encodeURIComponent(testSyntax)}`, '_blank');
-        openedWindow = openedWindow || (googleWindow !== null);
-      }
-      
-      if (isBaiduSelected) {
-        const baiduWindow = window.open(`https://www.baidu.com/s?wd=${encodeURIComponent(testSyntax)}`, '_blank');
-        openedWindow = openedWindow || (baiduWindow !== null);
-      }
-      
-      // 检查是否成功打开窗口
-      if (!openedWindow) {
-        showFormError('无法打开测试窗口，浏览器可能阻止了弹出窗口。请检查浏览器设置允许弹出窗口，或按住Ctrl键再点击测试按钮。');
+    newTestBtn.addEventListener('click', function() {
+      const syntax = newForm.querySelector('#syntaxContent').value.trim();
+      if (!syntax) {
+        showFormError('请先输入搜索语法');
         return;
       }
       
-      // 显示测试通知
-      showNotification(`正在使用 ${testDomain} 测试语法`, 'info');
-    } catch (error) {
-      console.error('测试语法时出错:', error);
-      showFormError(`测试语法时出错: ${error.message}。请检查浏览器设置是否允许弹出窗口。`);
-    }
-  });
+      // 获取选中的搜索引擎（使用新表单中的元素）
+      const isGoogleSelected = newForm.querySelector('#engineGoogle').checked;
+      const isBaiduSelected = newForm.querySelector('#engineBaidu').checked;
+      const isBingSelected = newForm.querySelector('#engineBing').checked;
+      
+      if (!isGoogleSelected && !isBaiduSelected && !isBingSelected) {
+        showFormError('请至少选择一个搜索引擎');
+        return;
+      }
+      
+      // 使用pa55w0rd.online作为测试域名
+      const testDomain = 'pa55w0rd.online';
+      const testSyntax = syntax.replace(/{target_domain}/g, testDomain);
+      
+      try {
+        // 跟踪是否至少成功打开了一个窗口
+        let openedWindow = false;
+        
+        // 根据选择的搜索引擎打开对应页面
+        if (isGoogleSelected) {
+          const googleWindow = window.open(`https://www.google.com/search?q=${encodeURIComponent(testSyntax)}`, '_blank');
+          openedWindow = openedWindow || (googleWindow !== null);
+        }
+        
+        if (isBaiduSelected) {
+          const baiduWindow = window.open(`https://www.baidu.com/s?wd=${encodeURIComponent(testSyntax)}`, '_blank');
+          openedWindow = openedWindow || (baiduWindow !== null);
+        }
+        
+        if (isBingSelected) {
+          const bingWindow = window.open(`https://www.bing.com/search?q=${encodeURIComponent(testSyntax)}`, '_blank');
+          openedWindow = openedWindow || (bingWindow !== null);
+        }
+        
+        // 检查是否成功打开窗口
+        if (!openedWindow) {
+          showFormError('无法打开测试窗口，浏览器可能阻止了弹出窗口。请检查浏览器设置允许弹出窗口，或按住Ctrl键再点击测试按钮。');
+          return;
+        }
+        
+        // 显示测试通知
+        showNotification(`正在使用 ${testDomain} 测试语法`, 'info');
+      } catch (error) {
+        console.error('测试语法时出错:', error);
+        showFormError(`测试语法时出错: ${error.message}。请检查浏览器设置是否允许弹出窗口。`);
+      }
+    });
+  }
   
-  // 设置表单提交
-  setupSyntaxFormSubmit();
+  // 如果是编辑模式，需要重新填充数据（因为表单被克隆了）
+  if (syntaxId) {
+    chrome.storage.local.get(['syntaxLibrary'], (result) => {
+      if (result.syntaxLibrary) {
+        const syntax = result.syntaxLibrary.find(s => s.id === syntaxId);
+        if (syntax) {
+          newForm.querySelector('#syntaxId').value = syntax.id;
+          newForm.querySelector('#syntaxName').value = syntax.name;
+          newForm.querySelector('#syntaxContent').value = syntax.template || syntax.syntax;
+          newForm.querySelector(`input[name="riskLevel"][value="${syntax.risk}"]`).checked = true;
+          newForm.querySelector('#engineGoogle').checked = syntax.engines.includes('google');
+          newForm.querySelector('#engineBaidu').checked = syntax.engines.includes('baidu');
+          newForm.querySelector('#engineBing').checked = syntax.engines.includes('bing');
+          newForm.querySelector(`input[name="syntaxStatus"][value="${syntax.enabled ? 'enabled' : 'disabled'}"]`).checked = true;
+        }
+      }
+    });
+  }
 }
 
 // 显示通知消息
@@ -748,9 +873,60 @@ function renderSyntaxItem(syntax, isCustom = false) {
 
   const risk = riskLevels[syntax.risk] || riskLevels.info;
   
-  const engineBadges = syntax.engines.map(engine => 
-    `<span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mr-2">${engine}</span>`
-  ).join('');
+  // 为所有语法显示搜索引擎开关
+  let engineSection = '';
+  
+  if (syntax.builtin) {
+    // 内置语法：使用engineSettings
+    const engineSettings = syntax.engineSettings || {
+      google: syntax.engines.includes('google'),
+      baidu: syntax.engines.includes('baidu'),
+      bing: syntax.engines.includes('bing')
+    };
+    
+    engineSection = `
+      <div class="flex items-center mt-2 space-x-3">
+        <span class="text-xs text-gray-600 mr-2">搜索引擎:</span>
+        <label class="inline-flex items-center cursor-pointer">
+          <div class="engine-toggle ${engineSettings.google ? 'active' : ''}" data-syntax-id="${syntax.id}" data-engine="google"></div>
+          <span class="ml-1 text-xs text-gray-700">Google</span>
+        </label>
+        <label class="inline-flex items-center cursor-pointer">
+          <div class="engine-toggle ${engineSettings.baidu ? 'active' : ''}" data-syntax-id="${syntax.id}" data-engine="baidu"></div>
+          <span class="ml-1 text-xs text-gray-700">百度</span>
+        </label>
+        <label class="inline-flex items-center cursor-pointer">
+          <div class="engine-toggle ${engineSettings.bing ? 'active' : ''}" data-syntax-id="${syntax.id}" data-engine="bing"></div>
+          <span class="ml-1 text-xs text-gray-700">Bing</span>
+        </label>
+      </div>
+    `;
+  } else {
+    // 自定义语法：使用engines数组
+    const engineSettings = {
+      google: syntax.engines.includes('google'),
+      baidu: syntax.engines.includes('baidu'),
+      bing: syntax.engines.includes('bing')
+    };
+    
+    engineSection = `
+      <div class="flex items-center mt-2 space-x-3">
+        <span class="text-xs text-gray-600 mr-2">搜索引擎:</span>
+        <label class="inline-flex items-center cursor-pointer">
+          <div class="engine-toggle ${engineSettings.google ? 'active' : ''}" data-syntax-id="${syntax.id}" data-engine="google"></div>
+          <span class="ml-1 text-xs text-gray-700">Google</span>
+        </label>
+        <label class="inline-flex items-center cursor-pointer">
+          <div class="engine-toggle ${engineSettings.baidu ? 'active' : ''}" data-syntax-id="${syntax.id}" data-engine="baidu"></div>
+          <span class="ml-1 text-xs text-gray-700">百度</span>
+        </label>
+        <label class="inline-flex items-center cursor-pointer">
+          <div class="engine-toggle ${engineSettings.bing ? 'active' : ''}" data-syntax-id="${syntax.id}" data-engine="bing"></div>
+          <span class="ml-1 text-xs text-gray-700">Bing</span>
+        </label>
+      </div>
+    `;
+  }
 
   const editDeleteButtons = isCustom ? `
     <div class="flex">
@@ -764,16 +940,16 @@ function renderSyntaxItem(syntax, isCustom = false) {
   ` : '';
 
   return `
-    <div class="syntax-item bg-white rounded-lg border p-4 transition-all duration-200 flex justify-between items-center">
-      <div class="flex items-center">
-        <div class="toggle-switch ${syntax.enabled ? 'active' : ''} mr-4" data-id="${syntax.id}"></div>
-        <div>
+    <div class="syntax-item bg-white rounded-lg border p-4 transition-all duration-200 flex justify-between items-start">
+      <div class="flex items-start">
+        <div class="toggle-switch ${syntax.enabled ? 'active' : ''} mr-4 mt-1" data-id="${syntax.id}"></div>
+        <div class="flex-1">
           <div class="font-medium text-gray-800 ${!syntax.enabled ? 'opacity-60' : ''}">${syntax.name}</div>
-          <div class="text-gray-500 text-sm ${!syntax.enabled ? 'opacity-60' : ''}">${syntax.syntax || syntax.template}</div>
-          <div class="flex mt-1">
+          <div class="text-gray-500 text-sm ${!syntax.enabled ? 'opacity-60' : ''} mb-1">${syntax.syntax || syntax.template}</div>
+          <div class="flex items-center">
             <span class="${risk.class} text-xs px-2 py-0.5 rounded mr-2">${risk.text}</span>
-            ${engineBadges}
           </div>
+          ${engineSection}
         </div>
       </div>
       ${editDeleteButtons}
@@ -810,111 +986,6 @@ function addEventListeners() {
   
   // 语法相关的事件监听器
   addSyntaxEventListeners();
-}
-
-// 打开语法表单模态窗口
-function openSyntaxFormModal(syntaxId = null) {
-  const modal = document.getElementById('syntaxFormModal');
-  const title = document.getElementById('syntaxFormTitle');
-  const submitBtn = document.getElementById('saveSyntaxBtn');
-  const submitBtnIcon = document.getElementById('syntaxBtnIcon');
-  const submitBtnText = document.getElementById('syntaxBtnText');
-  
-  // 清除之前的表单错误
-  hideFormError();
-
-  if (syntaxId) {
-    // 编辑模式
-    title.textContent = '编辑自定义语法';
-    submitBtnIcon.className = 'fas fa-save mr-2';
-    submitBtnText.textContent = '保存更改';
-    
-    // 加载语法数据
-    chrome.storage.local.get(['syntaxLibrary'], (result) => {
-      if (result.syntaxLibrary) {
-        const syntax = result.syntaxLibrary.find(s => s.id === syntaxId);
-        if (syntax) {
-          document.getElementById('syntaxId').value = syntax.id;
-          document.getElementById('syntaxName').value = syntax.name;
-          document.getElementById('syntaxContent').value = syntax.template || syntax.syntax;
-          document.querySelector(`input[name="riskLevel"][value="${syntax.risk}"]`).checked = true;
-          document.getElementById('engineGoogle').checked = syntax.engines.includes('google');
-          document.getElementById('engineBaidu').checked = syntax.engines.includes('baidu');
-          document.querySelector(`input[name="syntaxStatus"][value="${syntax.enabled ? 'enabled' : 'disabled'}"]`).checked = true;
-        }
-      }
-    });
-  } else {
-    // 添加模式
-    title.textContent = '添加自定义语法';
-    submitBtnIcon.className = 'fas fa-plus mr-2';
-    submitBtnText.textContent = '添加语法';
-    
-    // 重置表单
-    document.getElementById('syntaxForm').reset();
-    document.getElementById('syntaxId').value = '';
-  }
-
-  modal.classList.add('show');
-  
-  // 移除旧的事件监听器
-  const form = document.getElementById('syntaxForm');
-  const newForm = form.cloneNode(true);
-  form.parentNode.replaceChild(newForm, form);
-  
-  // 添加测试语法按钮事件监听
-  const testSyntaxBtn = document.getElementById('testSyntaxBtn');
-  testSyntaxBtn.addEventListener('click', function() {
-    const syntax = document.getElementById('syntaxContent').value.trim();
-    if (!syntax) {
-      showFormError('请先输入搜索语法');
-      return;
-    }
-    
-    // 获取选中的搜索引擎
-    const isGoogleSelected = document.getElementById('engineGoogle').checked;
-    const isBaiduSelected = document.getElementById('engineBaidu').checked;
-    
-    if (!isGoogleSelected && !isBaiduSelected) {
-      showFormError('请至少选择一个搜索引擎');
-      return;
-    }
-    
-    // 使用pa55w0rd.online作为测试域名
-    const testDomain = 'pa55w0rd.online';
-    const testSyntax = syntax.replace(/{target_domain}/g, testDomain);
-    
-    try {
-      // 跟踪是否至少成功打开了一个窗口
-      let openedWindow = false;
-      
-      // 根据选择的搜索引擎打开对应页面
-      if (isGoogleSelected) {
-        const googleWindow = window.open(`https://www.google.com/search?q=${encodeURIComponent(testSyntax)}`, '_blank');
-        openedWindow = openedWindow || (googleWindow !== null);
-      }
-      
-      if (isBaiduSelected) {
-        const baiduWindow = window.open(`https://www.baidu.com/s?wd=${encodeURIComponent(testSyntax)}`, '_blank');
-        openedWindow = openedWindow || (baiduWindow !== null);
-      }
-      
-      // 检查是否成功打开窗口
-      if (!openedWindow) {
-        showFormError('无法打开测试窗口，浏览器可能阻止了弹出窗口。请检查浏览器设置允许弹出窗口，或按住Ctrl键再点击测试按钮。');
-        return;
-      }
-      
-      // 显示测试通知
-      showNotification(`正在使用 ${testDomain} 测试语法`, 'info');
-    } catch (error) {
-      console.error('测试语法时出错:', error);
-      showFormError(`测试语法时出错: ${error.message}。请检查浏览器设置是否允许弹出窗口。`);
-    }
-  });
-  
-  // 添加表单提交事件处理
-  setupSyntaxFormSubmit();
 }
 
 // 打开删除确认模态窗口
@@ -1018,7 +1089,8 @@ function saveSettings() {
   const settings = {
     sidebarEnabled: document.getElementById('toggleSidebar').classList.contains('active'),
     googleEnabled: document.getElementById('toggleGoogle').classList.contains('active'),
-    baiduEnabled: document.getElementById('toggleBaidu').classList.contains('active')
+    baiduEnabled: document.getElementById('toggleBaidu').classList.contains('active'),
+    bingEnabled: document.getElementById('toggleBing').classList.contains('active')
   };
   
   // 获取URL黑名单
@@ -1133,6 +1205,95 @@ function addSyntaxEventListeners() {
       openDeleteModal(syntaxId, syntaxName);
     });
   });
+  
+  // 搜索引擎开关
+  document.querySelectorAll('.engine-toggle').forEach(toggle => {
+    toggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const syntaxId = e.currentTarget.dataset.syntaxId;
+      const engine = e.currentTarget.dataset.engine;
+      const isActive = e.currentTarget.classList.contains('active');
+      
+      // 切换状态
+      e.currentTarget.classList.toggle('active');
+      
+      // 更新语法库中的引擎设置
+      updateSyntaxEngineSettings(syntaxId, engine, !isActive);
+      
+      // 显示通知
+      const engineNames = {
+        google: 'Google',
+        baidu: '百度',
+        bing: 'Bing'
+      };
+      showNotification(`${engineNames[engine]}搜索引擎已${!isActive ? '启用' : '禁用'}`, 'success');
+    });
+  });
+}
+
+// 更新语法的搜索引擎设置
+function updateSyntaxEngineSettings(syntaxId, engine, enabled) {
+  chrome.storage.local.get(['syntaxLibrary'], (result) => {
+    if (result.syntaxLibrary) {
+      const syntaxLibrary = result.syntaxLibrary.map(syntax => {
+        if (syntax.id === syntaxId) {
+          if (syntax.builtin) {
+            // 内置语法：使用engineSettings
+            if (!syntax.engineSettings) {
+              syntax.engineSettings = {
+                google: syntax.engines.includes('google'),
+                baidu: syntax.engines.includes('baidu'),
+                bing: syntax.engines.includes('bing')
+              };
+            }
+            
+            // 更新指定引擎的设置
+            syntax.engineSettings[engine] = enabled;
+            
+            // 更新engines数组以保持兼容性
+            const enabledEngines = [];
+            if (syntax.engineSettings.google) enabledEngines.push('google');
+            if (syntax.engineSettings.baidu) enabledEngines.push('baidu');
+            if (syntax.engineSettings.bing) enabledEngines.push('bing');
+            syntax.engines = enabledEngines;
+          } else {
+            // 自定义语法：直接更新engines数组
+            const currentEngines = [...syntax.engines];
+            
+            if (enabled) {
+              // 启用引擎：如果不在数组中则添加
+              if (!currentEngines.includes(engine)) {
+                currentEngines.push(engine);
+              }
+            } else {
+              // 禁用引擎：从数组中移除
+              const index = currentEngines.indexOf(engine);
+              if (index > -1) {
+                currentEngines.splice(index, 1);
+              }
+            }
+            
+            syntax.engines = currentEngines;
+          }
+          
+          return syntax;
+        }
+        return syntax;
+      });
+      
+      chrome.storage.local.set({ syntaxLibrary }, () => {
+        console.log(`语法 ${syntaxId} 的 ${engine} 引擎设置已更新为: ${enabled}`);
+        
+        // 广播语法变更消息，实现实时同步
+        chrome.runtime.sendMessage({
+          action: 'syntaxChanged',
+          syntaxLibrary: syntaxLibrary
+        });
+      });
+    }
+  });
 }
 
 // 应用设置到UI元素
@@ -1157,6 +1318,12 @@ function applySettings(settings) {
     toggleBaidu.classList.toggle('active', settings.baiduEnabled === true);
   }
   
+  // Bing搜索支持
+  const toggleBing = document.getElementById('toggleBing');
+  if (toggleBing) {
+    toggleBing.classList.toggle('active', settings.bingEnabled === true);
+  }
+  
   // URL黑名单
   const urlBlacklist = document.getElementById('urlBlacklist');
   if (urlBlacklist) {
@@ -1166,9 +1333,66 @@ function applySettings(settings) {
   }
 }
 
+// 加载清单信息
+function loadManifestInfo() {
+  const manifest = chrome.runtime.getManifest();
+  
+  // 更新版本号
+  const versionElements = document.querySelectorAll('#versionText, #aboutVersionText');
+  versionElements.forEach(element => {
+    if (element) {
+      element.textContent = manifest.version;
+    }
+  });
+  
+  // 设置GitHub链接
+  const githubLink = manifest.homepage_url;
+  const githubElements = document.querySelectorAll('#githubLink, #aboutGithubLink');
+  githubElements.forEach(element => {
+    if (element && githubLink) {
+      element.href = githubLink;
+    }
+  });
+  
+  // 设置Star项目链接
+  const starProjectLink = document.getElementById('starProjectLink');
+  if (starProjectLink && githubLink) {
+    // 添加点击事件，显示Star引导模态窗口
+    starProjectLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      // 显示Star项目模态窗口
+      const starModal = document.getElementById('starProjectModal');
+      if (starModal) {
+        starModal.classList.add('show');
+        
+        // 设置确认按钮的点击事件
+        const confirmStarBtn = document.getElementById('confirmStarBtn');
+        if (confirmStarBtn) {
+          confirmStarBtn.onclick = function() {
+            // 关闭模态窗口
+            starModal.classList.remove('show');
+            
+            // 显示跳转提示
+            showNotification('正在跳转到GitHub仓库，请点击Star按钮支持项目 ⭐', 'success');
+            
+            // 跳转到GitHub仓库
+            setTimeout(() => {
+              window.open(githubLink, '_blank');
+            }, 800);
+          };
+        }
+      }
+    });
+  }
+}
+
 // 初始化
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('DOM加载完成，开始初始化设置');
+  
+  // 加载manifest信息
+  loadManifestInfo();
   
   // 添加消息监听器，用于接收设置变更消息
   chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
@@ -1277,7 +1501,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   addEventListeners();
 
   // 导出配置按钮
-  document.querySelector('.bg-blue-600').addEventListener('click', function() {
+  document.getElementById('exportConfigBtn').addEventListener('click', function() {
     exportConfig();
   });
   

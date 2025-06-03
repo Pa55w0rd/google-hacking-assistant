@@ -1,26 +1,13 @@
 /* Google搜索侧边栏样式 */
+
 body {
   font-family: 'Roboto', Arial, sans-serif;
 }
 
-/* 确保侧边栏在适当的位置 */
+/* Google特有的布局调整 */
 #rhs {
-  min-width: 320px !important;
+  min-width: 340px !important;
   margin-left: 20px !important;
-}
-
-.hacking-sidebar {
-  width: 320px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 6px rgba(32,33,36,.28);
-  z-index: 1000;
-  max-height: 90vh;
-  overflow-y: auto;
-  overflow-x: hidden;
-  position: sticky;
-  top: 10px;
-  margin-bottom: 16px;
 }
 
 /* 修复Google搜索页面上可能的布局问题 */
@@ -29,205 +16,15 @@ body {
   flex: 1 !important;
 }
 
-.glass-morph {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.12);
-}
-
-.risk-info { 
-  background-color: #e8f0fe; 
-  border-left: 3px solid #1a73e8; 
-}
-
-.risk-low { 
-  background-color: #e6f4ea; 
-  border-left: 3px solid #34a853; 
-}
-
-.risk-medium { 
-  background-color: #fef7e0; 
-  border-left: 3px solid #fbbc04; 
-}
-
-.risk-high { 
-  background-color: #fce8e6; 
-  border-left: 3px solid #ea4335; 
-}
-
-.syntax-btn {
-  transition: all 0.2s ease;
-  cursor: pointer;
-  margin-bottom: 8px;
-  text-align: left;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-radius: 4px;
-  padding: 8px 12px;
-}
-
-.syntax-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(32,33,36,.10);
-}
-
-.sidebar-header {
-  padding: 12px;
-  border-bottom: 1px solid #e1e6eb;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.sidebar-header-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: #202124;
-}
-
-.sidebar-header-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.sidebar-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.blue-button {
-  background-color: #e8f0fe;
-  color: #1a73e8;
-}
-
-.blue-button:hover {
-  background-color: #d2e3fc;
-}
-
-.gray-button {
-  background-color: #f1f3f4;
-  color: #5f6368;
-}
-
-.gray-button:hover {
-  background-color: #e8eaed;
-}
-
-.url-panel {
-  padding: 12px;
-  border-bottom: 1px solid #e1e6eb;
-}
-
-.url-panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.url-panel-title {
-  font-size: 13px;
-  font-weight: 500;
-  color: #202124;
-}
-
-.url-panel-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.url-list {
-  background-color: #f8f9fa;
-  border: 1px solid #dadce0;
-  border-radius: 4px;
-  max-height: 240px;
-  overflow-y: auto;
-  padding: 4px;
-}
-
-.url-item {
-  padding: 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  cursor: pointer;
-}
-
-.url-item:hover {
-  background-color: #e8f0fe;
-}
-
-.syntax-container {
-  padding: 12px;
-}
-
-.sidebar-footer {
-  padding: 12px;
-  border-top: 1px solid #dfe1e5;
-  font-size: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #5f6368;
-}
-
-.sidebar-footer-links {
-  display: flex;
-  gap: 12px;
-}
-
-.sidebar-footer-link {
-  color: #1a73e8;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.sidebar-footer-link:hover {
-  text-decoration: underline;
-}
-
-.sidebar-footer-version {
-  color: #5f6368;
-}
-
-/* 适应不同设备的响应式样式 */
+/* Google特有的响应式样式 */
 @media (max-width: 1200px) {
   #rhs {
-    min-width: 300px !important;
-  }
-  
-  .hacking-sidebar {
-    width: 300px;
+    min-width: 320px !important;
   }
 }
 
 @media (max-width: 1000px) {
   #rhs {
-    min-width: 280px !important;
+    min-width: 300px !important;
   }
-  
-  .hacking-sidebar {
-    width: 280px;
-  }
-}
-
-/* 确保Font Awesome图标正确显示 */
-.fas, .fab {
-  display: inline-block;
-  width: 14px;
-  text-align: center;
-  margin-right: 4px;
 } 

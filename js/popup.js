@@ -2,7 +2,8 @@
 const defaultSettings = {
   sidebarEnabled: true,
   googleEnabled: true,
-  baiduEnabled: true
+  baiduEnabled: false,
+  bingEnabled: false
 };
 
 // 保存设置到Chrome存储
@@ -10,7 +11,8 @@ function saveSettings() {
   const settings = {
     sidebarEnabled: document.getElementById('sidebarToggle').classList.contains('active'),
     googleEnabled: document.getElementById('googleToggle').classList.contains('active'),
-    baiduEnabled: document.getElementById('baiduToggle').classList.contains('active')
+    baiduEnabled: document.getElementById('baiduToggle').classList.contains('active'),
+    bingEnabled: document.getElementById('bingToggle').classList.contains('active')
   };
   
   chrome.storage.local.set({searchHackingSettings: settings}, function() {
@@ -34,6 +36,9 @@ function applySettings(settings) {
   
   // 百度开关
   document.getElementById('baiduToggle').classList.toggle('active', settings.baiduEnabled !== false);
+  
+  // Bing开关
+  document.getElementById('bingToggle').classList.toggle('active', settings.bingEnabled !== false);
 }
 
 // 加载设置
@@ -55,15 +60,15 @@ function loadManifestInfo() {
   }
   
   // 设置GitHub链接
-  const githubLink = manifest.homepage_url || "https://github.com/Pa55w0rd/google-hacking-assistant";
-  const githubElement = document.querySelector('a[href*="github.com"]');
-  if (githubElement) {
+  const githubLink = manifest.homepage_url;
+  const githubElement = document.querySelector('#githubLink');
+  if (githubElement && githubLink) {
     githubElement.href = githubLink;
   }
   
   // 设置反馈链接
-  const feedbackLink = manifest.bugs ? manifest.bugs.url : `${githubLink}/issues/new`;
-  const feedbackElement = document.querySelector('a[href*="issues/new"]');
+  const feedbackLink = `${githubLink}/issues/new`;
+  const feedbackElement = document.querySelector('#feedbackLink');
   if (feedbackElement) {
     feedbackElement.href = feedbackLink;
   }
@@ -110,6 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
   toggleSetting('sidebarToggle');
   toggleSetting('googleToggle');
   toggleSetting('baiduToggle');
+  toggleSetting('bingToggle');
   
   // 打开设置页面
   document.getElementById('openOptions').addEventListener('click', function() {

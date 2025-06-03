@@ -2,85 +2,165 @@
  * 默认内置语法列表
  */
 const BUILTIN_SYNTAX = [
+  // === 通用语法（所有引擎都支持且效果好） ===
   {
-    id: "default_docs",
-    name: "公开文档",
-    template: "site:{target_domain} filetype:doc OR filetype:docx OR filetype:odt OR filetype:pdf OR filetype:rtf OR filetype:sxw OR filetype:psw OR filetype:ppt OR filetype:pptx OR filetype:pps OR filetype:csv", 
+    id: "universal_docs",
+    name: "文档文件",
+    template: "site:{target_domain} filetype:pdf OR filetype:doc OR filetype:docx OR filetype:ppt OR filetype:pptx", 
     enabled: true,
     risk: "info",
-    engines: ["google", "baidu"],
+    engines: ["google", "baidu", "bing"],
+    engineSettings: {
+      google: true,
+      baidu: true,
+      bing: true
+    },
     builtin: true
   },
   {
-    id: "default_dir_list",
-    name: "目录列表漏洞",
-    template: "site:{target_domain} intitle:index.of OR \"parent directory\"",
+    id: "universal_config",
+    name: "配置文件",
+    template: "site:{target_domain} filetype:xml OR filetype:conf OR filetype:cfg OR filetype:ini OR filetype:env", 
+    enabled: true,
+    risk: "high",
+    engines: ["google", "baidu", "bing"],
+    engineSettings: {
+      google: true,
+      baidu: true,
+      bing: true
+    },
+    builtin: true
+  },
+  {
+    id: "universal_backup",
+    name: "备份文件",
+    template: "site:{target_domain} filetype:sql OR filetype:bak OR filetype:backup OR filetype:old",
+    enabled: true,
+    risk: "high",
+    engines: ["google", "baidu", "bing"],
+    engineSettings: {
+      google: true,
+      baidu: true,
+      bing: true
+    },
+    builtin: true
+  },
+  {
+    id: "universal_login",
+    name: "登录页面",
+    template: "site:{target_domain} inurl:login OR inurl:admin OR inurl:signin", 
+    enabled: true,
+    risk: "low",
+    engines: ["google", "baidu", "bing"],
+    engineSettings: {
+      google: true,
+      baidu: true,
+      bing: true
+    },
+    builtin: true
+  },
+  
+  // === Google 特色语法 ===
+  {
+    id: "google_directory",
+    name: "目录列表",
+    template: "site:{target_domain} intitle:\"index of\" OR \"parent directory\"",
     enabled: true,
     risk: "medium",
-    engines: ["google", "baidu"],
+    engines: ["google"],
+    engineSettings: {
+      google: true,
+      baidu: false,
+      bing: false
+    },
     builtin: true
   },
   {
-    id: "default_config_files",
-    name: "配置文件暴露",
-    template: "site:{target_domain} filetype:xml OR filetype:conf OR filetype:cnf OR filetype:reg OR filetype:inf OR filetype:rdp OR filetype:cfg OR filetype:txt OR filetype:ora OR filetype:ini OR filetype:env OR filetype:yml OR filetype:yaml OR filetype:json", 
+    id: "google_errors",
+    name: "错误信息",
+    template: "site:{target_domain} \"fatal error\" OR \"syntax error\" OR \"warning:\" OR \"mysql error\"",
     enabled: true,
     risk: "high",
-    engines: ["google", "baidu"],
+    engines: ["google"],
+    engineSettings: {
+      google: true,
+      baidu: false,
+      bing: false
+    },
     builtin: true
   },
   {
-    id: "default_db_backup_files",
-    name: "数据库备份文件",
-    template: "site:{target_domain} filetype:sql OR filetype:bak OR filetype:backup OR filetype:old OR filetype:tmp",
+    id: "google_phpinfo",
+    name: "PHP信息",
+    template: "site:{target_domain} intitle:phpinfo OR inurl:phpinfo.php",
     enabled: true,
     risk: "high",
-    engines: ["google", "baidu"],
+    engines: ["google"],
+    engineSettings: {
+      google: true,
+      baidu: false,
+      bing: false
+    },
+    builtin: true
+  },
+  
+  // === 百度特色语法 ===
+  {
+    id: "baidu_chinese",
+    name: "中文敏感信息",
+    template: "site:{target_domain} \"密码\" OR \"账号\" OR \"用户名\" OR \"管理员\" OR \"后台\"",
+    enabled: true,
+    risk: "medium",
+    engines: ["baidu"],
+    engineSettings: {
+      google: false,
+      baidu: true,
+      bing: false
+    },
     builtin: true
   },
   {
-    id: "default_log_files",
-    name: "日志文件暴漏",
+    id: "baidu_logs",
+    name: "日志文件",
     template: "site:{target_domain} filetype:log OR inurl:log",
     enabled: true,
     risk: "medium",
-    engines: ["google", "baidu"],
+    engines: ["baidu"],
+    engineSettings: {
+      google: false,
+      baidu: true,
+      bing: false
+    },
     builtin: true
   },
+  
+  // === Bing 特色语法 ===
   {
-    id: "default_login_admin",
-    name: "登录和管理页面",
-    template: "site:{target_domain} inurl:login OR inurl:admin OR inurl:signin OR inurl:dashboard OR intitle:\"管理\" OR intitle:\"登录\" OR intitle:\"Admin Login\" OR intitle:\"Control Panel\"", 
-    enabled: true,
-    risk: "low",
-    engines: ["google", "baidu"],
-    builtin: true
-  },
-  {
-    id: "default_error_exposures",
-    name: "错误信息泄露",
-    template: "site:{target_domain} intext:\"sql syntax\" OR \"syntax error\" OR \"Fatal error\" OR \"PHP Error\" OR \"PHP Warning\"", 
+    id: "bing_contains",
+    name: "文档内容搜索",
+    template: "site:{target_domain} contains:password OR contains:confidential OR contains:secret",
     enabled: true,
     risk: "high",
-    engines: ["google", "baidu"],
+    engines: ["bing"],
+    engineSettings: {
+      google: false,
+      baidu: false,
+      bing: true
+    },
     builtin: true
   },
   {
-    id: "default_sensitive_info",
-    name: "敏感信息泄露",
-    template: "site:{target_domain} filetype:php intitle:phpinfo OR inurl:.git OR inurl:wp-config",
-    enabled: true,
-    risk: "high",
-    engines: ["google", "baidu"],
-    builtin: true
-  },
-  {
-    id: "default_api_dev",
-    name: "API开发文档",
-    template: "site:{target_domain} inurl:api OR inurl:swagger OR intext:\"api key\" OR intext:\"api token\"",
+    id: "bing_api",
+    name: "API文档",
+    template: "site:{target_domain} inurl:api OR inurl:swagger OR \"api documentation\"",
     enabled: true,
     risk: "medium",
-    engines: ["google", "baidu"],
+    engines: ["bing"],
+    engineSettings: {
+      google: false,
+      baidu: false,
+      bing: true
+    },
     builtin: true
   }
 ];
@@ -92,6 +172,7 @@ const DEFAULT_SETTINGS = {
   sidebarEnabled: true,
   googleEnabled: true,
   baiduEnabled: false,
+  bingEnabled: false,
   urlBlacklist: [
     "example.com",
     "*.gov",
@@ -357,6 +438,17 @@ function isBaiduSearchUrl(url) {
 }
 
 /**
+ * 检查URL是否为Bing搜索页面
+ * @param {string} url - 要检查的URL
+ * @returns {boolean} - 是否为Bing搜索页面
+ */
+function isBingSearchUrl(url) {
+  return url.includes('bing.com/search') || 
+         url.includes('bing.cn/search') ||
+         /bing\.[a-z.]+\/search/.test(url);
+}
+
+/**
  * 检查URL是否包含site:参数
  * @param {string} url - 要检查的URL
  * @returns {boolean} - 是否包含site:参数
@@ -369,19 +461,36 @@ function hasSiteParameter(url) {
 /**
  * 注入脚本和样式到页面
  * @param {number} tabId - 标签页ID
- * @param {boolean} isGoogle - 是否为Google搜索页面
+ * @param {string} searchEngine - 搜索引擎类型 ('google', 'baidu', 'bing')
  */
-function injectScriptsAndStyles(tabId, isGoogle) {
+function injectScriptsAndStyles(tabId, searchEngine) {
   // 根据搜索引擎类型选择不同的内容脚本
-  const scriptFile = isGoogle ? 'js/content.js' : 'js/baidu-content.js';
-  const cssFile = isGoogle ? 'css/content.css' : 'css/baidu-content.css';
+  let scriptFile, cssFile;
+  
+  switch (searchEngine) {
+    case 'google':
+      scriptFile = 'js/content.js';
+      cssFile = 'css/content.css';
+      break;
+    case 'baidu':
+      scriptFile = 'js/baidu-content.js';
+      cssFile = 'css/baidu-content.css';
+      break;
+    case 'bing':
+      scriptFile = 'js/bing-content.js';
+      cssFile = 'css/bing-content.css';
+      break;
+    default:
+      console.error('未知的搜索引擎类型:', searchEngine);
+      return;
+  }
   
   // 注入脚本
   chrome.scripting.executeScript({
     target: {tabId: tabId},
     files: [scriptFile]
   }).then(() => {
-    console.log('内容脚本注入成功');
+    console.log(`${searchEngine}内容脚本注入成功`);
     
     // 注入样式
     return chrome.scripting.insertCSS({
@@ -389,9 +498,9 @@ function injectScriptsAndStyles(tabId, isGoogle) {
       files: [cssFile]
     });
   }).then(() => {
-    console.log('样式注入成功');
+    console.log(`${searchEngine}样式注入成功`);
   }).catch(err => {
-    console.error('脚本或样式注入失败:', err);
+    console.error(`${searchEngine}脚本或样式注入失败:`, err);
   });
 }
 
@@ -402,12 +511,18 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
   if (changeInfo.status === 'complete' && tab.url) {
     console.log('页面加载完成:', tab.url);
     
-    // 检查是否是Google或百度搜索结果页面
+    // 检查是否是Google、百度或Bing搜索结果页面
     const isGoogleSearch = isGoogleSearchUrl(tab.url);
     const isBaiduSearch = isBaiduSearchUrl(tab.url);
+    const isBingSearch = isBingSearchUrl(tab.url);
     
-    if (isGoogleSearch || isBaiduSearch) {
-      console.log('检测到搜索引擎页面:', isGoogleSearch ? 'Google' : 'Baidu');
+    if (isGoogleSearch || isBaiduSearch || isBingSearch) {
+      let searchEngine = '';
+      if (isGoogleSearch) searchEngine = 'Google';
+      else if (isBaiduSearch) searchEngine = 'Baidu';
+      else if (isBingSearch) searchEngine = 'Bing';
+      
+      console.log('检测到搜索引擎页面:', searchEngine);
       
       // 检查URL中是否包含site:参数或启用测试模式直接注入
       const hasSiteParam = hasSiteParameter(tab.url);
@@ -430,13 +545,19 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
           if (forceInject || settings.sidebarEnabled !== false) {
             if (forceInject || 
                 (isGoogleSearch && settings.googleEnabled !== false) || 
-                (isBaiduSearch && settings.baiduEnabled !== false)) {
+                (isBaiduSearch && settings.baiduEnabled !== false) ||
+                (isBingSearch && settings.bingEnabled !== false)) {
               
-              console.log('注入侧边栏到标签页:', tabId, isGoogleSearch ? 'Google' : 'Baidu');
+              console.log('注入侧边栏到标签页:', tabId, searchEngine);
               
               // 注入侧边栏 - 添加延迟确保页面已完全加载
               setTimeout(() => {
-                injectScriptsAndStyles(tabId, isGoogleSearch);
+                let engineType = '';
+                if (isGoogleSearch) engineType = 'google';
+                else if (isBaiduSearch) engineType = 'baidu';
+                else if (isBingSearch) engineType = 'bing';
+                
+                injectScriptsAndStyles(tabId, engineType);
               }, 500);
             }
           }

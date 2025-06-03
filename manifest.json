@@ -1,8 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Search Hacking 助手",
-  "version": "2.0.0",
-  "description": "在Google和百度搜索结果页面显示Hacking语法侧边栏，帮助用户进行高级搜索操作",
+  "description": "在Google、百度和Bing搜索结果页面显示Hacking语法侧边栏，帮助用户进行高级搜索操作",
   "homepage_url": "https://github.com/Pa55w0rd/google-hacking-assistant",
   "icons": {
     "16": "images/icon16.png",
@@ -21,6 +20,52 @@
   "background": {
     "service_worker": "js/background.js"
   },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.google.com/*",
+        "*://*.google.co.jp/*",
+        "*://*.google.co.uk/*",
+        "*://*.google.com.hk/*",
+        "*://*.google.co.in/*",
+        "*://*.google.fr/*",
+        "*://*.google.de/*",
+        "*://*.google.it/*",
+        "*://*.google.es/*",
+        "*://*.google.ca/*",
+        "*://*.google.com.br/*",
+        "*://*.google.com.au/*",
+        "*://*.google.ru/*",
+        "*://*.google.nl/*"
+      ],
+      "js": ["js/content.js"],
+      "css": ["css/sidebar-common.css", "css/content.css"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["*://*.baidu.com/*"],
+      "js": ["js/baidu-content.js"],
+      "css": ["css/sidebar-common.css", "css/baidu-content.css"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": [
+        "*://*.bing.com/*",
+        "*://*.bing.cn/*",
+        "*://*.bing.co.uk/*",
+        "*://*.bing.de/*",
+        "*://*.bing.fr/*",
+        "*://*.bing.it/*",
+        "*://*.bing.es/*",
+        "*://*.bing.ca/*",
+        "*://*.bing.com.au/*",
+        "*://*.bing.co.jp/*"
+      ],
+      "js": ["js/bing-content.js"],
+      "css": ["css/sidebar-common.css", "css/bing-content.css"],
+      "run_at": "document_end"
+    }
+  ],
   "permissions": [
     "storage",
     "tabs",
@@ -41,7 +86,17 @@
     "*://*.google.com.au/*",
     "*://*.google.ru/*",
     "*://*.google.nl/*",
-    "*://*.baidu.com/*"
+    "*://*.baidu.com/*",
+    "*://*.bing.com/*",
+    "*://*.bing.cn/*",
+    "*://*.bing.co.uk/*",
+    "*://*.bing.de/*",
+    "*://*.bing.fr/*",
+    "*://*.bing.it/*",
+    "*://*.bing.es/*",
+    "*://*.bing.ca/*",
+    "*://*.bing.com.au/*",
+    "*://*.bing.co.jp/*"
   ],
   "web_accessible_resources": [
     {

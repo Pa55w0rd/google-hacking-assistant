@@ -342,4 +342,42 @@ input[type="radio"]:checked + .custom-radio::after {
 .gradient-header {
   background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
   border-radius: 12px 12px 0 0;
+}
+
+/* 搜索引擎开关样式 */
+.engine-toggle {
+  width: 32px;
+  height: 16px;
+  background-color: #e5e7eb;
+  border-radius: 8px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #d1d5db;
+}
+
+.engine-toggle::before {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 12px;
+  height: 12px;
+  background-color: white;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.engine-toggle.active {
+  background-color: #3b82f6;
+  border-color: #2563eb;
+}
+
+.engine-toggle.active::before {
+  transform: translateX(16px);
+}
+
+.engine-toggle:hover {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 } 
