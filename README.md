@@ -277,6 +277,9 @@ URL黑名单对"提取URL"功能特别有用，可以帮助你过滤掉不需要
 
 ---
 ## 📜 更新日志
+### v2.1.1
+
+*   **问题修复**：修复了Chrome扩展安装时出现的"Required value 'version' is missing or invalid"问题。
 
 ### v2.1
 
