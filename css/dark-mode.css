@@ -634,49 +634,6 @@
   box-shadow: 0 0 0 3px rgba(144, 202, 249, 0.3);
 }
 
-/* 主题切换通知样式 */
-.theme-notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  padding: 12px 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px var(--shadow-medium);
-  border: 1px solid var(--border-secondary);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  opacity: 0;
-  transform: translateX(100%);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.theme-notification.show {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.theme-notification .icon {
-  font-size: 16px;
-}
-
-.theme-notification.light {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  color: #1a1a1a;
-  border-color: #e1e5e9;
-}
-
-.theme-notification.dark {
-  background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
-  color: #ffffff;
-  border-color: #404040;
-}
-
 /* 平滑过渡 */
 * {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;

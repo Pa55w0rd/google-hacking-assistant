@@ -82,22 +82,17 @@ class ThemeManager {
 
   // 设置主题
   setTheme(theme) {
+    console.log('设置主题为:', theme);
     this.currentTheme = theme;
+    
+    // 应用主题到DOM
     document.documentElement.setAttribute('data-theme', theme);
     
-    // 更新主题切换按钮状态
-    this.updateToggleButtons();
+    // 保存主题设置
+    this.saveTheme(theme);
     
-    // 保存主题设置（除非是首次检测）
-    if (!this.isFirstTime) {
-      this.saveTheme(theme);
-    } else {
-      // 首次安装时也要保存，但延迟一点以确保用户看到了主题应用
-      setTimeout(() => {
-        this.saveTheme(theme);
-        this.isFirstTime = false;
-      }, 1000);
-    }
+    // 立即更新按钮状态
+    this.updateToggleButtons();
     
     // 触发主题变更事件
     this.dispatchThemeChangeEvent(theme);
@@ -108,46 +103,12 @@ class ThemeManager {
     const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
     this.setTheme(newTheme);
     
-    // 显示切换通知
-    this.showThemeNotification(newTheme);
-  }
-
-  // 显示主题切换通知
-  showThemeNotification(theme) {
-    // 移除现有通知
-    const existingNotification = document.querySelector('.theme-notification');
-    if (existingNotification) {
-      existingNotification.remove();
+    // 只在options页面显示通知
+    if (window.location.pathname.includes('options.html') && typeof showNotification === 'function') {
+      const icon = newTheme === 'dark' ? '🌙' : '☀️';
+      const text = newTheme === 'dark' ? '已切换到深色模式' : '已切换到浅色模式';
+      showNotification(`${icon} ${text}`, 'success');
     }
-
-    // 创建新通知
-    const notification = document.createElement('div');
-    notification.className = `theme-notification ${theme}`;
-    
-    const icon = theme === 'dark' ? '🌙' : '☀️';
-    const text = theme === 'dark' ? '已切换到深色模式' : '已切换到浅色模式';
-    
-    notification.innerHTML = `
-      <span class="icon">${icon}</span>
-      <span>${text}</span>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    // 显示动画
-    setTimeout(() => {
-      notification.classList.add('show');
-    }, 100);
-    
-    // 3秒后自动隐藏
-    setTimeout(() => {
-      notification.classList.remove('show');
-      setTimeout(() => {
-        if (notification.parentNode) {
-          notification.remove();
-        }
-      }, 300);
-    }, 3000);
   }
 
   // 保存主题设置
@@ -164,15 +125,39 @@ class ThemeManager {
   // 更新主题切换按钮状态
   updateToggleButtons() {
     const toggleButtons = document.querySelectorAll('.theme-toggle');
+    console.log('更新主题切换按钮状态，当前主题:', this.currentTheme, '找到按钮数量:', toggleButtons.length);
+    
     toggleButtons.forEach(button => {
       if (this.currentTheme === 'dark') {
         button.classList.add('dark');
         button.setAttribute('aria-label', '切换到浅色模式');
         button.setAttribute('title', '切换到浅色模式');
+        // 更新按钮文本内容
+        const buttonText = button.querySelector('span:not(.moon-icon)');
+        if (buttonText) {
+          buttonText.textContent = '切换到浅色模式';
+        } else {
+          // 如果没有文本span，创建一个
+          const textSpan = document.createElement('span');
+          textSpan.textContent = '切换到浅色模式';
+          textSpan.style.display = 'none'; // 隐藏文本，只用于屏幕阅读器
+          button.appendChild(textSpan);
+        }
       } else {
         button.classList.remove('dark');
         button.setAttribute('aria-label', '切换到深色模式');
         button.setAttribute('title', '切换到深色模式');
+        // 更新按钮文本内容
+        const buttonText = button.querySelector('span:not(.moon-icon)');
+        if (buttonText) {
+          buttonText.textContent = '切换到深色模式';
+        } else {
+          // 如果没有文本span，创建一个
+          const textSpan = document.createElement('span');
+          textSpan.textContent = '切换到深色模式';
+          textSpan.style.display = 'none'; // 隐藏文本，只用于屏幕阅读器
+          button.appendChild(textSpan);
+        }
       }
     });
   }
@@ -196,15 +181,49 @@ class ThemeManager {
       }
     }
 
-    // 为主题切换按钮添加点击事件 - 使用事件委托
-    document.addEventListener('click', (e) => {
-      const themeToggle = e.target.closest('.theme-toggle');
-      if (themeToggle) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('主题切换按钮被点击');
-        this.toggleTheme();
-      }
+    // 为主题切换按钮添加点击事件 - 使用更可靠的方式
+    const bindThemeToggleEvents = () => {
+      const toggleButtons = document.querySelectorAll('.theme-toggle');
+      console.log('绑定主题切换按钮事件，找到按钮数量:', toggleButtons.length);
+      
+      toggleButtons.forEach(button => {
+        // 移除可能存在的旧事件监听器
+        button.removeEventListener('click', this.handleThemeToggleClick);
+        // 添加新的事件监听器
+        button.addEventListener('click', this.handleThemeToggleClick.bind(this));
+      });
+    };
+
+    // 立即绑定现有按钮
+    bindThemeToggleEvents();
+
+    // 使用MutationObserver监听DOM变化，自动绑定新添加的按钮
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              if (node.classList && node.classList.contains('theme-toggle')) {
+                console.log('检测到新的主题切换按钮，绑定事件');
+                node.addEventListener('click', this.handleThemeToggleClick.bind(this));
+              }
+              // 检查子元素
+              const childButtons = node.querySelectorAll && node.querySelectorAll('.theme-toggle');
+              if (childButtons && childButtons.length > 0) {
+                console.log('检测到新的主题切换按钮（子元素），绑定事件');
+                childButtons.forEach(btn => {
+                  btn.addEventListener('click', this.handleThemeToggleClick.bind(this));
+                });
+              }
+            }
+          });
+        }
+      });
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
     });
 
     // 监听键盘快捷键 (Ctrl/Cmd + Shift + D)
@@ -219,10 +238,19 @@ class ThemeManager {
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
         this.updateToggleButtons();
+        bindThemeToggleEvents();
       });
     } else {
       this.updateToggleButtons();
     }
+  }
+
+  // 主题切换按钮点击处理函数
+  handleThemeToggleClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('主题切换按钮被点击');
+    this.toggleTheme();
   }
 
   // 处理系统主题变化
