@@ -543,6 +543,10 @@
   outline: none;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
 }
 
 .theme-toggle::before {
@@ -571,6 +575,18 @@
   opacity: 0.8;
 }
 
+/* 添加月亮图标 */
+.theme-toggle .moon-icon {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  font-size: 12px;
+  opacity: 0.4;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+}
+
 /* 深色模式下的主题切换按钮 */
 [data-theme="dark"] .theme-toggle {
   background: linear-gradient(135deg, #263238 0%, #37474f 100%);
@@ -585,8 +601,12 @@
 }
 
 [data-theme="dark"] .theme-toggle::after {
-  content: '🌙';
-  left: 36px;
+  content: '☀️';
+  left: 6px;
+  opacity: 0.4;
+}
+
+[data-theme="dark"] .theme-toggle .moon-icon {
   opacity: 0.9;
 }
 
@@ -612,6 +632,49 @@
 
 [data-theme="dark"] .theme-toggle:focus {
   box-shadow: 0 0 0 3px rgba(144, 202, 249, 0.3);
+}
+
+/* 主题切换通知样式 */
+.theme-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--shadow-medium);
+  border: 1px solid var(--border-secondary);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-notification.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.theme-notification .icon {
+  font-size: 16px;
+}
+
+.theme-notification.light {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  color: #1a1a1a;
+  border-color: #e1e5e9;
+}
+
+.theme-notification.dark {
+  background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+  color: #ffffff;
+  border-color: #404040;
 }
 
 /* 平滑过渡 */

@@ -107,6 +107,47 @@ class ThemeManager {
   toggleTheme() {
     const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
     this.setTheme(newTheme);
+    
+    // 显示切换通知
+    this.showThemeNotification(newTheme);
+  }
+
+  // 显示主题切换通知
+  showThemeNotification(theme) {
+    // 移除现有通知
+    const existingNotification = document.querySelector('.theme-notification');
+    if (existingNotification) {
+      existingNotification.remove();
+    }
+
+    // 创建新通知
+    const notification = document.createElement('div');
+    notification.className = `theme-notification ${theme}`;
+    
+    const icon = theme === 'dark' ? '🌙' : '☀️';
+    const text = theme === 'dark' ? '已切换到深色模式' : '已切换到浅色模式';
+    
+    notification.innerHTML = `
+      <span class="icon">${icon}</span>
+      <span>${text}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // 显示动画
+    setTimeout(() => {
+      notification.classList.add('show');
+    }, 100);
+    
+    // 3秒后自动隐藏
+    setTimeout(() => {
+      notification.classList.remove('show');
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 300);
+    }, 3000);
   }
 
   // 保存主题设置
@@ -155,10 +196,13 @@ class ThemeManager {
       }
     }
 
-    // 为主题切换按钮添加点击事件
+    // 为主题切换按钮添加点击事件 - 使用事件委托
     document.addEventListener('click', (e) => {
-      if (e.target.classList.contains('theme-toggle') || e.target.closest('.theme-toggle')) {
+      const themeToggle = e.target.closest('.theme-toggle');
+      if (themeToggle) {
         e.preventDefault();
+        e.stopPropagation();
+        console.log('主题切换按钮被点击');
         this.toggleTheme();
       }
     });
@@ -170,6 +214,15 @@ class ThemeManager {
         this.toggleTheme();
       }
     });
+
+    // DOM加载完成后更新按钮状态
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        this.updateToggleButtons();
+      });
+    } else {
+      this.updateToggleButtons();
+    }
   }
 
   // 处理系统主题变化
