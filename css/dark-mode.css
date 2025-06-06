@@ -21,25 +21,25 @@
   --shadow-heavy: rgba(0, 0, 0, 0.25);
 }
 
-/* 深色模式变量 */
+/* 深色模式变量 - 增强对比度 */
 [data-theme="dark"] {
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #2d2d2d;
-  --bg-tertiary: #3a3a3a;
-  --text-primary: #e8eaed;
-  --text-secondary: #9aa0a6;
-  --text-tertiary: #80868b;
-  --border-primary: #5f6368;
-  --border-secondary: #3c4043;
-  --accent-primary: #8ab4f8;
-  --accent-secondary: #aecbfa;
-  --success-color: #81c995;
-  --warning-color: #fdd663;
-  --error-color: #f28b82;
-  --info-color: #8ab4f8;
-  --shadow-light: rgba(0, 0, 0, 0.3);
-  --shadow-medium: rgba(0, 0, 0, 0.4);
-  --shadow-heavy: rgba(0, 0, 0, 0.6);
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --bg-tertiary: #2d2d2d;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-tertiary: #8a8a8a;
+  --border-primary: #404040;
+  --border-secondary: #333333;
+  --accent-primary: #90caf9;
+  --accent-secondary: #bbdefb;
+  --success-color: #81c784;
+  --warning-color: #ffb74d;
+  --error-color: #e57373;
+  --info-color: #90caf9;
+  --shadow-light: rgba(0, 0, 0, 0.4);
+  --shadow-medium: rgba(0, 0, 0, 0.6);
+  --shadow-heavy: rgba(0, 0, 0, 0.8);
 }
 
 /* 基础元素深色模式样式 */
@@ -530,60 +530,88 @@
   color: var(--accent-primary) !important;
 }
 
-/* 主题切换按钮样式 */
+/* 主题切换按钮样式 - 全新设计 */
 .theme-toggle {
   position: relative;
-  width: 60px;
-  height: 30px;
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-  border-radius: 15px;
+  width: 56px;
+  height: 28px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-radius: 14px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  border: none;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid #e1e5e9;
   outline: none;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .theme-toggle::before {
   content: '';
   position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 24px;
-  height: 24px;
-  background: white;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
   border-radius: 50%;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.1);
+  z-index: 2;
 }
 
 .theme-toggle::after {
   content: '☀️';
   position: absolute;
   top: 50%;
-  left: 8px;
+  left: 6px;
   transform: translateY(-50%);
-  font-size: 14px;
-  transition: all 0.3s ease;
+  font-size: 12px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+  opacity: 0.8;
 }
 
+/* 深色模式下的主题切换按钮 */
 [data-theme="dark"] .theme-toggle {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  background: linear-gradient(135deg, #263238 0%, #37474f 100%);
+  border-color: #455a64;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 [data-theme="dark"] .theme-toggle::before {
-  transform: translateX(30px);
+  transform: translateX(26px);
+  background: linear-gradient(135deg, #37474f 0%, #455a64 100%);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 [data-theme="dark"] .theme-toggle::after {
   content: '🌙';
-  left: 38px;
+  left: 36px;
+  opacity: 0.9;
 }
 
 /* 主题切换按钮悬停效果 */
 .theme-toggle:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .theme-toggle:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* 主题切换按钮激活效果 */
+.theme-toggle:active {
+  transform: scale(0.98);
+}
+
+/* 主题切换按钮焦点效果 */
+.theme-toggle:focus {
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
+}
+
+[data-theme="dark"] .theme-toggle:focus {
+  box-shadow: 0 0 0 3px rgba(144, 202, 249, 0.3);
 }
 
 /* 平滑过渡 */
@@ -607,4 +635,216 @@
 
 [data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
   background-color: var(--text-tertiary);
+}
+
+/* 深色模式文字对比度优化 */
+[data-theme="dark"] .text-gray-900 {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .text-gray-700 {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .text-gray-600 {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .text-gray-400 {
+  color: var(--text-tertiary) !important;
+}
+
+/* 深色模式下的链接样式 */
+[data-theme="dark"] a {
+  color: var(--accent-primary);
+}
+
+[data-theme="dark"] a:hover {
+  color: var(--accent-secondary);
+}
+
+/* 深色模式下的代码块样式 */
+[data-theme="dark"] code {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+}
+
+[data-theme="dark"] pre {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+}
+
+/* 深色模式下的表格样式 */
+[data-theme="dark"] table {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] th {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] td {
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+}
+
+/* 深色模式下的选择框样式 */
+[data-theme="dark"] select {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] select:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(144, 202, 249, 0.2);
+}
+
+[data-theme="dark"] option {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* 深色模式下的文本区域样式 */
+[data-theme="dark"] textarea {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] textarea:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(144, 202, 249, 0.2);
+}
+
+/* 深色模式下的标签样式 */
+[data-theme="dark"] label {
+  color: var(--text-primary);
+}
+
+/* 深色模式下的图标样式 */
+[data-theme="dark"] .icon {
+  filter: brightness(0.8) contrast(1.2);
+}
+
+/* 深色模式下的分隔线样式 */
+[data-theme="dark"] hr {
+  border-color: var(--border-primary);
+}
+
+/* 深色模式下的工具提示样式 */
+[data-theme="dark"] .tooltip {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  box-shadow: 0 4px 12px var(--shadow-medium);
+}
+
+/* 深色模式下的加载动画样式 */
+[data-theme="dark"] .loading-spinner {
+  border-color: var(--border-primary);
+  border-top-color: var(--accent-primary);
+}
+
+/* 深色模式下的进度条样式 */
+[data-theme="dark"] .progress-bar {
+  background-color: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .progress-fill {
+  background-color: var(--accent-primary);
+}
+
+/* 深色模式下的面包屑导航样式 */
+[data-theme="dark"] .breadcrumb {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .breadcrumb a {
+  color: var(--accent-primary);
+}
+
+[data-theme="dark"] .breadcrumb .separator {
+  color: var(--text-tertiary);
+}
+
+/* 深色模式下的徽章样式增强 */
+[data-theme="dark"] .badge {
+  border: 1px solid var(--border-primary);
+}
+
+[data-theme="dark"] .badge-success {
+  background-color: rgba(129, 199, 132, 0.2);
+  color: var(--success-color);
+  border-color: var(--success-color);
+}
+
+[data-theme="dark"] .badge-warning {
+  background-color: rgba(255, 183, 77, 0.2);
+  color: var(--warning-color);
+  border-color: var(--warning-color);
+}
+
+[data-theme="dark"] .badge-error {
+  background-color: rgba(229, 115, 115, 0.2);
+  color: var(--error-color);
+  border-color: var(--error-color);
+}
+
+[data-theme="dark"] .badge-info {
+  background-color: rgba(144, 202, 249, 0.2);
+  color: var(--info-color);
+  border-color: var(--info-color);
+}
+
+/* 深色模式下的卡片阴影增强 */
+[data-theme="dark"] .card {
+  box-shadow: 0 4px 6px var(--shadow-medium), 0 1px 3px var(--shadow-light);
+}
+
+[data-theme="dark"] .card:hover {
+  box-shadow: 0 8px 15px var(--shadow-heavy), 0 3px 6px var(--shadow-medium);
+}
+
+/* 深色模式下的焦点样式统一 */
+[data-theme="dark"] *:focus {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* 深色模式下的选中文本样式 */
+[data-theme="dark"] ::selection {
+  background-color: rgba(144, 202, 249, 0.3);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] ::-moz-selection {
+  background-color: rgba(144, 202, 249, 0.3);
+  color: var(--text-primary);
+}
+
+/* 深色模式下的占位符文本样式 */
+[data-theme="dark"] ::placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.8;
+}
+
+[data-theme="dark"] ::-webkit-input-placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.8;
+}
+
+[data-theme="dark"] ::-moz-placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.8;
+}
+
+[data-theme="dark"] :-ms-input-placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.8;
 } 
