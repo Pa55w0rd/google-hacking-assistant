@@ -40,13 +40,13 @@
         "*://*.google.nl/*"
       ],
       "js": ["js/content.js"],
-      "css": ["css/sidebar-common.css", "css/content.css"],
+      "css": ["css/sidebar-common.css", "css/dark-mode.css", "css/content.css"],
       "run_at": "document_end"
     },
     {
       "matches": ["*://*.baidu.com/*"],
       "js": ["js/baidu-content.js"],
-      "css": ["css/sidebar-common.css", "css/baidu-content.css"],
+      "css": ["css/sidebar-common.css", "css/dark-mode.css", "css/baidu-content.css"],
       "run_at": "document_end"
     },
     {
@@ -63,7 +63,7 @@
         "*://*.bing.co.jp/*"
       ],
       "js": ["js/bing-content.js"],
-      "css": ["css/sidebar-common.css", "css/bing-content.css"],
+      "css": ["css/sidebar-common.css", "css/dark-mode.css", "css/bing-content.css"],
       "run_at": "document_end"
     }
   ],

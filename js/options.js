@@ -70,7 +70,7 @@ document.getElementById('syntaxSearch').addEventListener('input', function() {
 
 // 导出配置
 function exportConfig() {
-  chrome.storage.local.get(['searchHackingSettings', 'syntaxLibrary'], function(result) {
+  chrome.storage.local.get(['searchHackingSettings', 'syntaxLibrary', 'currentTheme', 'userHasPreference'], function(result) {
     // 获取manifest信息
     const manifest = chrome.runtime.getManifest();
     
@@ -79,7 +79,11 @@ function exportConfig() {
       version: manifest.version, // 从manifest获取版本信息
       exportDate: new Date().toISOString(), // 添加导出时间
       settings: result.searchHackingSettings || {},
-      syntaxLibrary: result.syntaxLibrary || []
+      syntaxLibrary: result.syntaxLibrary || [],
+      themeSettings: {
+        currentTheme: result.currentTheme || 'light',
+        userHasPreference: result.userHasPreference || false
+      }
     };
     
     // 验证和清理语法库数据
@@ -221,61 +225,201 @@ function importConfig(fileContent) {
     const configVersion = config.version || '1.0.0';
     console.log(`导入配置文件版本: ${configVersion}`);
     
-    // 验证和处理设置
-    const settings = config.settings || {};
-    
-    // 确保所有必要的设置字段都存在
-    const defaultSettings = {
-      sidebarEnabled: true,
-      googleEnabled: true,
-      baiduEnabled: false,
-      bingEnabled: false,
-      urlBlacklist: []
-    };
-    
-    const mergedSettings = { ...defaultSettings, ...settings };
-    
-    // 验证语法库结构
-    let invalidSyntaxCount = 0;
-    const validatedSyntaxLibrary = [];
+    // 分析导入内容
+    const importedBuiltinSyntax = [];
+    const importedCustomSyntax = [];
     
     if (Array.isArray(config.syntaxLibrary)) {
       for (const syntax of config.syntaxLibrary) {
         if (validateSyntax(syntax)) {
-          // 确保语法对象包含所有必要字段
-          const validatedSyntax = {
-            id: syntax.id,
-            name: syntax.name,
-            template: syntax.template || syntax.syntax,
-            syntax: syntax.syntax || syntax.template,
-            risk: syntax.risk || 'info',
-            engines: Array.isArray(syntax.engines) ? syntax.engines : ['google'],
-            enabled: syntax.enabled !== false,
-            builtin: syntax.builtin || false
-          };
-          
-          // 如果是内置语法且有engineSettings，保留它
-          if (syntax.builtin && syntax.engineSettings) {
-            validatedSyntax.engineSettings = syntax.engineSettings;
+          if (syntax.builtin) {
+            importedBuiltinSyntax.push(syntax);
+          } else {
+            importedCustomSyntax.push(syntax);
           }
-          
-          validatedSyntaxLibrary.push(validatedSyntax);
-        } else {
-          invalidSyntaxCount++;
-          console.warn('跳过无效语法:', syntax);
         }
       }
     }
     
-    console.log(`验证完成: ${validatedSyntaxLibrary.length} 条有效语法, ${invalidSyntaxCount} 条无效语法`);
+    // 显示导入确认对话框
+    showImportConfirmDialog(config, importedBuiltinSyntax, importedCustomSyntax);
     
-    // 保存基本设置
+  } catch (error) {
+    showNotification('导入失败：无效的配置文件格式', 'error');
+    console.error('配置导入错误:', error);
+  }
+}
+
+// 显示导入确认对话框
+function showImportConfirmDialog(config, importedBuiltinSyntax, importedCustomSyntax) {
+  // 填充导入概览信息
+  const importOverview = document.getElementById('importOverview');
+  const themeInfo = config.themeSettings ? 
+    `${config.themeSettings.currentTheme === 'dark' ? '深色模式' : '浅色模式'}` : 
+    '不包含';
+  
+  importOverview.innerHTML = `
+    <div>• 基本设置：${config.settings ? '包含' : '不包含'}</div>
+    <div>• 主题设置：${themeInfo}</div>
+    <div>• 内置语法：${importedBuiltinSyntax.length} 条（仅更新开关状态）</div>
+    <div>• 自定义语法：${importedCustomSyntax.length} 条</div>
+    ${config.exportDate ? `<div>• 导出时间：${new Date(config.exportDate).toLocaleString('zh-CN')}</div>` : ''}
+  `;
+  
+  // 更新内置语法信息
+  const builtinSyntaxInfo = document.getElementById('builtinSyntaxInfo');
+  builtinSyntaxInfo.innerHTML = `• 发现 <span class="font-medium">${importedBuiltinSyntax.length}</span> 条内置语法，将更新其开关状态`;
+  
+  // 更新自定义语法信息
+  const customSyntaxInfo = document.getElementById('customSyntaxInfo');
+  if (importedCustomSyntax.length > 0) {
+    customSyntaxInfo.innerHTML = `检测到 <strong>${importedCustomSyntax.length}</strong> 条自定义语法，请选择处理方式。`;
+  } else {
+    customSyntaxInfo.innerHTML = '未检测到自定义语法。';
+  }
+  
+  // 显示模态框
+  const modal = document.getElementById('importConfirmModal');
+  modal.classList.add('show');
+  
+  // 绑定确认按钮事件（移除之前的事件监听器）
+  const confirmBtn = document.getElementById('confirmImportBtn');
+  const newConfirmBtn = confirmBtn.cloneNode(true);
+  confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+  
+  newConfirmBtn.addEventListener('click', function() {
+    const customSyntaxMode = document.querySelector('input[name="customSyntaxMode"]:checked')?.value || 'append';
+    executeImport(config, importedBuiltinSyntax, importedCustomSyntax, customSyntaxMode);
+    closeModal('importConfirmModal');
+  });
+  
+  // 绑定取消按钮事件
+  const cancelBtns = modal.querySelectorAll('[data-action="close"]');
+  cancelBtns.forEach(btn => {
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    newBtn.addEventListener('click', function() {
+      closeModal('importConfirmModal');
+      showNotification('已取消导入操作', 'info');
+    });
+  });
+  
+  // 点击背景关闭
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      closeModal('importConfirmModal');
+      showNotification('已取消导入操作', 'info');
+    }
+  });
+}
+
+// 执行导入操作
+function executeImport(config, importedBuiltinSyntax, importedCustomSyntax, customSyntaxMode) {
+  // 获取当前语法库
+  chrome.storage.local.get(['syntaxLibrary', 'searchHackingSettings'], function(result) {
+    const currentSyntaxLibrary = result.syntaxLibrary || [];
+    const currentSettings = result.searchHackingSettings || {};
+    
+    // 处理基本设置
+    let mergedSettings = currentSettings;
+    if (config.settings) {
+      const defaultSettings = {
+        sidebarEnabled: true,
+        googleEnabled: true,
+        baiduEnabled: false,
+        bingEnabled: false,
+        urlBlacklist: []
+      };
+      mergedSettings = { ...defaultSettings, ...currentSettings, ...config.settings };
+    }
+    
+    // 处理主题设置
+    if (config.themeSettings) {
+      const themeData = {
+        currentTheme: config.themeSettings.currentTheme || 'light',
+        userHasPreference: config.themeSettings.userHasPreference !== false
+      };
+      
+      // 保存主题设置
+      chrome.storage.local.set(themeData, function() {
+        console.log('主题设置已导入:', themeData);
+        
+        // 如果有主题管理器，立即应用主题
+        if (window.themeManager) {
+          window.themeManager.setTheme(themeData.currentTheme);
+        } else {
+          // 直接设置主题属性
+          document.documentElement.setAttribute('data-theme', themeData.currentTheme);
+        }
+      });
+    }
+    
+    // 分离当前的内置语法和自定义语法
+    const currentBuiltinSyntax = currentSyntaxLibrary.filter(s => s.builtin);
+    const currentCustomSyntax = currentSyntaxLibrary.filter(s => !s.builtin);
+    
+    // 处理内置语法：只更新开关状态，不修改内容
+    const updatedBuiltinSyntax = currentBuiltinSyntax.map(currentSyntax => {
+      const importedSyntax = importedBuiltinSyntax.find(s => s.id === currentSyntax.id);
+      if (importedSyntax) {
+        // 只更新开关状态和引擎设置
+        return {
+          ...currentSyntax,
+          enabled: importedSyntax.enabled,
+          engineSettings: importedSyntax.engineSettings || currentSyntax.engineSettings
+        };
+      }
+      return currentSyntax;
+    });
+    
+    // 处理自定义语法
+    let finalCustomSyntax = [];
+    let importStats = {
+      builtinUpdated: 0,
+      customAdded: 0,
+      customReplaced: 0,
+      customSkipped: 0,
+      themeImported: !!config.themeSettings
+    };
+    
+    if (customSyntaxMode === 'append') {
+      // 追加模式：保留现有，添加新的
+      finalCustomSyntax = [...currentCustomSyntax];
+      
+      for (const importedSyntax of importedCustomSyntax) {
+        const existingIndex = finalCustomSyntax.findIndex(s => s.id === importedSyntax.id);
+        if (existingIndex === -1) {
+          // 新语法，直接添加
+          finalCustomSyntax.push({
+            ...importedSyntax,
+            builtin: false
+          });
+          importStats.customAdded++;
+        } else {
+          // 重复ID，跳过
+          importStats.customSkipped++;
+        }
+      }
+    } else {
+      // 覆盖模式：替换所有自定义语法
+      finalCustomSyntax = importedCustomSyntax.map(syntax => ({
+        ...syntax,
+        builtin: false
+      }));
+      importStats.customReplaced = finalCustomSyntax.length;
+    }
+    
+    // 统计内置语法更新数量
+    importStats.builtinUpdated = importedBuiltinSyntax.length;
+    
+    // 合并最终的语法库
+    const finalSyntaxLibrary = [...updatedBuiltinSyntax, ...finalCustomSyntax];
+    
+    // 保存设置
     chrome.storage.local.set({searchHackingSettings: mergedSettings}, function() {
       console.log('基本设置已导入:', mergedSettings);
-      // 应用设置到UI
-      applySettings(mergedSettings);
       
-      // 广播设置变更消息，实现实时同步
+      // 广播设置变更消息
       chrome.runtime.sendMessage({
         action: 'settingsChanged',
         settings: mergedSettings
@@ -283,34 +427,63 @@ function importConfig(fileContent) {
     });
     
     // 保存语法库
-    chrome.storage.local.set({syntaxLibrary: validatedSyntaxLibrary}, function() {
-      console.log('语法库已导入，共', validatedSyntaxLibrary.length, '条语法');
+    chrome.storage.local.set({syntaxLibrary: finalSyntaxLibrary}, function() {
+      console.log('语法库已导入，共', finalSyntaxLibrary.length, '条语法');
+      
       // 更新语法列表
       updateSyntaxLists();
       
       // 广播语法变更消息，实现实时同步
       chrome.runtime.sendMessage({
         action: 'syntaxChanged',
-        syntaxLibrary: validatedSyntaxLibrary
+        syntaxLibrary: finalSyntaxLibrary
       });
       
-      // 显示导入结果
-      if (invalidSyntaxCount > 0) {
-        showNotification(`配置已导入！成功导入 ${validatedSyntaxLibrary.length} 条语法，跳过 ${invalidSyntaxCount} 条无效语法`, 'warning');
-      } else {
-        showNotification(`配置已成功导入！共导入 ${validatedSyntaxLibrary.length} 条语法`, 'success');
-      }
-      
-      // 如果有导出时间，显示额外信息
-      if (config.exportDate) {
-        const exportDate = new Date(config.exportDate).toLocaleString('zh-CN');
-        console.log(`导入的配置导出时间: ${exportDate}`);
-      }
+      // 显示详细的导入结果
+      showImportResults(importStats, config);
     });
-    
-  } catch (error) {
-    showNotification('导入失败：无效的配置文件格式', 'error');
-    console.error('配置导入错误:', error);
+  });
+}
+
+// 显示导入结果
+function showImportResults(stats, config) {
+  const messages = [];
+  
+  if (stats.builtinUpdated > 0) {
+    messages.push(`内置语法：${stats.builtinUpdated} 条状态已更新`);
+  }
+  
+  if (stats.customAdded > 0) {
+    messages.push(`自定义语法：新增 ${stats.customAdded} 条`);
+  }
+  
+  if (stats.customReplaced > 0) {
+    messages.push(`自定义语法：替换为 ${stats.customReplaced} 条`);
+  }
+  
+  if (stats.customSkipped > 0) {
+    messages.push(`跳过重复语法：${stats.customSkipped} 条`);
+  }
+  
+  if (stats.themeImported) {
+    const themeName = config.themeSettings.currentTheme === 'dark' ? '深色模式' : '浅色模式';
+    messages.push(`主题设置：已切换到${themeName}`);
+  }
+  
+  const resultMessage = messages.length > 0 ? messages.join('，') : '配置已导入';
+  
+  // 根据结果类型选择通知类型
+  let notificationType = 'success';
+  if (stats.customSkipped > 0 && stats.customAdded === 0 && stats.customReplaced === 0) {
+    notificationType = 'warning';
+  }
+  
+  showNotification(`导入完成！${resultMessage}`, notificationType);
+  
+  // 如果有导出时间，显示额外信息
+  if (config.exportDate) {
+    const exportDate = new Date(config.exportDate).toLocaleString('zh-CN');
+    console.log(`导入的配置导出时间: ${exportDate}`);
   }
 }
 

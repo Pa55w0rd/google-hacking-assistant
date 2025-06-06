@@ -106,14 +106,14 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 });
 
 // 事件监听器
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
   // 初始化主题管理器
-  if (typeof window.themeManager !== 'undefined') {
+  if (typeof ThemeManager !== 'undefined') {
     try {
-      window.themeManager.init();
-      console.log('弹出窗口主题管理器初始化完成');
+      await ThemeManager.init();
+      console.log('Popup页面主题管理器初始化成功');
     } catch (error) {
-      console.warn('弹出窗口主题管理器初始化失败:', error);
+      console.error('主题管理器初始化失败:', error);
     }
   }
   

@@ -13,56 +13,63 @@ class ThemeManager {
     this.addEventListeners();
   }
 
-  // 从存储中加载主题设置
+  // 加载主题
   async loadTheme() {
     try {
-      // 优先从Chrome存储中获取
-      if (typeof chrome !== 'undefined' && chrome.storage) {
-        const result = await new Promise((resolve) => {
-          chrome.storage.local.get([this.storageKey, 'isFirstInstall'], resolve);
-        });
-        
-        const savedTheme = result[this.storageKey];
-        const isFirstInstall = result.isFirstInstall !== false; // 默认为首次安装
-        
-        if (savedTheme) {
-          // 有保存的主题设置，直接使用
-          this.setTheme(savedTheme);
-        } else if (isFirstInstall) {
-          // 首次安装，检测系统偏好并保存
-          this.isFirstTime = true;
-          const systemTheme = this.detectSystemTheme();
-          this.setTheme(systemTheme);
-          
-          // 标记为非首次安装
-          chrome.storage.local.set({ 'isFirstInstall': false });
-          
-          console.log('Search Hacking Assistant: 首次安装，已根据系统设置应用', systemTheme, '主题');
-        } else {
-          // 非首次安装但没有保存的主题，使用浅色模式
-          this.setTheme('light');
-        }
-      } else {
-        // 回退到localStorage
-        const savedTheme = localStorage.getItem(this.storageKey);
-        const isFirstInstall = localStorage.getItem('searchHackingFirstInstall') !== 'false';
-        
-        if (savedTheme) {
-          this.setTheme(savedTheme);
-        } else if (isFirstInstall) {
-          this.isFirstTime = true;
-          const systemTheme = this.detectSystemTheme();
-          this.setTheme(systemTheme);
-          localStorage.setItem('searchHackingFirstInstall', 'false');
-        } else {
-          this.setTheme('light');
+      let savedTheme = null;
+      let userHasPreference = false;
+
+      // 优先从Chrome存储读取
+      if (chrome && chrome.storage && chrome.storage.local) {
+        try {
+          const result = await new Promise((resolve) => {
+            chrome.storage.local.get(['currentTheme', 'userHasPreference'], resolve);
+          });
+          savedTheme = result.currentTheme;
+          userHasPreference = result.userHasPreference;
+          console.log('从Chrome存储读取主题:', savedTheme, '用户偏好:', userHasPreference);
+        } catch (error) {
+          console.warn('Chrome存储读取失败，回退到localStorage:', error);
         }
       }
+
+      // 如果Chrome存储失败，回退到localStorage
+      if (!savedTheme) {
+        savedTheme = localStorage.getItem('currentTheme');
+        userHasPreference = localStorage.getItem('userHasPreference') === 'true';
+        console.log('从localStorage读取主题:', savedTheme, '用户偏好:', userHasPreference);
+      }
+
+      // 如果有保存的主题，使用它
+      if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
+        this.setTheme(savedTheme);
+        return;
+      }
+
+      // 如果是首次安装或没有用户偏好，检测系统主题
+      if (!userHasPreference) {
+        const systemTheme = this.detectSystemTheme();
+        console.log('首次安装，检测到系统主题:', systemTheme);
+        this.setTheme(systemTheme);
+        
+        // 标记为首次安装完成
+        if (chrome && chrome.storage && chrome.storage.local) {
+          chrome.storage.local.set({ 
+            isFirstInstall: false,
+            userHasPreference: true 
+          });
+        } else {
+          localStorage.setItem('isFirstInstall', 'false');
+          localStorage.setItem('userHasPreference', 'true');
+        }
+      } else {
+        // 有用户偏好但没有有效主题，使用默认浅色主题
+        this.setTheme('light');
+      }
     } catch (error) {
-      console.error('主题加载失败:', error);
-      // 发生错误时，检测系统主题作为回退
-      const systemTheme = this.detectSystemTheme();
-      this.setTheme(systemTheme);
+      console.error('加载主题失败:', error);
+      // 出错时使用默认主题
+      this.setTheme('light');
     }
   }
 
@@ -113,12 +120,24 @@ class ThemeManager {
 
   // 保存主题设置
   saveTheme(theme) {
-    // 优先保存到Chrome存储
-    if (typeof chrome !== 'undefined' && chrome.storage) {
-      chrome.storage.local.set({ [this.storageKey]: theme });
-    } else {
+    try {
+      if (chrome && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({ 
+          currentTheme: theme,
+          userHasPreference: true,
+          lastThemeChange: Date.now() // 添加时间戳用于同步
+        });
+      } else {
+        localStorage.setItem('currentTheme', theme);
+        localStorage.setItem('userHasPreference', 'true');
+        localStorage.setItem('lastThemeChange', Date.now().toString());
+      }
+    } catch (error) {
+      console.error('保存主题设置失败:', error);
       // 回退到localStorage
-      localStorage.setItem(this.storageKey, theme);
+      localStorage.setItem('currentTheme', theme);
+      localStorage.setItem('userHasPreference', 'true');
+      localStorage.setItem('lastThemeChange', Date.now().toString());
     }
   }
 
@@ -180,6 +199,33 @@ class ThemeManager {
         });
       }
     }
+
+    // 监听Chrome存储变化（跨页面同步）
+    if (chrome && chrome.storage && chrome.storage.onChanged) {
+      chrome.storage.onChanged.addListener((changes, namespace) => {
+        if (namespace === 'local' && changes.currentTheme) {
+          const newTheme = changes.currentTheme.newValue;
+          if (newTheme && newTheme !== this.currentTheme) {
+            console.log('检测到其他页面的主题变化:', newTheme);
+            this.currentTheme = newTheme;
+            document.documentElement.setAttribute('data-theme', newTheme);
+            this.updateToggleButtons();
+            this.dispatchThemeChangeEvent(newTheme);
+          }
+        }
+      });
+    }
+
+    // 监听localStorage变化（跨标签页同步）
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'currentTheme' && e.newValue && e.newValue !== this.currentTheme) {
+        console.log('检测到localStorage主题变化:', e.newValue);
+        this.currentTheme = e.newValue;
+        document.documentElement.setAttribute('data-theme', e.newValue);
+        this.updateToggleButtons();
+        this.dispatchThemeChangeEvent(e.newValue);
+      }
+    });
 
     // 为主题切换按钮添加点击事件 - 使用更可靠的方式
     const bindThemeToggleEvents = () => {

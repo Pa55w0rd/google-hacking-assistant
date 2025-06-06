@@ -6,9 +6,23 @@
 function getMessage(key, substitutions = null) {
   try {
     if (typeof chrome !== 'undefined' && chrome.i18n && chrome.i18n.getMessage) {
-      return chrome.i18n.getMessage(key, substitutions) || key;
+      const message = chrome.i18n.getMessage(key, substitutions);
+      if (message) return message;
     }
-    return key;
+    
+    // 如果没有国际化文件，返回默认的中文文本
+    const defaultMessages = {
+      'sidebarTitle': 'Search Hacking 助手',
+      'extractUrlBtn': '提取URL',
+      'urlPanelTitle': '提取的URL',
+      'copyAllUrlsBtn': '复制全部',
+      'customSyntaxDivider': '自定义语法',
+      'settingsBtn': '设置',
+      'githubBtn': 'GitHub',
+      'loading': '加载中...'
+    };
+    
+    return defaultMessages[key] || key;
   } catch (error) {
     console.warn('Failed to get i18n message for key:', key, error);
     return key;
@@ -20,9 +34,20 @@ const ThemeManager = {
   // 获取当前主题
   async getCurrentTheme() {
     try {
-      const result = await getSafeStorageData('searchHackingTheme');
-      if (result) {
-        return result;
+      // 优先从Chrome存储读取
+      if (chrome && chrome.storage && chrome.storage.local) {
+        const result = await new Promise((resolve) => {
+          chrome.storage.local.get(['currentTheme'], resolve);
+        });
+        if (result.currentTheme) {
+          return result.currentTheme;
+        }
+      }
+      
+      // 回退到localStorage
+      const savedTheme = localStorage.getItem('currentTheme');
+      if (savedTheme) {
+        return savedTheme;
       }
       
       // 如果没有保存的主题，检测系统偏好
@@ -40,6 +65,8 @@ const ThemeManager = {
   applyThemeToSidebar(sidebar, theme) {
     if (!sidebar) return;
     
+    console.log('[侧边栏] 应用主题:', theme);
+    
     // 设置主题属性
     sidebar.setAttribute('data-theme', theme);
     
@@ -56,29 +83,51 @@ const ThemeManager = {
 
   // 监听主题变化
   setupThemeListener(sidebar) {
-    // 监听存储变化
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
+    console.log('[侧边栏] 设置主题监听器');
+    
+    // 监听Chrome存储变化（与主题管理器同步）
+    if (chrome && chrome.storage && chrome.storage.onChanged) {
       chrome.storage.onChanged.addListener((changes, namespace) => {
-        if (namespace === 'local' && changes.searchHackingTheme) {
-          const newTheme = changes.searchHackingTheme.newValue || 'light';
-          this.applyThemeToSidebar(sidebar, newTheme);
+        if (namespace === 'local' && changes.currentTheme) {
+          const newTheme = changes.currentTheme.newValue;
+          if (newTheme) {
+            console.log('[侧边栏] 检测到主题变化:', newTheme);
+            this.applyThemeToSidebar(sidebar, newTheme);
+          }
         }
       });
     }
+
+    // 监听localStorage变化（跨标签页同步）
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'currentTheme' && e.newValue) {
+        console.log('[侧边栏] 检测到localStorage主题变化:', e.newValue);
+        this.applyThemeToSidebar(sidebar, e.newValue);
+      }
+    });
 
     // 监听系统主题变化
     if (window.matchMedia) {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       const handleSystemThemeChange = async (e) => {
         // 只有在用户没有手动设置主题时才自动切换
-        const savedTheme = await getSafeStorageData('searchHackingTheme');
-        if (!savedTheme) {
+        const savedTheme = await this.getCurrentTheme();
+        const userHasPreference = chrome && chrome.storage ? 
+          await new Promise(resolve => chrome.storage.local.get(['userHasPreference'], resolve)).then(r => r.userHasPreference) :
+          localStorage.getItem('userHasPreference') === 'true';
+          
+        if (!userHasPreference) {
           const newTheme = e.matches ? 'dark' : 'light';
+          console.log('[侧边栏] 系统主题变化，应用新主题:', newTheme);
           this.applyThemeToSidebar(sidebar, newTheme);
         }
       };
       
-      mediaQuery.addListener(handleSystemThemeChange);
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', handleSystemThemeChange);
+      } else {
+        mediaQuery.addListener(handleSystemThemeChange);
+      }
     }
   }
 };

@@ -6,6 +6,119 @@
 if (!window.hackingSidebarInjected) {
   window.hackingSidebarInjected = true;
   
+  // 主题管理功能
+  const ThemeManager = {
+    // 获取当前主题
+    async getCurrentTheme() {
+      try {
+        // 优先从Chrome存储读取
+        if (chrome && chrome.storage && chrome.storage.local) {
+          const result = await new Promise((resolve) => {
+            chrome.storage.local.get(['currentTheme'], resolve);
+          });
+          if (result.currentTheme) {
+            return result.currentTheme;
+          }
+        }
+        
+        // 回退到localStorage
+        const savedTheme = localStorage.getItem('currentTheme');
+        if (savedTheme) {
+          return savedTheme;
+        }
+        
+        // 如果没有保存的主题，检测系统偏好
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          return 'dark';
+        }
+        return 'light';
+      } catch (error) {
+        console.error('获取主题失败:', error);
+        return 'light';
+      }
+    },
+
+    // 应用主题到侧边栏
+    applyThemeToSidebar(sidebar, theme) {
+      if (!sidebar) return;
+      
+      console.log('[Bing侧边栏] 应用主题:', theme);
+      
+      // 递归应用主题到所有子元素
+      const applyThemeRecursively = (element) => {
+        if (element.nodeType === Node.ELEMENT_NODE) {
+          element.setAttribute('data-theme', theme);
+          Array.from(element.children).forEach(applyThemeRecursively);
+        }
+      };
+      
+      sidebar.setAttribute('data-theme', theme);
+      applyThemeRecursively(sidebar);
+    },
+
+    // 设置主题监听器
+    setupThemeListener(sidebar) {
+      if (!sidebar) return;
+      
+      console.log('[Bing侧边栏] 设置主题监听器');
+      
+      // 监听Chrome存储变化
+      if (chrome && chrome.storage && chrome.storage.onChanged) {
+        chrome.storage.onChanged.addListener((changes, namespace) => {
+          if (namespace === 'local' && changes.currentTheme) {
+            const newTheme = changes.currentTheme.newValue;
+            if (newTheme) {
+              console.log('[Bing侧边栏] 检测到主题变化:', newTheme);
+              this.applyThemeToSidebar(sidebar, newTheme);
+            }
+          }
+        });
+      }
+
+      // 监听localStorage变化（跨标签页同步）
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'currentTheme' && e.newValue) {
+          console.log('[Bing侧边栏] 检测到localStorage主题变化:', e.newValue);
+          this.applyThemeToSidebar(sidebar, e.newValue);
+        }
+      });
+
+      // 监听系统主题变化
+      if (window.matchMedia) {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleSystemThemeChange = async (e) => {
+          try {
+            // 检查用户是否有手动设置的主题偏好
+            let userHasPreference = false;
+            if (chrome && chrome.storage && chrome.storage.local) {
+              const result = await new Promise((resolve) => {
+                chrome.storage.local.get(['userHasPreference'], resolve);
+              });
+              userHasPreference = result.userHasPreference;
+            } else {
+              userHasPreference = localStorage.getItem('userHasPreference') === 'true';
+            }
+            
+            if (!userHasPreference) {
+              // 用户没有手动设置过主题，跟随系统变化
+              const newTheme = e.matches ? 'dark' : 'light';
+              console.log('[Bing侧边栏] 跟随系统主题变化为:', newTheme);
+              this.applyThemeToSidebar(sidebar, newTheme);
+            }
+          } catch (error) {
+            console.error('[Bing侧边栏] 处理系统主题变化失败:', error);
+          }
+        };
+
+        if (mediaQuery.addEventListener) {
+          mediaQuery.addEventListener('change', handleSystemThemeChange);
+        } else {
+          mediaQuery.addListener(handleSystemThemeChange);
+        }
+      }
+    }
+  };
+  
   // 保存状态
   const state = {
     lastProcessedUrl: '',
@@ -616,10 +729,10 @@ if (!window.hackingSidebarInjected) {
       const headerElement = document.createElement('div');
       headerElement.className = 'sidebar-header';
       headerElement.innerHTML = `
-        <div class="sidebar-header-title">Search Hacking 助手</div>
+        <div class="sidebar-header-title">${getMessage('sidebarTitle')}</div>
         <div class="sidebar-header-actions">
           <button id="extractUrlBtn" class="sidebar-button blue-button">
-            <i class="fas fa-link"></i> 提取URL
+            <i class="fas fa-link"></i> ${getMessage('extractUrlBtn')}
           </button>
         </div>
       `;
@@ -632,10 +745,10 @@ if (!window.hackingSidebarInjected) {
       urlPanel.style.display = 'none';
       urlPanel.innerHTML = `
         <div class="url-panel-header">
-          <div class="url-panel-title">已提取的URL <span id="urlCount" class="url-count">(0)</span></div>
+          <div class="url-panel-title">${getMessage('urlPanelTitle')} <span id="urlCount" class="url-count">(0)</span></div>
           <div class="url-panel-actions">
             <button id="copyAllUrlsBtn" class="sidebar-button blue-button">
-              复制全部
+              ${getMessage('copyAllUrlsBtn')}
             </button>
             <button id="collapseUrlPanelBtn" class="sidebar-button gray-button">
               <i class="fas fa-chevron-up"></i>
@@ -679,7 +792,7 @@ if (!window.hackingSidebarInjected) {
       if (customSyntaxItems.length > 0) {
         const divider = document.createElement('div');
         divider.className = 'syntax-divider';
-        divider.textContent = '自定义语法';
+        divider.textContent = getMessage('customSyntaxDivider');
         syntaxContainer.appendChild(divider);
         
         // 添加自定义语法
@@ -696,13 +809,13 @@ if (!window.hackingSidebarInjected) {
       footerElement.innerHTML = `
         <div class="sidebar-footer-links">
           <a href="chrome-extension://${chrome.runtime.id}/options.html" class="sidebar-footer-link" target="_blank">
-            <i class="fas fa-cog"></i>设置
+            <i class="fas fa-cog"></i> ${getMessage('settingsBtn')}
           </a>
           <a href="#" class="sidebar-footer-link" target="_blank" id="sidebarGithubLink">
-            <i class="fab fa-github"></i>GitHub
+            <i class="fab fa-github"></i> ${getMessage('githubBtn')}
           </a>
         </div>
-        <div class="sidebar-footer-version" id="sidebarVersion">加载中...</div>
+        <div class="sidebar-footer-version" id="sidebarVersion">${getMessage('loading')}</div>
       `;
       sidebarContainer.appendChild(footerElement);
       
@@ -765,6 +878,18 @@ if (!window.hackingSidebarInjected) {
       
       // 创建侧边栏元素
       const sidebar = createSidebar(syntaxLibrary);
+      
+      // 应用主题到侧边栏
+      (async () => {
+        try {
+          const currentTheme = await ThemeManager.getCurrentTheme();
+          ThemeManager.applyThemeToSidebar(sidebar, currentTheme);
+          ThemeManager.setupThemeListener(sidebar);
+          console.log('[Bing侧边栏] 已应用主题:', currentTheme);
+        } catch (error) {
+          console.warn('[Bing侧边栏] 应用主题失败:', error);
+        }
+      })();
       
       // 查找Bing搜索结果布局容器
       // Bing搜索页面的主要容器选择器
@@ -1341,4 +1466,31 @@ async function getSafeStorageData(key) {
       resolve({}); // 任何错误都返回空对象
     }
   });
+} 
+
+// 国际化工具函数
+function getMessage(key, substitutions = null) {
+  try {
+    if (typeof chrome !== 'undefined' && chrome.i18n && chrome.i18n.getMessage) {
+      const message = chrome.i18n.getMessage(key, substitutions);
+      if (message) return message;
+    }
+    
+    // 如果没有国际化文件，返回默认的中文文本
+    const defaultMessages = {
+      'sidebarTitle': 'Search Hacking 助手',
+      'extractUrlBtn': '提取URL',
+      'urlPanelTitle': '提取的URL',
+      'copyAllUrlsBtn': '复制全部',
+      'customSyntaxDivider': '自定义语法',
+      'settingsBtn': '设置',
+      'githubBtn': 'GitHub',
+      'loading': '加载中...'
+    };
+    
+    return defaultMessages[key] || key;
+  } catch (error) {
+    console.warn('Failed to get i18n message for key:', key, error);
+    return key;
+  }
 } 
