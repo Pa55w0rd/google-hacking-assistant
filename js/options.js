@@ -1391,6 +1391,16 @@ function loadManifestInfo() {
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('DOM加载完成，开始初始化设置');
   
+  // 初始化主题管理器
+  if (typeof window.themeManager !== 'undefined') {
+    try {
+      await window.themeManager.init();
+      console.log('主题管理器初始化完成');
+    } catch (error) {
+      console.warn('主题管理器初始化失败:', error);
+    }
+  }
+  
   // 加载manifest信息
   loadManifestInfo();
   

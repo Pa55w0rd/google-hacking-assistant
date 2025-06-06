@@ -107,6 +107,16 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 
 // 事件监听器
 document.addEventListener('DOMContentLoaded', function() {
+  // 初始化主题管理器
+  if (typeof window.themeManager !== 'undefined') {
+    try {
+      window.themeManager.init();
+      console.log('弹出窗口主题管理器初始化完成');
+    } catch (error) {
+      console.warn('弹出窗口主题管理器初始化失败:', error);
+    }
+  }
+  
   // 加载设置和清单信息
   loadSettings();
   loadManifestInfo();

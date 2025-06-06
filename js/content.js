@@ -15,6 +15,74 @@ function getMessage(key, substitutions = null) {
   }
 }
 
+// 主题管理功能
+const ThemeManager = {
+  // 获取当前主题
+  async getCurrentTheme() {
+    try {
+      const result = await getSafeStorageData('searchHackingTheme');
+      if (result) {
+        return result;
+      }
+      
+      // 如果没有保存的主题，检测系统偏好
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+      }
+      return 'light';
+    } catch (error) {
+      console.warn('获取主题失败，使用默认主题:', error);
+      return 'light';
+    }
+  },
+
+  // 应用主题到侧边栏
+  applyThemeToSidebar(sidebar, theme) {
+    if (!sidebar) return;
+    
+    // 设置主题属性
+    sidebar.setAttribute('data-theme', theme);
+    
+    // 确保侧边栏及其子元素都应用主题
+    const applyThemeRecursively = (element) => {
+      element.setAttribute('data-theme', theme);
+      Array.from(element.children).forEach(child => {
+        applyThemeRecursively(child);
+      });
+    };
+    
+    applyThemeRecursively(sidebar);
+  },
+
+  // 监听主题变化
+  setupThemeListener(sidebar) {
+    // 监听存储变化
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
+      chrome.storage.onChanged.addListener((changes, namespace) => {
+        if (namespace === 'local' && changes.searchHackingTheme) {
+          const newTheme = changes.searchHackingTheme.newValue || 'light';
+          this.applyThemeToSidebar(sidebar, newTheme);
+        }
+      });
+    }
+
+    // 监听系统主题变化
+    if (window.matchMedia) {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleSystemThemeChange = async (e) => {
+        // 只有在用户没有手动设置主题时才自动切换
+        const savedTheme = await getSafeStorageData('searchHackingTheme');
+        if (!savedTheme) {
+          const newTheme = e.matches ? 'dark' : 'light';
+          this.applyThemeToSidebar(sidebar, newTheme);
+        }
+      };
+      
+      mediaQuery.addListener(handleSystemThemeChange);
+    }
+  }
+};
+
 // 防止重复注入
 if (!window.hackingSidebarInjected) {
   window.hackingSidebarInjected = true;
@@ -777,6 +845,18 @@ if (!window.hackingSidebarInjected) {
       
       // 创建侧边栏元素
       const sidebar = createSidebar(syntaxLibrary);
+      
+      // 应用主题到侧边栏
+      (async () => {
+        try {
+          const currentTheme = await ThemeManager.getCurrentTheme();
+          ThemeManager.applyThemeToSidebar(sidebar, currentTheme);
+          ThemeManager.setupThemeListener(sidebar);
+          console.log('[侧边栏] 已应用主题:', currentTheme);
+        } catch (error) {
+          console.warn('[侧边栏] 应用主题失败:', error);
+        }
+      })();
       
       // 查找Google搜索结果布局容器
       // 针对 google.com 和其他区域 Google 搜索页面进行特殊处理
