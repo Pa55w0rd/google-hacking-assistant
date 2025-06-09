@@ -108,13 +108,16 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 // 事件监听器
 document.addEventListener('DOMContentLoaded', async function() {
   // 初始化主题管理器
-  if (typeof ThemeManager !== 'undefined') {
+  if (typeof window.themeManager !== 'undefined') {
     try {
-      await ThemeManager.init();
-      console.log('Popup页面主题管理器初始化成功');
+      // themeManager 已经在 theme-manager.js 中自动初始化了
+      // 这里只需要等待初始化完成即可
+      console.log('Popup页面主题管理器已就绪');
     } catch (error) {
       console.error('主题管理器初始化失败:', error);
     }
+  } else {
+    console.warn('主题管理器未找到，可能是加载顺序问题');
   }
   
   // 加载设置和清单信息

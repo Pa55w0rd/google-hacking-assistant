@@ -49,23 +49,35 @@ document.querySelectorAll('.toggle-switch').forEach(toggle => {
 
 // 语法搜索功能
 document.getElementById('syntaxSearch').addEventListener('input', function() {
-  const searchTerm = this.value.toLowerCase();
+  const searchTerm = this.value.toLowerCase().trim();
   const syntaxItems = document.querySelectorAll('.syntax-item');
+  const searchResultElement = document.getElementById('searchResult');
   let visibleCount = 0;
   
-  syntaxItems.forEach(item => {
-    const syntaxName = item.querySelector('.font-medium').textContent.toLowerCase();
-    const syntaxCode = item.querySelector('.text-gray-500.text-sm').textContent.toLowerCase();
-    
-    if (syntaxName.includes(searchTerm) || syntaxCode.includes(searchTerm)) {
+  if (searchTerm === '') {
+    // 没有搜索内容时，显示所有语法并隐藏搜索结果计数
+    syntaxItems.forEach(item => {
       item.style.display = 'flex';
-      visibleCount++;
-    } else {
-      item.style.display = 'none';
-    }
-  });
-  
-  document.querySelector('#searchResult .font-semibold').textContent = visibleCount;
+    });
+    searchResultElement.style.display = 'none';
+  } else {
+    // 有搜索内容时，过滤语法并显示匹配数量
+    syntaxItems.forEach(item => {
+      const syntaxName = item.querySelector('.font-medium').textContent.toLowerCase();
+      const syntaxCode = item.querySelector('.text-gray-500.text-sm').textContent.toLowerCase();
+      
+      if (syntaxName.includes(searchTerm) || syntaxCode.includes(searchTerm)) {
+        item.style.display = 'flex';
+        visibleCount++;
+      } else {
+        item.style.display = 'none';
+      }
+    });
+    
+    // 显示搜索结果计数
+    searchResultElement.style.display = 'block';
+    document.querySelector('#searchResult .font-semibold').textContent = visibleCount;
+  }
 });
 
 // 导出配置
@@ -1242,6 +1254,9 @@ function updateSyntaxStatus(syntaxId, enabled) {
         return syntax;
       });
       
+      // 找到被修改的语法信息
+      const modifiedSyntax = syntaxLibrary.find(syntax => syntax.id === syntaxId);
+      
       chrome.storage.local.set({ syntaxLibrary }, () => {
         // 广播语法变更消息，实现实时同步
         chrome.runtime.sendMessage({
@@ -1249,8 +1264,21 @@ function updateSyntaxStatus(syntaxId, enabled) {
           syntaxLibrary: syntaxLibrary
         });
         
-        // 通知用户状态已更新
-        showNotification(`语法状态已${enabled ? '启用' : '禁用'}`, 'success');
+        // 根据语法类型显示不同的通知
+        if (modifiedSyntax) {
+          const syntaxType = modifiedSyntax.builtin ? '内置语法' : '自定义语法';
+          const statusText = enabled ? '已开启' : '已关闭';
+          const statusIcon = enabled ? '✅' : '❌';
+          
+          // 显示详细通知
+          showNotification(
+            `${statusIcon} ${syntaxType} "${modifiedSyntax.name}" ${statusText}`, 
+            enabled ? 'success' : 'info'
+          );
+        } else {
+          // 备用通知（如果找不到语法信息）
+          showNotification(`语法状态已${enabled ? '启用' : '禁用'}`, 'success');
+        }
       });
     }
   });
@@ -1392,16 +1420,36 @@ function addSyntaxEventListeners() {
       // 切换状态
       e.currentTarget.classList.toggle('active');
       
-      // 更新语法库中的引擎设置
-      updateSyntaxEngineSettings(syntaxId, engine, !isActive);
-      
-      // 显示通知
-      const engineNames = {
-        google: 'Google',
-        baidu: '百度',
-        bing: 'Bing'
-      };
-      showNotification(`${engineNames[engine]}搜索引擎已${!isActive ? '启用' : '禁用'}`, 'success');
+      // 获取语法信息用于通知
+      chrome.storage.local.get(['syntaxLibrary'], (result) => {
+        if (result.syntaxLibrary) {
+          const syntax = result.syntaxLibrary.find(s => s.id === syntaxId);
+          
+          // 更新语法库中的引擎设置
+          updateSyntaxEngineSettings(syntaxId, engine, !isActive);
+          
+          // 显示详细通知
+          const engineNames = {
+            google: 'Google',
+            baidu: '百度',
+            bing: 'Bing'
+          };
+          
+          if (syntax) {
+            const syntaxType = syntax.builtin ? '内置语法' : '自定义语法';
+            const statusText = !isActive ? '已启用' : '已禁用';
+            const statusIcon = !isActive ? '🔍' : '🚫';
+            
+            showNotification(
+              `${statusIcon} ${syntaxType} "${syntax.name}" 在 ${engineNames[engine]} 搜索引擎${statusText}`, 
+              !isActive ? 'success' : 'info'
+            );
+          } else {
+            // 备用通知
+            showNotification(`${engineNames[engine]}搜索引擎已${!isActive ? '启用' : '禁用'}`, 'success');
+          }
+        }
+      });
     });
   });
 }
