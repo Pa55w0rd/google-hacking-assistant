@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Search Hacking 助手",
-  "version": "2.2",
+  "version": "2.2.1",
   "description": "在Google、百度和Bing搜索结果页面显示Hacking语法侧边栏，帮助用户进行高级搜索操作",
   "homepage_url": "https://github.com/Pa55w0rd/google-hacking-assistant",
   "icons": {

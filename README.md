@@ -7,8 +7,10 @@
 **专业的搜索引擎Hacking语法工具**
 
 [![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue?style=flat-square&logo=google-chrome)](https://github.com/Pa55w0rd/google-hacking-assistant)
-[![Version](https://img.shields.io/badge/version-2.2-green?style=flat-square)](https://github.com/Pa55w0rd/google-hacking-assistant)
+[![Version](https://img.shields.io/badge/version-2.2.1-green?style=flat-square)](https://github.com/Pa55w0rd/google-hacking-assistant)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
+
+**[English](README_EN.md) | 中文**
 
 [功能特色](#-功能特色) • [安装使用](#-安装使用) • [使用指南](#-使用指南) • [贡献指南](#-贡献指南)
 
@@ -277,6 +279,17 @@ URL黑名单对"提取URL"功能特别有用，可以帮助你过滤掉不需要
 
 ---
 ## 📜 更新日志
+
+### v2.2.1
+
+*   **问题修复**：修复了主题管理器初始化问题并优化语法开关通知
+    *   修复了popup.js中ThemeManager.init()调用错误，改为使用正确的全局实例
+    *   修复了Chrome扩展中的异步消息监听器错误，解决"A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received"问题
+    *   修复了ThemeManager重复声明错误，添加重复声明检查机制
+    *   优化了内置语法开关通知，显示详细的语法名称和状态信息
+    *   优化了搜索引擎开关通知，包含语法类型和引擎信息
+    *   修复了搜索结果计数显示问题，默认隐藏，仅在搜索时显示匹配数量
+
 ### v2.2
 
 *   **增加深色模式**：全新的深色模式功能，支持自动检测系统主题偏好和手动切换，所有界面都支持深色模式并实时同步主题变化。

@@ -1379,19 +1379,20 @@ if (!window.hackingSidebarInjected) {
             // 使用防抖处理设置变更
             debounce(() => {
               initHackingSidebar(true);
-              sendResponse({success: true, message: '设置已应用'});
             }, 300, 'settingsChange')();
             
-            return true; // 表示将异步发送响应
+            // 立即发送响应，不需要异步
+            sendResponse({success: true, message: '设置已应用'});
+            return false; // 同步响应
           }
+          
+          // 对于未处理的消息，不返回true
+          return false;
         } catch (error) {
           console.error('处理消息监听器出错:', error);
-          // 尝试发送错误响应
-          try {
-            sendResponse({success: false, message: '处理消息时出错'});
-          } catch (e) {
-            // 忽略进一步的错误
-          }
+          // 发送错误响应
+          sendResponse({success: false, message: '处理消息时出错'});
+          return false;
         }
       });
     } catch (error) {

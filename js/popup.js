@@ -90,10 +90,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     console.log('接收到设置变更:', request.settings);
     // 应用新的设置到UI
     applySettings(request.settings);
+    // 同步操作，不需要异步响应
+    return false;
   }
   
-  // 返回true表示异步处理消息
-  return true;
+  // 对于未处理的消息，不返回true
+  return false;
 });
 
 // 监听存储变更事件，作为备用同步机制

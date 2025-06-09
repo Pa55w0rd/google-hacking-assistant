@@ -621,6 +621,21 @@
         <h3 class="text-lg font-medium text-gray-800 mb-4">📝 更新日志</h3>
         
         <div class="space-y-6">
+          <div class="border-l-4 border-red-500 pl-4">
+            <h4 class="font-medium text-gray-800 mb-2 flex items-center">
+              <span class="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded mr-2">v2.2.1</span>
+              <span>主题管理器修复与通知优化</span>
+              <span class="text-gray-500 text-sm ml-auto">2025年6月9日</span>
+            </h4>
+            <ul class="list-disc pl-5 text-gray-600 space-y-1 text-sm">
+              <li><strong>主题管理器修复</strong>：修复了popup.js中ThemeManager.init()调用错误，解决主题初始化失败问题</li>
+              <li><strong>消息监听器修复</strong>：修复了Chrome扩展中的异步消息监听器错误，解决"A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received"问题</li>
+              <li><strong>重复声明修复</strong>：修复了ThemeManager重复声明错误，添加重复声明检查机制</li>
+              <li><strong>语法开关通知优化</strong>：优化了内置语法开关通知，显示详细的语法名称和状态信息；优化了搜索引擎开关通知，包含语法类型和引擎信息</li>
+              <li><strong>搜索结果计数修复</strong>：修复了搜索结果计数显示问题，默认隐藏，仅在搜索时显示匹配数量</li>
+            </ul>
+          </div>
+          
           <div class="border-l-4 border-purple-500 pl-4">
             <h4 class="font-medium text-gray-800 mb-2 flex items-center">
               <span class="bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded mr-2">v2.2</span>
