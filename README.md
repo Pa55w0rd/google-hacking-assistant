@@ -6,9 +6,10 @@
 
 **专业的搜索引擎Hacking语法工具**
 
-[![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue?style=flat-square&logo=google-chrome)](https://github.com/Pa55w0rd/google-hacking-assistant)
-[![Version](https://img.shields.io/badge/version-2.2.1-green?style=flat-square)](https://github.com/Pa55w0rd/google-hacking-assistant)
+[![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-4285F4?style=flat-square&logo=google-chrome&logoColor=white)](https://github.com/Pa55w0rd/google-hacking-assistant)
+[![Version](https://img.shields.io/badge/version-2.2.1-green?style=flat-square)](https://github.com/Pa55w0rd/google-hacking-assistant/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=flat-square&logo=github)](https://github.com/Pa55w0rd/google-hacking-assistant)
 
 **[English](README_EN.md) | 中文**
 
