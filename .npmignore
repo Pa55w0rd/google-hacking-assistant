@@ -1,0 +1,9 @@
+node_modules/
+src/
+tsconfig.json
+webpack.config.js
+.gitignore
+js_backup/
+*.log
+.DS_Store
+

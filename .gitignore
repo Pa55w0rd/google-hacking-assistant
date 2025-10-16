@@ -1,71 +1,8 @@
-# 操作系统文件
-.DS_Store
-Thumbs.db
-desktop.ini
-$RECYCLE.BIN/
-*.lnk
-
-# 编辑器/IDE文件
-.idea/
-.vscode/
-*.sublime-project
-*.sublime-workspace
-.vs/
-*.swp
-*~
-*.bak
-.cursor
-
-
-# 依赖
 node_modules/
-bower_components/
-package-lock.json
-yarn.lock
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# 构建输出
-/dist/
-/build/
-/out/
-/release/
-*.zip
-*.crx
-*.pem
-*.xpi
-
-# 临时文件
-/tmp/
-/temp/
-*.tmp
+dist/
 *.log
-logs/
-*.cache
-/prototype/
-
-# 敏感信息
-.env
-.env.*
-*.pem
-*.key
-secrets.json
-credential*.json
-
-# 测试覆盖报告
-/coverage/
-
-# 浏览器扩展特定文件
-.web-extension-id
-
-# 个人设置和开发配置
-dev-config.json
-local-settings.json
-user-preferences.json
-
-# 其他
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db 
+.DS_Store
+*.map
+.vscode/
+.idea/
+.cursor/

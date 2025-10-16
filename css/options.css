@@ -1,290 +1,412 @@
+/* iOS 16 Style - Options Page */
+
+/* 全局样式 */
 body {
-  font-family: 'Roboto', 'Segoe UI', 'Microsoft YaHei', sans-serif;
-  background-color: #f8f9fa;
-  font-size: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  background-color: #F2F2F7;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  padding: 0;
 }
 
-/* 导航栏字体大小 */
-.nav-item {
-  font-size: 1.125rem; /* 18px */
-}
-
-/* 主标题字体大小 */
+/* 标题字体 */
 h1 {
-  font-size: 1.5rem !important; /* 24px */
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.03em;
+  color: #000000;
 }
 
-/* 二级标题字体大小 */
 h2 {
-  font-size: 1.375rem !important; /* 22px */
+  font-size: 22px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em;
+  color: #000000;
 }
 
-/* 三级标题字体大小 */
 h3 {
-  font-size: 1.25rem !important; /* 20px */
+  font-size: 17px !important;
+  font-weight: 600 !important;
+  color: #000000;
 }
 
-/* 四级标题字体大小 */
 h4 {
-  font-size: 1.125rem !important; /* 18px */
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: #000000;
 }
 
-/* 正文文本字体大小 */
+/* 正文文本 */
 p, div, span, label {
-  font-size: 1rem !important; /* 16px */
+  font-size: 15px !important;
+  color: #000000;
 }
 
-/* 小号文本字体大小 */
+/* 小号文本 */
 .text-sm {
-  font-size: 0.9375rem !important; /* 15px */
+  font-size: 13px !important;
+  color: #8E8E93;
 }
 
-/* 超小号文本字体大小 */
 .text-xs {
-  font-size: 0.875rem !important; /* 14px */
+  font-size: 12px !important;
+  color: #8E8E93;
 }
 
-/* 模态窗口标题字体大小 */
-.modal-container h3 {
-  font-size: 1.25rem !important; /* 20px */
+/* 容器 */
+.container {
+  background-color: #F2F2F7 !important;
+  max-width: 100% !important;
+  padding-left: 24px !important;
+  padding-right: 24px !important;
 }
 
-/* 按钮文本字体大小 */
-button {
-  font-size: 1rem !important; /* 16px */
-}
-
-/* 表单输入框字体大小 */
-input, textarea {
-  font-size: 1rem !important; /* 16px */
-}
-
-/* 导航菜单字体大小 */
-.container .flex.text-gray-600 a {
-  font-size: 1.125rem !important; /* 18px */
-  padding: 1rem 1.5rem !important;
-}
-
-/* 标签和徽章字体大小 */
-.badge-info, .badge-low, .badge-medium, .badge-high {
-  font-size: 0.875rem !important; /* 14px */
-}
-
-/* 通知文本字体大小 */
-.notification {
-  font-size: 1rem !important; /* 16px */
-}
-
+/* 卡片 - 扁平白色 */
 .glass-card {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  background: #FFFFFF !important;
+  border: 0.5px solid #E5E5EA !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
 
+/* 导航栏 */
 .gradient-bg {
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  background: #FFFFFF !important;
+  border-bottom: 0.5px solid #E5E5EA;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1000 !important;
 }
 
+.gradient-bg, .gradient-header {
+  background: #FFFFFF !important;
+}
+
+/* 标签页导航栏固定 */
+.bg-white.border-b {
+  position: sticky !important;
+  top: 73px !important; /* 顶部导航栏高度 */
+  z-index: 999 !important;
+  background: #FFFFFF !important;
+}
+
+/* 标签页 */
 .tab-active {
-  color: #1a73e8;
-  border-bottom: 3px solid #1a73e8;
+  color: #007AFF !important;
+  border-bottom: 2px solid #007AFF !important;
+  font-weight: 600 !important;
 }
 
+/* iOS风格开关 */
 .toggle-switch {
-  width: 48px;
-  height: 24px;
-  border-radius: 12px;
-  background-color: #e0e0e0;
-  transition: all 0.3s;
+  width: 51px;
+  height: 31px;
+  border-radius: 16px;
+  background-color: #E5E5EA;
+  transition: background-color 0.3s ease;
   cursor: pointer;
   position: relative;
+  border: none;
 }
 
 .toggle-switch::after {
   content: '';
   position: absolute;
-  width: 20px;
-  height: 20px;
+  width: 27px;
+  height: 27px;
   border-radius: 50%;
-  background-color: white;
+  background-color: #FFFFFF;
   top: 2px;
   left: 2px;
-  transition: all 0.3s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .toggle-switch.active {
-  background-color: #1a73e8;
+  background-color: #34C759;
 }
 
 .toggle-switch.active::after {
-  left: 26px;
+  transform: translateX(20px);
+}
+
+/* 语法项 - iOS扁平卡片 */
+.syntax-item {
+  background: #FFFFFF;
+  border: 0.5px solid #E5E5EA;
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
 }
 
 .syntax-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(32,33,36,.10);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.badge-info { background-color: #e8f0fe; color: #174ea6; }
-.badge-low { background-color: #e6f4ea; color: #0d652d; }
-.badge-medium { background-color: #fef7e0; color: #b06000; }
-.badge-high { background-color: #fce8e6; color: #c5221f; }
-
-.btn-effect:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-}
-
-.btn-effect:active {
-  transform: translateY(0);
-}
-
-/* 通知相关样式 */
-.notification {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.3s, transform 0.3s;
-  left: 50%;
-  transform: translateX(-50%);
-  top: -100px;
-}
-
-.notification.show {
-  top: 16px;
-}
-
-.notification.opacity-0 {
-  opacity: 0;
-  top: -10px;
-}
-
-/* 模态窗口样式 */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+.syntax-item-header {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.syntax-item-title {
+  display: flex;
   align-items: center;
-  z-index: 100;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
+  flex: 1;
+  min-width: 0;
 }
 
-.modal-overlay.show {
-  opacity: 1;
-  visibility: visible;
-}
-
-.modal-container {
-  background-color: white;
-  max-width: 500px;
-  width: 90%;
-  border-radius: 12px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+.syntax-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #000000;
+  line-height: 1.4;
+  white-space: nowrap;
   overflow: hidden;
-  transform: scale(0.9);
-  transition: transform 0.3s ease;
+  text-overflow: ellipsis;
 }
 
-.modal-overlay.show .modal-container {
-  transform: scale(1);
-}
-
-.modal-header {
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+.syntax-item-actions {
   display: flex;
   align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
-.modal-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+.syntax-item-body {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.syntax-template {
+  font-family: "SF Mono", "Monaco", "Menlo", "Courier New", monospace;
+  font-size: 13px;
+  color: #3C3C43;
+  line-height: 1.5;
+  background: #F2F2F7;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+}
+
+/* 风险标签 - iOS徽章风格 */
+.risk-badge {
+  display: inline-flex;
   align-items: center;
-  margin-right: 1rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
-.modal-icon.warning {
-  background-color: #fef7e0;
-  color: #b06000;
+.risk-badge-info {
+  background: #E3F2FD !important;
+  color: #007AFF !important;
 }
 
-.modal-icon.danger {
-  background-color: #fce8e6;
-  color: #c5221f;
+.risk-badge-low {
+  background: #E8F5E9 !important;
+  color: #34C759 !important;
 }
 
-.modal-body {
-  padding: 1.5rem;
+.risk-badge-medium {
+  background: #FFF3E0 !important;
+  color: #FF9500 !important;
 }
 
-.modal-footer {
-  padding: 1rem 1.5rem;
-  background-color: #f9fafb;
+.risk-badge-high {
+  background: #FFEBEE !important;
+  color: #FF3B30 !important;
+}
+
+/* 搜索引擎标签 */
+.syntax-engines {
   display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
-.modal-btn {
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
+.engine-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
   font-weight: 500;
-  font-size: 0.875rem;
-  cursor: pointer;
   transition: all 0.2s;
 }
 
-.modal-btn-cancel {
-  background-color: #f3f4f6;
-  color: #4b5563;
+.engine-badge i {
+  font-size: 12px;
 }
 
-.modal-btn-cancel:hover {
-  background-color: #e5e7eb;
+.engine-badge-google {
+  background: #E3F2FD;
+  color: #007AFF;
 }
 
-.modal-btn-confirm {
-  background-color: #ef4444;
-  color: white;
+.engine-badge-baidu {
+  background: #E3F2FD;
+  color: #007AFF;
 }
 
-.modal-btn-confirm:hover {
-  background-color: #dc2626;
+.engine-badge-bing {
+  background: #E8F5E9;
+  color: #34C759;
 }
 
-/* 添加/编辑语法模态窗口样式 */
-.radio-container {
-  display: flex;
+/* 图标按钮 - iOS风格 */
+.icon-btn {
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #F2F2F7;
+  color: #8E8E93;
   cursor: pointer;
-  transition: all 0.3s;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.icon-btn:hover {
+  background-color: #E5E5EA;
+  color: #000000;
+}
+
+.icon-btn:active {
+  transform: scale(0.95);
+}
+
+.edit-btn:hover {
+  background-color: #E3F2FD;
+  color: #007AFF;
+}
+
+.delete-btn:hover {
+  background-color: #FFEBEE;
+  color: #FF3B30;
+}
+
+/* 按钮 - iOS扁平风格 */
+.bg-blue-600, button.bg-blue-600 {
+  background: #007AFF !important;
+  color: #FFFFFF !important;
+  border-radius: 10px !important;
+  padding: 11px 20px !important;
+  font-weight: 600 !important;
+  border: none !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.bg-blue-600:hover, button.bg-blue-600:hover {
+  background: #0051D5 !important;
+  transform: translateY(0) !important;
+}
+
+.bg-blue-600:active {
+  transform: scale(0.98) !important;
+}
+
+.bg-green-600 {
+  background: #34C759 !important;
+  color: #FFFFFF !important;
+  border-radius: 10px !important;
+  padding: 11px 20px !important;
+  font-weight: 600 !important;
+  border: none !important;
+}
+
+.bg-red-600 {
+  background: #FF3B30 !important;
+  color: #FFFFFF !important;
+  border-radius: 10px !important;
+  padding: 11px 20px !important;
+  font-weight: 600 !important;
+  border: none !important;
+}
+
+.btn-effect:hover {
+  transform: translateY(0) !important;
+  box-shadow: none !important;
+}
+
+.btn-effect:active {
+  transform: scale(0.98) !important;
+}
+
+/* 表单元素 */
+input, textarea, select {
+  background-color: #FFFFFF !important;
+  border: 0.5px solid #E5E5EA !important;
+  color: #000000 !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  font-size: 15px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
+  transition: all 0.2s ease !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #007AFF !important;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1) !important;
+  outline: none !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #C7C7CC !important;
+}
+
+/* 单选按钮容器 - iOS风格 */
+.radio-container {
+  border: 0.5px solid #E5E5EA;
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+/* 默认背景色（如果没有Tailwind类） */
+.radio-container:not([class*="bg-"]) {
+  background: #F2F2F7;
 }
 
 .radio-container:hover {
-  background-color: #f3f4f6;
+  filter: brightness(0.97);
+}
+
+/* 隐藏原生单选框但保持可访问性 */
+.radio-container input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .custom-radio {
   width: 20px;
   height: 20px;
-  border: 2px solid #d1d5db;
+  border: 2px solid #C7C7CC;
   border-radius: 50%;
   position: relative;
-  margin-right: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
 }
 
 .custom-radio::after {
@@ -292,41 +414,169 @@ input, textarea {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #1e3c72;
+  background: #007AFF;
   opacity: 0;
-  transition: all 0.3s;
+  transition: opacity 0.2s;
 }
 
-input[type="radio"]:checked + .custom-radio {
-  border-color: #1e3c72;
+/* 选中状态 */
+.radio-container:has(input[type="radio"]:checked) .custom-radio {
+  border-color: #007AFF;
 }
 
-input[type="radio"]:checked + .custom-radio::after {
+.radio-container:has(input[type="radio"]:checked) .custom-radio::after {
   opacity: 1;
 }
 
+/* 复选框 */
+input[type="checkbox"] {
+  accent-color: #007AFF !important;
+}
+
+/* 模态框 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  display: none; /* 默认隐藏 */
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+/* 显示模态框 */
+.modal-overlay.show,
+.modal-overlay[style*="display: flex"],
+.modal-overlay[style*="display:flex"] {
+  display: flex !important;
+}
+
+.modal-container {
+  background-color: #FFFFFF;
+  border-radius: 14px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 0.5px solid #E5E5EA;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  background-color: #F2F2F7;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 0.5px solid #E5E5EA;
+}
+
+.modal-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.modal-btn-cancel {
+  background-color: #E5E5EA !important;
+  color: #000000 !important;
+}
+
+.modal-btn-cancel:hover {
+  background-color: #D1D1D6 !important;
+}
+
+.modal-btn-confirm {
+  background-color: #007AFF !important;
+  color: #FFFFFF !important;
+}
+
+.modal-btn-confirm:hover {
+  background-color: #0051D5 !important;
+}
+
+/* 确保按钮内所有元素文字都是白色 - 最高优先级 */
+button.modal-btn-confirm,
+button.modal-btn-confirm *,
+button.modal-btn-confirm span,
+button.modal-btn-confirm i,
+.modal-btn.modal-btn-confirm,
+.modal-btn.modal-btn-confirm *,
+.modal-btn.modal-btn-confirm span,
+.modal-btn.modal-btn-confirm i {
+  color: #FFFFFF !important;
+}
+
+/* 取消按钮黑色文字 - 最高优先级 */
+button.modal-btn-cancel,
+button.modal-btn-cancel *,
+button.modal-btn-cancel span,
+button.modal-btn-cancel i,
+.modal-btn.modal-btn-cancel,
+.modal-btn.modal-btn-cancel *,
+.modal-btn.modal-btn-cancel span,
+.modal-btn.modal-btn-cancel i {
+  color: #000000 !important;
+}
+
+/* 语法示例提示 */
 .syntax-example {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   cursor: pointer;
+  user-select: none;
 }
 
 .syntax-example-content {
   visibility: hidden;
   position: absolute;
-  z-index: 10;
+  z-index: 1000;
   bottom: 125%;
   left: 50%;
   transform: translateX(-50%);
   width: 300px;
-  background-color: #1e293b;
-  color: #fff;
+  background-color: #FFFFFF; /* 浅色模式默认使用白底 */
+  color: #000000; /* 提升浅色模式可读性 */
   text-align: left;
-  border-radius: 6px;
-  padding: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.04);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  font-size: 13px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+/* 添加小三角指示器 */
+.syntax-example-content::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #FFFFFF; /* 与浅色模式提示框背景一致 */
 }
 
 .syntax-example:hover .syntax-example-content {
@@ -334,50 +584,148 @@ input[type="radio"]:checked + .custom-radio::after {
   opacity: 1;
 }
 
-.syntax-modal-container {
-  max-width: 1000px;
-  width: 95%;
+/* 通知 - 顶部居中悬浮 */
+.notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #FFFFFF;
+  color: #000000;
+  border: 0.5px solid #E5E5EA;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 500;
+  z-index: 100000;
+  min-width: 200px;
+  text-align: center;
+  animation: notificationSlideDown 0.3s ease;
 }
 
-.gradient-header {
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-  border-radius: 12px 12px 0 0;
+@keyframes notificationSlideDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 
-/* 搜索引擎开关样式 */
+.notification-success {
+  border-left: 4px solid #34C759;
+}
+
+.notification-error {
+  border-left: 4px solid #FF3B30;
+}
+
+.notification-info {
+  border-left: 4px solid #007AFF;
+}
+
+/* 徽章 */
+.badge-info, .badge-low, .badge-medium, .badge-high {
+  font-size: 12px !important;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.badge-info {
+  background-color: #E3F2FD;
+  color: #007AFF;
+}
+
+.badge-low {
+  background-color: #E8F5E9;
+  color: #34C759;
+}
+
+.badge-medium {
+  background-color: #FFF3E0;
+  color: #FF9500;
+}
+
+.badge-high {
+  background-color: #FFEBEE;
+  color: #FF3B30;
+}
+
+/* 主题切换按钮 */
+.theme-toggle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-size: 16px;
+}
+
+.theme-toggle:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle:active {
+  transform: scale(0.95);
+}
+
+/* 搜索引擎开关 */
 .engine-toggle {
-  width: 32px;
-  height: 16px;
-  background-color: #e5e7eb;
-  border-radius: 8px;
+  width: 51px;
+  height: 31px;
+  background-color: #E5E5EA;
+  border-radius: 16px;
   position: relative;
   cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid #d1d5db;
+  transition: background-color 0.3s ease;
+  border: none;
 }
 
 .engine-toggle::before {
   content: '';
   position: absolute;
-  top: 1px;
-  left: 1px;
-  width: 12px;
-  height: 12px;
-  background-color: white;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  background-color: #FFFFFF;
   border-radius: 50%;
-  transition: all 0.3s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .engine-toggle.active {
-  background-color: #3b82f6;
-  border-color: #2563eb;
+  background-color: #34C759;
 }
 
 .engine-toggle.active::before {
-  transform: translateX(16px);
+  transform: translateX(20px);
 }
 
-.engine-toggle:hover {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-} 
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #C7C7CC;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #8E8E93;
+}

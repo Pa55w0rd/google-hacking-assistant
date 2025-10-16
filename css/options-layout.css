@@ -1,0 +1,271 @@
+/* ===== Options页面布局样式 ===== */
+
+/* 顶部导航样式 */
+.gradient-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 100 !important;
+  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.3) !important;
+}
+
+/* 顶部Logo样式 */
+.header-logo {
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.375rem;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-logo:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 顶部标题样式 */
+.header-title {
+  font-size: 1.375rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* 页面标题优化 */
+h2.page-title {
+  font-size: 1.75rem !important;
+  font-weight: 700 !important;
+  color: #1f2937 !important;
+  margin-bottom: 1.5rem !important;
+  padding-bottom: 0.75rem !important;
+  border-bottom: 2px solid #e5e7eb !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+}
+
+h2.page-title i {
+  color: #667eea !important;
+  font-size: 1.5rem !important;
+  width: auto !important;
+  margin-right: 0 !important;
+}
+
+/* 主布局容器 */
+.main-layout {
+  display: flex;
+  min-height: calc(100vh - 56px); /* 减去顶部导航栏高度 */
+}
+
+/* 左侧菜单 */
+.sidebar-menu {
+  width: 240px;
+  background: #fff;
+  border-right: 1px solid #e5e7eb;
+  flex-shrink: 0;
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+}
+
+.menu-nav {
+  padding: 1rem 0;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 0.875rem 1.5rem;
+  color: #6b7280;
+  text-decoration: none;
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+  font-size: 0.9375rem;
+}
+
+.menu-item:hover {
+  background: #f9fafb;
+  color: #374151;
+}
+
+.menu-item.tab-active {
+  background: #f0f4ff;
+  color: #667eea;
+  border-left-color: #667eea;
+  font-weight: 500;
+}
+
+.menu-icon {
+  width: 20px;
+  margin-right: 0.75rem;
+  font-size: 1rem;
+}
+
+/* 主内容区域 */
+.main-content {
+  flex: 1;
+  padding: 2rem 3rem;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* ===== 顶部按钮样式 ===== */
+
+/* 统一的头部按钮样式 */
+.header-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 32px !important;
+  height: 32px !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 6px !important;
+  color: #fff !important;
+  text-decoration: none !important;
+  transition: all 0.2s !important;
+  cursor: pointer;
+  font-size: 0.875rem !important;
+  padding: 0 !important;
+}
+
+.header-btn:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-1px);
+}
+
+.header-btn:active {
+  transform: translateY(0);
+}
+
+.header-btn .theme-icon {
+  font-size: 1rem !important;
+  line-height: 1;
+}
+
+/* 版本信息样式 */
+.header-version {
+  display: inline-flex !important;
+  align-items: center;
+  height: 32px !important;
+  padding: 0 0.75rem !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 6px !important;
+  font-size: 0.8125rem !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+  font-weight: 500 !important;
+}
+
+/* 深色模式适配 */
+[data-theme="dark"] .sidebar-menu {
+  background: #1f2937;
+  border-right-color: #374151;
+}
+
+[data-theme="dark"] .menu-item {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .menu-item:hover {
+  background: #374151;
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] .menu-item.tab-active {
+  background: #1e293b;
+  color: #818cf8;
+  border-left-color: #818cf8;
+}
+
+/* ===== 滚动进度条和回到顶部按钮 ===== */
+
+/* 滚动进度条容器 */
+.scroll-progress-container {
+  position: fixed;
+  right: 0;
+  top: 56px;
+  width: 4px;
+  height: calc(100vh - 56px);
+  background: rgba(0, 0, 0, 0.05);
+  z-index: 50;
+  pointer-events: none;
+}
+
+/* 进度条 */
+.scroll-progress-bar {
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  transition: height 0.1s ease-out;
+  border-radius: 0 0 2px 2px;
+}
+
+/* 回到顶部按钮 */
+.back-to-top {
+  position: fixed;
+  right: 20px;
+  bottom: 30px;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 1.25rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-to-top.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.back-to-top:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.back-to-top:active {
+  transform: translateY(-2px);
+}
+
+/* 深色模式适配 */
+[data-theme="dark"] body {
+  background-color: #111827 !important;
+}
+
+[data-theme="dark"] .main-content {
+  background-color: #111827 !important;
+}
+
+[data-theme="dark"] .scroll-progress-container {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] h2.page-title {
+  color: #e5e7eb !important;
+  border-bottom-color: #374151 !important;
+}
+
+[data-theme="dark"] h2.page-title i {
+  color: #818cf8 !important;
+}
+

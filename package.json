@@ -1,0 +1,30 @@
+{
+  "name": "search-hacking-assistant",
+  "version": "2.3.0",
+  "description": "Chrome extension for search hacking syntax assistance",
+  "scripts": {
+    "build": "webpack --mode production",
+    "dev": "webpack --mode development --watch",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "chrome-extension",
+    "search-hacking",
+    "google-hacking"
+  ],
+  "author": "Pa55w0rd",
+  "license": "MIT",
+  "devDependencies": {
+    "@fortawesome/fontawesome-free": "^7.1.0",
+    "@types/chrome": "^0.0.260",
+    "clean-webpack-plugin": "^4.0.0",
+    "copy-webpack-plugin": "^11.0.0",
+    "css-loader": "^6.8.1",
+    "rimraf": "^5.0.5",
+    "style-loader": "^3.3.3",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.3",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
+  }
+}

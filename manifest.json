@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Search Hacking 助手",
-  "version": "2.2.1",
+  "version": "2.3.0",
   "description": "在Google、百度和Bing搜索结果页面显示Hacking语法侧边栏，帮助用户进行高级搜索操作",
   "homepage_url": "https://github.com/Pa55w0rd/google-hacking-assistant",
   "icons": {
@@ -39,13 +39,13 @@
         "*://*.google.ru/*",
         "*://*.google.nl/*"
       ],
-      "js": ["js/content.js"],
+      "js": ["js/content-google.js"],
       "css": ["css/sidebar-common.css", "css/dark-mode.css", "css/content.css"],
       "run_at": "document_end"
     },
     {
       "matches": ["*://*.baidu.com/*"],
-      "js": ["js/baidu-content.js"],
+      "js": ["js/content-baidu.js"],
       "css": ["css/sidebar-common.css", "css/dark-mode.css", "css/baidu-content.css"],
       "run_at": "document_end"
     },
@@ -62,7 +62,7 @@
         "*://*.bing.com.au/*",
         "*://*.bing.co.jp/*"
       ],
-      "js": ["js/bing-content.js"],
+      "js": ["js/content-bing.js"],
       "css": ["css/sidebar-common.css", "css/dark-mode.css", "css/bing-content.css"],
       "run_at": "document_end"
     }
@@ -105,4 +105,4 @@
       "matches": ["<all_urls>"]
     }
   ]
-} 
+}

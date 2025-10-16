@@ -4,19 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Search Hacking 助手 - 弹出窗口</title>
+  <!-- Tailwind CSS 保留CDN，确保样式正常 -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Font Awesome 本地化 -->
+  <link rel="stylesheet" href="libs/font-awesome/css/all.min.css">
   <link rel="stylesheet" href="css/popup.css">
   <link rel="stylesheet" href="css/dark-mode.css">
 </head>
 <body class="bg-gray-100 flex flex-col h-full">
   <!-- 顶部导航栏 -->
   <div class="bg-gradient text-white py-4 px-6 shadow-lg">
-    <div class="flex items-center justify-center">
-      <div class="flex items-center space-x-3">
-        <i class="fas fa-search text-xl"></i>
-        <h1 class="text-lg font-medium">Search Hacking 助手</h1>
-      </div>
+    <div class="flex items-center space-x-3">
+      <i class="fas fa-search text-xl"></i>
+      <h1 class="text-lg font-medium">Search Hacking 助手</h1>
     </div>
   </div>
   
@@ -27,7 +27,7 @@
       <div class="mb-5">
         <div class="flex items-center justify-between mb-2">
           <label class="text-gray-700 text-base font-medium">启用侧边栏</label>
-          <div class="toggle-switch" id="sidebarToggle"></div>
+          <div class="toggle-switch" id="toggleSidebar"></div>
         </div>
         <p class="text-gray-500 text-xs">开启后，在包含site:的搜索结果页面显示Hacking语法侧边栏</p>
       </div>
@@ -57,7 +57,7 @@
       </div>
       
       <div class="text-center mt-6">
-        <button id="openOptions" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-full shadow-md transition-all duration-300 btn-effect flex items-center mx-auto">
+        <button id="openSettings" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-full shadow-md transition-all duration-300 btn-effect flex items-center mx-auto">
           <i class="fas fa-cog mr-2"></i> 打开更多设置
         </button>
       </div>
@@ -81,7 +81,6 @@
     </div>
   </div>
   
-  <script src="js/theme-manager.js"></script>
   <script src="js/popup.js"></script>
 </body>
 </html> 
